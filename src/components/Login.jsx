@@ -5,10 +5,12 @@ const Login = ({ onLogin }) => {
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    if (cpf && password) {
+    if (cpf === '05875164450' && password === 'adminteste') {
       onLogin();
+    } else {
+      alert('CPF ou senha inválidos para este acesso de teste.');
     }
   };
 
