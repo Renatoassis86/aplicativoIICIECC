@@ -1,25 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #580000; /* Darker Burgundy from the image */
-  --primary-light: #800000;
-  --primary-dark: #3a0000;
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #FDF5E6; /* Cream */
-  --bg-tertiary: #FEF9F0;
-  --text-primary: #1A1A1A;
-  --text-secondary: #4B5563;
-  --text-muted: #9ca3af;
-  --accent: #C5A059; /* Gold */
-  --accent-light: #E5D0A1;
-  --border: #D1D5DB;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --radius-sm: 4px;
-  --radius: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --primary: #d61f26; /* Mockup action red */
+  --primary-bg: rgba(214, 31, 38, 0.1);
+  --accent: #111827; /* Near black */
+  --bg-main: #eef1f4;
+  --bg-app: #f7f8fa;
+  --bg-card: #ffffff;
+  --bg-highlight: #f8fafc;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --border-light: #e5e7eb;
+  --radius-app: 32px;
+  --radius-card: 24px;
+  --radius-item: 20px;
+  --radius-xs: 12px;
   --font-heading: 'Cinzel', serif;
   --font-body: 'Outfit', -apple-system, sans-serif;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
