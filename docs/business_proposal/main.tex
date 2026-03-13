@@ -1,0 +1,86 @@
+\documentclass[12px,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+% Definição de Cores Institucionais
+\definecolor{CIECCRed}{HTML}{800000}
+\definecolor{CIECCGold}{HTML}{C5A059}
+\definecolor{CIECCNavy}{HTML}{111827}
+\definecolor{CIECCCream}{HTML}{FDF5E6}
+
+% Configuração de Títulos
+\titleformat{\section}{\color{CIECCRed}\normalfont\Large\bfseries\scshape}{\thesection}{1em}{}
+\titleformat{\subsection}{\color{CIECCNavy}\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+\title{
+    \vspace{2cm}
+    \includegraphics[width=0.3\textwidth]{src/assets/logo-placeholder.svg} \\ % Placeholder para logo
+    \vspace{1cm}
+    \textcolor{CIECCRed}{\Huge \textbf{Proposta Técnica e Comercial}} \\
+    \vspace{0.5cm}
+    \textcolor{CIECCNavy}{\Large App Oficial do II CIECC 2026} \\
+    \vspace{1cm}
+    \large Hub Digital de Experiência e Engajamento
+}
+\author{Antigravity AI Coding Assistant}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\section{Introdução e Objetivo}
+O aplicativo oficial do \textbf{II Congresso Internacional de Educação Cristã Clássica (CIECC)} foi concebido para ser o epicentro da comunicação e relacionamento durante o evento. Mais do que um simples repositório de informações, ele atua como um \textit{Digital Concierge}, guiando o congressista em sua jornada acadêmica e espiritual.
+
+\subsection{Proposta de Valor}
+\begin{itemize}
+    \item \textbf{Centralização:} Todas as informações (agenda, tickets, avisos) em um único lugar.
+    * \textbf{Engajamento:} Ferramentas de networking para conectar educadores, gestores e famílias.
+    * \textbf{Exclusividade:} Acesso a conteúdos de mídia e transmissões oficiais.
+    * \textbf{Eficiência:} Redução de filas e otimização do fluxo de credenciamento via QR Code.
+\end{itemize}
+
+\section{Conceito Visual (Branding)}
+A identidade visual do aplicativo é baseada no conceito \textbf{Classical Academic Premium}. Inspirada na tradição das artes liberais, utilizamos uma paleta de cores institucional que transmite autoridade e seriedade:
+\begin{description}
+    \item[Bordô (Crimson):] Simboliza a paixão pelo conhecimento e a herança acadêmica.
+    \item[Dourado (Ochre):] Representa o valor eterno da sabedoria clássica.
+    \item[Creme (Parchment):] Remete à tradição dos grandes textos e manuscritos.
+\end{description}
+
+\section{Arquitetura da Solução}
+O aplicativo é dividido em cinco pilares fundamentais de navegação, desenhados com foco em UX \textit{mobile-first}:
+
+\subsection{Dashboard de Início (Home)}
+O painel de controle do congressista. Reúne banners de boas-vindas, contagem regressiva, comunicados de alta prioridade e atalhos rápidos para as funções mais utilizadas.
+
+\subsection{Gestão de Programação (Agenda)}
+Permite ao usuário visualizar a grade completa de atividades, filtrar por temas ou palestrantes e favoritar sessões de interesse para montar sua agenda personalizada.
+
+\subsection{Networking e Relacionamento}
+Área dedicada à conexão entre participantes. Facilita o encontro de perfis estratégicos (Gestores, Famílias Educadoras) e promove o relacionamento comercial com parceiros e expositores.
+
+\section{Impacto e Resultados Esperados}
+O app visa transformar a experiência do congresso em algo dinâmico e interativo, proporcionando:
+\begin{description}
+    \item[Para o Organizador:] Melhor controle de tráfego, comunicação instantânea e dados de interesse do público.
+    \item[Para o Participante:] Sensação de valor institucional e facilidade na navegação pelo evento.
+    \item[Para o Patrocinador:] Espaços nobres de visibilidade e conexão direta com o público-alvo.
+\end{description}
+
+\vspace{2cm}
+\begin{tcolorbox}[colback=CIECCRed!5,colframe=CIECCRed,title=Nota de Desenvolvimento]
+    Este documento é atualizado dinamicamente conforme a evolução do protótipo digital.
+\end{tcolorbox}
+
+\end{document}
