@@ -1,22 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #800000; /* Deep Burgundy/Maroon from video */
-  --primary-dark: #600101;
+  --primary: #580000; /* Darker Burgundy from the image */
+  --primary-light: #800000;
+  --primary-dark: #3a0000;
   --bg-primary: #FFFFFF;
-  --bg-secondary: #FDF5E6; /* Warm Old Paper / Cream background */
+  --bg-secondary: #FDF5E6; /* Cream */
   --bg-tertiary: #FEF9F0;
-  --text-primary: #1A1A1A; /* Near black */
+  --text-primary: #1A1A1A;
   --text-secondary: #4B5563;
   --text-muted: #9ca3af;
-  --accent: #C5A059; /* Gold/Ochre accent from logo/dividers */
+  --accent: #C5A059; /* Gold */
+  --accent-light: #E5D0A1;
   --border: #D1D5DB;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --radius-sm: 4px;
   --radius: 16px;
   --radius-lg: 24px;
-  --font-heading: 'Cinzel', serif; /* Classical Serif */
+  --radius-xl: 32px;
+  --font-heading: 'Cinzel', serif;
   --font-body: 'Outfit', -apple-system, sans-serif;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -127,4 +131,52 @@ h1 {
   color: var(--primary); 
   letter-spacing: 0.02em;
 }
-p { color: var(--text-secondary); }
+/* Classical Backgrounds & Textures */
+.bg-burgundy-texture {
+  background-color: var(--primary);
+  background-image: 
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03)),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 100%);
+  background-size: 40px 40px, 100% 100%;
+  position: relative;
+  color: white;
+}
+
+.laurel-decor {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  opacity: 0.1;
+  pointer-events: none;
+  background-image: url('https://www.transparenttextures.com/patterns/black-paper.png'); /* Pattern substitute */
+}
+
+.academic-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+
+.academic-card:active {
+  transform: scale(0.98);
+}
+
+.gold-text { color: var(--accent); }
+.serif { font-family: var(--font-heading); }
+.uppercase { text-transform: uppercase; }
+.tracking-widest { letter-spacing: 0.2em; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
+}

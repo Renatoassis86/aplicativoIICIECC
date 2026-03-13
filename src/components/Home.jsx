@@ -1,299 +1,146 @@
 import React from 'react';
-import { PlayCircle, Calendar, Users, Megaphone, HelpCircle, ChevronRight, Map, Award } from 'lucide-react';
+import { 
+  Calendar, Users, HelpCircle, Map, QrCode, Ticket, 
+  Bell, PlayCircle, Megaphone, ChevronRight, Award
+} from 'lucide-react';
 
 const Home = () => {
-  const cards = [
-    { title: 'Programação', desc: 'Agenda completa e favoritos.', icon: Calendar, color: 'bg-burgundy' },
-    { title: 'Palestrantes', desc: 'Conheça os convidados.', icon: Users, color: 'bg-gold' },
-    { title: 'Parceiros', desc: 'Expositores e networking.', icon: HelpCircle, color: 'bg-cream' },
-    { title: 'Comunicados', desc: 'Avisos importantes em tempo real.', icon: Megaphone, color: 'bg-burgundy' },
+  const shortcuts = [
+    { icon: Calendar, label: 'Agenda' },
+    { icon: Users, label: 'Parceiros' },
+    { icon: HelpCircle, label: 'Dúvidas' },
+    { icon: Map, label: 'Onde Ir' },
+    { icon: Ticket, label: 'Tickets' },
+    { icon: QrCode, label: 'Badge' },
   ];
 
   return (
     <div className="home-scroll-container">
-      {/* Classical Burgundy Header */}
-      <header className="classical-header">
-        <div className="header-parchment-overlay"></div>
-        <div className="header-canvas-texture"></div>
+      {/* Dynamic Header Banner */}
+      <header className="home-header-banner bg-burgundy-texture">
+        <div className="laurel-decor top-0 right-0"></div>
+        <div className="laurel-decor bottom-0 left-0 rotate-180"></div>
         
-        <div className="header-content">
-          <div className="header-top-row">
-            <span className="edition-badge">CIECC 2026</span>
-            <span className="welcome-text">Seja bem-vindo(a)</span>
+        <div className="header-badge">II CIECC 2026</div>
+        <h1 className="header-title serif uppercase tracking-widest text-white">Bem-vindo ao Congresso</h1>
+        <p className="header-subtitle text-white/70">Acompanhe a agenda, networking e conteúdos exclusivos em tempo real.</p>
+        
+        <div className="header-action-card mt-24">
+          <div className="flex items-center gap-12">
+            <div className="w-40 h-40 bg-accent rounded-full flex items-center justify-center text-white">
+              <Award size={20} />
+            </div>
+            <div className="flex-grow">
+              <span className="text-[10px] font-bold text-accent uppercase tracking-wider">Credenciamento</span>
+              <h3 className="serif text-white font-bold text-sm">Acesse seu QR Code para entrada</h3>
+            </div>
+            <ChevronRight size={18} className="text-accent" />
           </div>
-          
-          <h1 className="header-main-title">
-            II Congresso Internacional de Educação Cristã Clássica
-          </h1>
-          <div className="header-gold-line"></div>
-          <p className="header-desc">
-            Acompanhe a jornada acadêmica e espiritual do evento.
-          </p>
         </div>
       </header>
 
-      {/* Main Body */}
-      <div className="home-body">
-        {/* Featured Live/Action Card */}
-        <section className="featured-card-classical">
-          <div className="card-label">SESSÃO ATUAL</div>
-          <h2 className="card-title-serif">Abertura: As Sete Artes Liberais</h2>
-          <p className="card-subtitle">Local: Auditório Principal • 09:00</p>
-          <button className="btn-classical-gold">
-            <PlayCircle size={18} /> DETALHES DA SESSÃO
-          </button>
-        </section>
-
-        {/* Quick Menu */}
-        <div className="section-header-serif">Navegação</div>
-        <div className="action-grid-classical">
-          {cards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div key={card.title} className="action-card-academic">
-                <div className={`icon-box ${card.color}`}>
-                  <Icon size={20} />
-                </div>
-                <h3 className="academic-item-title">{card.title}</h3>
-                <p className="academic-item-desc">{card.desc}</p>
-              </div>
-            );
-          })}
+      {/* Announcements */}
+      <section className="px-20 py-24">
+        <div className="flex justify-between items-center mb-16">
+          <h2 className="serif text-primary uppercase font-bold text-xs tracking-wider">Comunicados Oficiais</h2>
+          <button className="text-secondary font-bold text-[10px]">VER TODOS</button>
         </div>
+        <div className="flex gap-12 overflow-x-auto no-scrollbar pb-8">
+          <div className="min-w-280 bg-white p-16 rounded-2xl border border-gray-200 flex gap-12 items-start">
+            <div className="p-8 bg-red-50 text-primary rounded-lg"><Megaphone size={16} /></div>
+            <div>
+              <h4 className="font-bold text-xs text-primary serif">Submissão de artigos científicos</h4>
+              <p className="text-[10px] text-gray-500 mt-4">Prazo final para envio na plataforma Summit...</p>
+            </div>
+          </div>
+          <div className="min-w-280 bg-white p-16 rounded-2xl border border-gray-200 flex gap-12 items-start">
+            <div className="p-8 bg-blue-50 text-blue-600 rounded-lg"><Bell size={16} /></div>
+            <div>
+              <h4 className="font-bold text-xs text-primary serif">Alteração de Sala: Workshop III</h4>
+              <p className="text-[10px] text-gray-500 mt-4">A atividade das 14h ocorrerá na Sala Beta...</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* Footer / Info */}
-        <section className="info-strip">
-          <div className="info-item">
-            <Map size={18} />
-            <span>Mapa do Local</span>
+      {/* Main Grid Shortcuts */}
+      <section className="px-20 py-8">
+        <h2 className="serif text-primary uppercase font-bold text-xs tracking-wider mb-16">Acesso Rápido</h2>
+        <div className="grid grid-cols-3 gap-12">
+          {shortcuts.map((s, i) => (
+            <div key={i} className="academic-card flex flex-col items-center gap-8 py-16 text-center">
+              <div className="w-48 h-48 bg-secondary rounded-2xl flex items-center justify-center text-primary border border-primary/10">
+                <s.icon size={20} />
+              </div>
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter serif">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Happening Now */}
+      <section className="px-20 py-24 pb-48">
+        <div className="bg-burgundy-texture p-24 rounded-3xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+          <div className="flex justify-between items-center">
+             <div className="flex items-center gap-6">
+                <div className="w-8 h-8 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-[9px] font-extrabold text-white uppercase tracking-widest">Sessão Atual</span>
+             </div>
+             <span className="text-[9px] font-bold text-white/50">Auditório Principal</span>
           </div>
-          <div className="info-item">
-            <Award size={18} />
-            <span>Meus Certificados</span>
-          </div>
-        </section>
-      </div>
+          <h3 className="serif text-white font-bold text-lg mt-12 leading-tight">Filosofia Educacional e a Paideia Cristã</h3>
+          <p className="text-white/60 text-[10px] mt-4 uppercase font-medium tracking-wide">Speaker: Dr. Chris Schlect</p>
+          <button className="mt-20 w-full py-12 bg-accent text-white rounded-xl font-bold text-[10px] tracking-widest flex items-center justify-center gap-8">
+             <PlayCircle size={14} /> DETALHES DA PROGRAMAÇÃO
+          </button>
+        </div>
+      </section>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .home-scroll-container {
-          flex: 1;
-          overflow-y: auto;
-          background-color: var(--bg-secondary);
-          padding-bottom: 110px;
-        }
-
-        .classical-header {
-          background-color: var(--primary);
-          padding: 40px 24px 32px;
-          position: relative;
-          color: white;
+        .home-header-banner {
+          padding: 60px 24px 40px;
           text-align: center;
-          border-bottom: 3px solid var(--accent);
+          border-bottom-left-radius: 40px;
+          border-bottom-right-radius: 40px;
+          box-shadow: var(--shadow-lg);
         }
 
-        .header-parchment-overlay {
-          position: absolute;
-          inset: 0;
-          opacity: 0.1;
-          background-image: url("https://www.transparenttextures.com/patterns/parchment.png");
-          pointer-events: none;
-        }
-
-        .header-canvas-texture {
-          position: absolute;
-          inset: 0;
-          opacity: 0.05;
-          background-image: url("https://www.transparenttextures.com/patterns/linen.png");
-          pointer-events: none;
-        }
-
-        .header-content { position: relative; z-index: 1; }
-
-        .header-top-row {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
+        .header-badge {
+          display: inline-block;
+          padding: 4px 16px;
+          border: 1px solid var(--accent);
+          color: var(--accent);
+          font-family: var(--font-heading);
+          font-size: 0.6rem;
+          letter-spacing: 0.3em;
           margin-bottom: 20px;
         }
 
-        .edition-badge {
-          border: 1px solid var(--accent);
-          padding: 4px 16px;
-          font-family: var(--font-heading);
-          font-size: 0.7rem;
-          letter-spacing: 0.2em;
-          color: var(--accent);
-        }
+        .header-title { font-size: 1.4rem; padding: 0 10px; line-height: 1.25; }
+        .header-subtitle { font-size: 0.8rem; margin-top: 12px; max-width: 260px; margin-left: auto; margin-right: auto; line-height: 1.6; }
 
-        .welcome-text {
-          font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.7);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-        }
-
-        .header-main-title {
-          font-family: var(--font-heading);
-          font-size: 1.4rem;
-          line-height: 1.3;
-          max-width: 90%;
-          margin: 0 auto;
-          color: white;
-        }
-
-        .header-gold-line {
-          height: 1px;
-          width: 80px;
-          background-color: var(--accent);
-          margin: 16px auto;
-        }
-
-        .header-desc {
-          font-size: 0.9rem;
-          color: rgba(255, 255, 255, 0.8);
-          max-width: 280px;
-          margin: 0 auto;
-        }
-
-        .home-body { padding: 24px; }
-
-        .featured-card-classical {
-          background-color: white;
-          border: 1px solid var(--border);
-          padding: 24px;
-          margin-bottom: 32px;
-          position: relative;
-          box-shadow: var(--shadow);
-        }
-
-        .featured-card-classical::before {
-          content: "";
-          position: absolute;
-          inset: 6px;
-          border: 1px solid var(--accent);
-          opacity: 0.2;
-          pointer-events: none;
-        }
-
-        .card-label {
-          font-family: var(--font-heading);
-          font-size: 0.65rem;
-          color: var(--primary);
-          margin-bottom: 8px;
-          letter-spacing: 0.1em;
-          font-weight: 700;
-        }
-
-        .card-title-serif {
-          font-family: var(--font-heading);
-          font-size: 1.15rem;
-          color: var(--text-primary);
-          margin-bottom: 8px;
-        }
-
-        .card-subtitle {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-          margin-bottom: 16px;
-        }
-
-        .btn-classical-gold {
-          width: 100%;
-          background-color: var(--primary);
-          color: white;
-          border: 1px solid var(--accent);
-          padding: 12px;
-          font-weight: 700;
-          font-family: var(--font-heading);
-          font-size: 0.8rem;
-          letter-spacing: 0.05em;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-        }
-
-        .section-header-serif {
-          font-family: var(--font-heading);
-          font-size: 1rem;
-          color: var(--primary);
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .section-header-serif::after {
-          content: "";
-          flex: 1;
-          height: 1px;
-          background-color: var(--border);
-        }
-
-        .action-grid-classical {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          margin-bottom: 32px;
-        }
-
-        .action-card-academic {
-          background-color: white;
+        .header-action-card {
+          background-color: rgba(255,255,255,0.08);
+          backdrop-filter: blur(10px);
           padding: 16px;
-          border-radius: 4px;
-          border: 1px solid var(--border);
-          box-shadow: var(--shadow-sm);
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.1);
+          text-align: left;
         }
 
-        .icon-box {
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 12px;
-        }
-
-        .bg-burgundy { background-color: var(--primary); color: white; }
-        .bg-gold { background-color: var(--accent); color: white; }
-        .bg-cream { background-color: var(--bg-tertiary); color: var(--primary); border: 1px solid var(--accent); }
-
-        .academic-item-title {
-          font-family: var(--font-heading);
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .academic-item-desc {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-          margin-top: 6px;
-          line-height: 1.4;
-        }
-
-        .info-strip {
-          display: flex;
-          gap: 12px;
-          margin-top: 8px;
-        }
-
-        .info-item {
-          flex: 1;
-          padding: 12px;
-          background-color: var(--bg-tertiary);
-          border: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--text-primary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
+        .w-40 { width: 40px; }
+        .h-40 { height: 40px; }
+        .w-48 { width: 48px; }
+        .h-48 { height: 48px; }
+        .w-80 { width: 80px; }
+        .h-80 { height: 80px; }
+        .min-w-280 { min-width: 280px; }
+        .rotate-180 { transform: rotate(180deg); }
+        .bg-red-50 { background-color: #fef2f2; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .text-blue-600 { color: #2563eb; }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
       `}} />
     </div>
   );

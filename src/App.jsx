@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import Login from './components/Login';
 import Navigation from './components/Navigation';
 import Home from './components/Home';
+import Agenda from './components/Agenda';
+import Network from './components/Network';
+import Media from './components/Media';
+import More from './components/More';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,38 +15,23 @@ function App() {
     setIsAuthenticated(true);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setActiveTab('home');
+  };
+
   return (
     <div className="mobile-container overflow-hidden">
       {!isAuthenticated ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <div className="flex-grow flex flex-col h-full relative">
+        <div className="flex-grow flex flex-col h-full relative overflow-hidden bg-secondary">
           <div className="flex-grow overflow-hidden">
             {activeTab === 'home' && <Home />}
-            {activeTab === 'agenda' && (
-              <div className="p-20 flex flex-col items-center justify-center h-full text-center bg-secondary">
-                <h1 className="text-xl font-bold">Agenda CIECC</h1>
-                <p className="mt-8 text-secondary">Carregando programação oficial...</p>
-              </div>
-            )}
-            {activeTab === 'network' && (
-              <div className="p-20 flex flex-col items-center justify-center h-full text-center bg-secondary">
-                <h1 className="text-xl font-bold">Networking</h1>
-                <p className="mt-8 text-secondary">Conecte-se com outros congressistas.</p>
-              </div>
-            )}
-            {activeTab === 'media' && (
-              <div className="p-20 flex flex-col items-center justify-center h-full text-center bg-secondary">
-                <h1 className="text-xl font-bold">Mídia & Galeria</h1>
-                <p className="mt-8 text-secondary">Fotos e vídeos oficiais do evento.</p>
-              </div>
-            )}
-            {activeTab === 'more' && (
-              <div className="p-20 flex flex-col items-center justify-center h-full text-center bg-secondary">
-                <h1 className="text-xl font-bold">Mais Opções</h1>
-                <p className="mt-8 text-secondary">Configurações, suporte e certificados.</p>
-              </div>
-            )}
+            {activeTab === 'agenda' && <Agenda />}
+            {activeTab === 'network' && <Network />}
+            {activeTab === 'media' && <Media />}
+            {activeTab === 'more' && <More onLogout={handleLogout} />}
           </div>
           <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
@@ -53,8 +42,6 @@ function App() {
         .relative { position: relative; }
         .overflow-hidden { overflow: hidden; }
         .bg-secondary { background-color: var(--bg-secondary); }
-        .text-secondary { color: var(--text-secondary); }
-        .mt-8 { margin-top: 8px; }
       `}} />
     </div>
   );
