@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { X, AlertTriangle, CheckCircle, ShieldAlert, WifiOff } from 'lucide-react';
-import { fetchUserTicket } from '../../services/ticketService';
+import { fetchUserTicket } from '../../services/tickets/ticketService';
 
 const MyTicketModal = ({ onClose, userName, userCpf }) => {
   const [ticketData, setTicketData] = useState(null);

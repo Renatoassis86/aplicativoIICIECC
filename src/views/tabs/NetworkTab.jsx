@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, ShieldCheck, MapPin, Building, Briefcase, Award, ArrowRight, UserCog, User, Users, RefreshCw, X } from 'lucide-react';
-import { fetchNetworkProfiles } from '../../services/networkService';
+import { fetchNetworkProfiles } from '../../services/networking/networkService';
 
 export default function NetworkTab() {
   const [profiles, setProfiles] = useState([]);
