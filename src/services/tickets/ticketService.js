@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 /**
  * Serviço responsável por buscar, validar e atualizar o ingresso do usuário.
