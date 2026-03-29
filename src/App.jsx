@@ -225,7 +225,12 @@ function App() {
       )}
       
       {authStatus === 'logged-in' && (
-        <DashboardView onLogout={handleLogout} userType={selectedType} userName={userName} />
+        <DashboardView 
+          onLogout={handleLogout} 
+          userType={selectedType} 
+          userName={userName} 
+          userCpf={currentUserCpf}
+        />
       )}
     </div>
   );

@@ -16,13 +16,15 @@ import AgendaTab from './tabs/AgendaTab';
 import NetworkTab from './tabs/NetworkTab';
 import MediaTab from './tabs/MediaTab';
 import MoreTab from './tabs/MoreTab';
+import MyTicketModal from '../components/ticket/MyTicketModal';
 
-const DashboardView = ({ onLogout, userType, userName }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
   const [activeTab, setActiveTab] = useState('home');
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <HomeTab userName={userName} />;
+      case 'home': return <HomeTab userName={userName} onOpenTicket={() => setShowTicketModal(true)} />;
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return <MediaTab />;
@@ -117,6 +119,15 @@ const DashboardView = ({ onLogout, userType, userName }) => {
           <span>Mais</span>
         </button>
       </nav>
+
+      {/* Ticket Modal Overlay */}
+      {showTicketModal && (
+        <MyTicketModal 
+          onClose={() => setShowTicketModal(false)} 
+          userName={userName}
+          userCpf={userCpf}
+        />
+      )}
     </div>
   );
 };

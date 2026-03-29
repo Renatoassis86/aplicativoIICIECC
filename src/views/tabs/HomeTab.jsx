@@ -18,7 +18,7 @@ import {
   Award
 } from 'lucide-react';
 
-const HomeTab = ({ userName }) => {
+const HomeTab = ({ userName, onOpenTicket }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = userName ? userName.charAt(0) : 'C';
 
@@ -27,7 +27,7 @@ const HomeTab = ({ userName }) => {
     { label: 'Palestrantes', icon: <Star color="#D69E2E" size={24} />, bg: '#FFFFF0' },
     { label: 'Parceiros', icon: <Briefcase color="#2B6CB0" size={24} />, bg: '#EBF8FF' },
     { label: 'Patrocinadores', icon: <Award color="#38A169" size={24} />, bg: '#F0FFF4' },
-    { label: 'Meu QR Code', icon: <QrCode color="#E53E3E" size={24} />, bg: '#FFF5F5' },
+    { label: 'Meu QR Code', icon: <QrCode color="#E53E3E" size={24} />, bg: '#FFF5F5', action: onOpenTicket },
     { label: 'Meus Tickets', icon: <Ticket color="#805AD5" size={24} />, bg: '#FAF5FF' },
     { label: 'Como chegar', icon: <MapPin color="#718096" size={24} />, bg: '#F7FAFC' },
     { label: 'FAQ', icon: <HelpCircle color="#D81E1E" size={24} />, bg: '#FDF2F2' },
@@ -178,7 +178,11 @@ const HomeTab = ({ userName }) => {
         <h4 className="section-title">Acesso Rápido</h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {shortcuts.map(item => (
-            <div key={item.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div 
+              key={item.label} 
+              onClick={item.action ? item.action : null}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: item.action ? 'pointer' : 'default' }}
+            >
               <div style={{ 
                 background: 'white', 
                 width: '64px', height: '64px', 
@@ -215,7 +219,10 @@ const HomeTab = ({ userName }) => {
               <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Hall de Entrada • Cidade Viva</p>
             </div>
           </div>
-          <div style={{ background: '#F8F9FA', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div 
+            style={{ background: '#F8F9FA', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+            onClick={onOpenTicket}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Search size={14} color="var(--text-muted)" />
               <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>Prepare seu QR Code no App</span>
