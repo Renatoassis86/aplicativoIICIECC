@@ -15,10 +15,11 @@ import {
   ChevronRight,
   Camera,
   Search,
-  Award
+  Award,
+  ScanLine
 } from 'lucide-react';
 
-const HomeTab = ({ userName, onOpenTicket }) => {
+const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = userName ? userName.charAt(0) : 'C';
 
@@ -69,9 +70,24 @@ const HomeTab = ({ userName, onOpenTicket }) => {
               <span style={{ fontSize: '13px', fontWeight: '500', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>Bem-vindo,</span>
               <span style={{ fontSize: '22px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--gold)' }}>{firstName}</span>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {userType === 'staff' && (
+                <button onClick={onOpenScanner} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <ScanLine size={20} color="var(--gold)" />
+                </button>
+              )}
+              <button onClick={onOpenNotifications} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
                 <Bell size={20} color="white" />
+                {unreadCount > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '-4px', right: '-4px',
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    background: '#E53E3E', color: 'white',
+                    fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </div>
+                )}
               </button>
               <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#111', fontSize: '18px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                 {initial}
@@ -110,14 +126,21 @@ const HomeTab = ({ userName, onOpenTicket }) => {
       </section>
 
       {/* 3. Comunicados Oficiais */}
-      <section style={{ padding: '0 20px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
+      <section 
+        onClick={onOpenNotifications}
+        style={{ padding: '0 20px', marginTop: '-20px', position: 'relative', zIndex: 20, cursor: 'pointer' }}
+      >
         <div className="card" style={{ borderLeft: '4px solid var(--gold)', display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', boxShadow: 'var(--shadow-md)' }}>
           <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px' }}>
             <Bell size={20} color="var(--primary)" />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Comunicado Oficial</p>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>O credenciamento será antecipado para as 08:00 no dia 15.</p>
+            <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {unreadCount > 0 ? `Novo Comunicado (${unreadCount})` : 'Central de Mensagens'}
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {unreadCount > 0 ? 'Toque para abrir a notificação.' : 'Acompanhe os avisos da organização.'}
+            </p>
           </div>
           <ChevronRight size={18} color="var(--border)" />
         </div>

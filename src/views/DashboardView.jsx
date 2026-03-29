@@ -18,12 +18,14 @@ import MediaTab from './tabs/MediaTab';
 import MoreTab from './tabs/MoreTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
+import ScannerStaffView from './ScannerStaffView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <HomeTab userName={userName} onOpenTicket={() => setShowTicketModal(true)} />;
+      case 'home': return <HomeTab userName={userName} userType={userType} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} />;
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} />;
@@ -103,7 +105,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
               )}
             </button>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: 'var(--secondary)', fontSize: '13px' }}>
-              {userName.charAt(0)}
+              {(userName && typeof userName === 'string') ? userName.charAt(0) : 'C'}
             </div>
           </div>
         </header>
@@ -168,9 +170,16 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
            userId={userCpf}
            onClose={() => {
              setShowNotifications(false);
-             // Reescanear após fechar para limpar badges
              fetchInbox(userCpf).then(r => setUnreadCount(r.unreadCount));
            }}
+        />
+      )}
+
+      {/* Staff QR Scanner */}
+      {showScanner && userType === 'staff' && (
+        <ScannerStaffView 
+          staffCpf={userCpf} 
+          onClose={() => setShowScanner(false)} 
         />
       )}
     </div>

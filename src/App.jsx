@@ -227,8 +227,8 @@ function App() {
       {authStatus === 'logged-in' && (
         <DashboardView 
           onLogout={handleLogout} 
-          userType={selectedType} 
-          userName={userName} 
+          userType={selectedType?.id || selectedType || 'congressista'} 
+          userName={userName || 'Visitante'} 
           userCpf={currentUserCpf}
         />
       )}

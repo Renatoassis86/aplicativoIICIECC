@@ -1,40 +1,132 @@
 import { supabase } from '../../lib/supabase';
 
 /**
- * Serviço responsável por buscar, validar e atualizar o ingresso do usuário.
- * Estrutura preparada para integração completa com Supabase utilizando o CPF 
- * como elo de ligação atual (antes da migração total para RLS UUID).
+ * SERVIÇO DE INGRESSOS E CHECK-IN CIECC
+ * Lida com emissões, bloqueios e o motor de leitura do Scanner Staff.
  */
 
+// ==============================
+// 1. CARREGAR TICKET DO USUÁRIO
+// ==============================
 export const fetchUserTicket = async (cpf) => {
   try {
-    // PREPARAÇÃO FUTURA (Quando a tabela `tickets` existir):
-    // const { data, error } = await supabase.from('tickets').select('*').eq('cpf', cpf).single();
-    // if (error) throw error;
-    // return data;
+    if (!cpf) return { status: 'not_generated', message: 'Inscrição não encontrada.' };
 
-    // MOCK REALISTA TEMPORÁRIO 
-    // Altera o status simulado com base no cenário para testes visuais.
-    // Você pode mudar esse 'status' para testar a UI:
-    // 'active' | 'blocked' | 'scanned' | 'not_generated'
-    
-    // Simulando uma pequena latência de rede
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const { data: ticket, error } = await supabase
+      .from('system_tickets')
+      .select('*')
+      .eq('member_cpf', cpf)
+      .single();
 
-    // Lógica simulada: se não tiver CPF, falha.
-    if (!cpf) {
-      return { status: 'not_generated', message: 'Inscrição não encontrada.' };
+    if (error) {
+      if (error.code === 'PGRST116') {
+         // Ticket não achado = cria pra simular importação tardia/auto-emissão (mock flexível)
+         return generateTicketForNewUser(cpf);
+      }
+      throw error;
     }
 
     return {
-      ticket_id: 'ciecc:tkt:550e8400-e29b-41d4-a716-446655440000',
-      cpf: cpf,
-      ticket_type: 'Presencial Premium',
-      status: 'active', // <--- Troque aqui para simular 'blocked' ou 'scanned'
-      created_at: new Date().toISOString()
+      ticket_id: ticket.id,
+      cpf: ticket.member_cpf,
+      ticket_type: ticket.ticket_type,
+      status: ticket.status,
+      created_at: ticket.created_at
     };
+
   } catch (error) {
     console.error("Erro ao buscar ticket no banco:", error);
     return { status: 'error', message: 'Erro na conexão com o servidor.' };
   }
+};
+
+const generateTicketForNewUser = async (cpf) => {
+  const { data, error } = await supabase.from('system_tickets').insert({
+    member_cpf: cpf,
+    ticket_type: 'Geral', // Default caso não lido ainda do Admin
+    status: 'active'
+  }).select().single();
+
+  if (error) {
+    console.warn("Auto-emission failed");
+    // Fallback Mock Seguro se não rodou o script SQL ainda 
+    return {
+      ticket_id: `mock-uuid-${Date.now()}`,
+      cpf: cpf,
+      ticket_type: 'Presencial Padrão',
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+  }
+
+  return {
+    ticket_id: data.id,
+    cpf: data.member_cpf,
+    ticket_type: data.ticket_type,
+    status: data.status,
+    created_at: data.created_at
+  };
+};
+
+// ==================================
+// 2. SCANNER STAFF (MOTOR DE CHECK-IN)
+// ==================================
+export const validateScannedTicket = async (qrPayload, staffUserId) => {
+  try {
+    // 2.1 Pega usando CPF (visto que o gerador de QR atual joga o CPF, ou ID)
+    // Nosso QR de mock tá jogando string mista, mas idealmente usa o CPF
+    // Ex: "ciecc:ticket:12345678909"
+    const parsedCpf = qrPayload.split(':').pop();
+
+    const { data: ticket, error: ticketErr } = await supabase
+      .from('system_tickets')
+      .select('*')
+      .eq('member_cpf', parsedCpf)
+      .single();
+
+    if (ticketErr || !ticket) {
+      await logScan(null, staffUserId, false, 'Ingresso Inexistente / QR Falso');
+      return { success: false, message: 'Ingresso Inválido ou Adulterado.' };
+    }
+
+    // 2.2 Avalia a política de Status
+    if (ticket.status === 'blocked') {
+      await logScan(ticket.id, staffUserId, false, 'Tentativa em Ingresso Bloqueado');
+      return { success: false, message: 'Ingresso encontra-se Bloqueado pela Organização.', ticket };
+    }
+
+    if (ticket.status === 'scanned') {
+      await logScan(ticket.id, staffUserId, false, 'Tentativa de Reentrada / Duplo Scan');
+      return { success: false, message: 'Este ingresso já foi utilizado no Check-in!', ticket };
+    }
+
+    if (ticket.status === 'active') {
+      // 2.3 Faz Checkin OFICIAL via Transaction / Update Lock
+      const { error: updateErr } = await supabase
+        .from('system_tickets')
+        .update({ status: 'scanned' })
+        .eq('id', ticket.id);
+
+      if (updateErr) throw updateErr;
+
+      // Log Triunfante
+      await logScan(ticket.id, staffUserId, true, 'Check-in Sucesso');
+      
+      return { success: true, message: 'Acesso Liberado com Sucesso!', ticket };
+    }
+
+    return { success: false, message: 'Erro desconhecido de status.' };
+  } catch (err) {
+     console.error("Erro interno no Motor de Scanner:", err);
+     return { success: false, message: 'Falha Técnica Remota. Tente de novo.' };
+  }
+};
+
+const logScan = async (ticketId, scannerId, success, message) => {
+  await supabase.from('system_ticket_scans').insert({
+    ticket_id: ticketId,
+    scanner_user_id: scannerId,
+    success: success,
+    scan_message: message
+  });
 };
