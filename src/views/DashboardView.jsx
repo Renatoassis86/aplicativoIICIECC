@@ -14,13 +14,15 @@ import {
 import HomeTab from './tabs/HomeTab';
 import AgendaTab from './tabs/AgendaTab';
 import NetworkTab from './tabs/NetworkTab';
-import MediaTab from './tabs/MediaTab';
+import OfficialMediaTab from './tabs/OfficialMediaTab';
+import MediaTab from './tabs/MediaTab'; // Feed Social
 import MoreTab from './tabs/MoreTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
+import { Video } from 'lucide-react';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOpenAdminPortal }) => {
   const [activeTab, setActiveTab] = useState('home');
@@ -59,8 +61,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       );
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
-      case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
-      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} userAvatar={userAvatar} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} />;
+      case 'media': return <OfficialMediaTab />;
+      case 'feed': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
+      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} userAvatar={userAvatar} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} onNavigate={(tab) => setActiveTab(tab)} />;
       default: return <HomeTab />;
     }
   };
@@ -70,7 +73,8 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       case 'home': return ''; // Home tem seu próprio header visual
       case 'agenda': return 'Agenda Geral';
       case 'network': return 'Networking';
-      case 'media': return 'Feed Social';
+      case 'media': return 'CIECC Mídia';
+      case 'feed': return 'Feed Social';
       case 'more': return 'Ajustes e Mais';
       default: return '';
     }
@@ -79,8 +83,8 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   return (
     <div className="dashboard-container" style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
       
-      {/* Top Navigation Global (exceto na Home que tem header custom) */}
-      {activeTab !== 'home' && activeTab !== 'more' && (
+      {/* Top Navigation Global (exceto na Home e Mídia que tem header custom) */}
+      {activeTab !== 'home' && activeTab !== 'more' && activeTab !== 'media' && (
         <header className="top-nav-global" style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -147,15 +151,15 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           <span>Agenda</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'network' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('network')}
-        >
-          <Users size={22} />
-          <span>Network</span>
-        </button>
-        <button 
           className={`nav-item ${activeTab === 'media' ? 'active' : ''}`} 
           onClick={() => setActiveTab('media')}
+        >
+          <Video size={22} />
+          <span>Mídia</span>
+        </button>
+        <button 
+          className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('feed')}
         >
           <Image size={22} />
           <span>Feed</span>
@@ -181,11 +185,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       {/* Notifications Inbox (In-App Push) */}
       {showNotifications && (
         <NotificationsSheet 
-           userId={userCpf}
-           onClose={() => {
-             setShowNotifications(false);
-             fetchInbox(userCpf).then(r => setUnreadCount(r.unreadCount));
-           }}
+          userId={userCpf}
+          onClose={() => {
+            setShowNotifications(false);
+            fetchInbox(userCpf).then(r => setUnreadCount(r.unreadCount));
+          }}
         />
       )}
 
@@ -208,4 +212,4 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   );
 };
 
-export default DashboardView;
+export default DashboardView;w;

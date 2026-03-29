@@ -18,7 +18,7 @@ import {
   Camera
 } from 'lucide-react';
 
-const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal }) => {
+const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -42,6 +42,7 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScan
     {
       title: 'Informações do Evento',
       items: [
+        { label: 'Network de Participantes', icon: <Users size={18} color="#48BB78" />, action: () => onNavigate('network') },
         { label: 'FAQ (Perguntas Frequentes)', icon: <HelpCircle size={18} color="#38A169" /> },
         { label: 'Palestrantes', icon: <Star size={18} color="#805AD5" /> },
         { label: 'Patrocinadores & Parceiros', icon: <Briefcase size={18} color="var(--primary)" /> },
