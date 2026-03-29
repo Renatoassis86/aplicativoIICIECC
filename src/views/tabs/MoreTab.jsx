@@ -22,7 +22,11 @@ import {
   Monitor
 } from 'lucide-react';
 
-const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate }) => {
+import { ImagePersistenceService } from '../../services/imagePersistence';
+
+const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar: initialAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate }) => {
+  const [userAvatar, setUserAvatar] = useState(initialAvatar);
+  const [uploading, setUploading] = useState(false);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -32,6 +36,28 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScan
     if (type === 'admin') return 'Administrador';
     if (type === 'patrocinador_diamante') return 'Patrocinador Diamante';
     return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  const handleUpdateAvatar = async () => {
+    const photo = await ImagePersistenceService.capturePhoto();
+    if (!photo) return;
+
+    // 1. Preview instantâneo
+    setUserAvatar(photo.webPath);
+    setUploading(true);
+
+    try {
+      const fileName = `avatars/${userCpf}_${Date.now()}.jpg`;
+      const publicUrlOrBase64 = await ImagePersistenceService.uploadToStorage('profiles_avatars', fileName, photo.blob);
+      const { error } = await supabase.from('profiles').update({ avatar_url: publicUrlOrBase64 }).eq('cpf', userCpf);
+      if (error) throw error;
+      console.log("[MoreTab] Foto persistida.");
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar foto permanentemente.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const menuGroups = [
@@ -83,29 +109,10 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScan
         alignItems: 'center',
         gap: '20px'
       }}>
-        <label style={{ cursor: 'pointer', position: 'relative' }}>
-          <input 
-            type="file" 
-            accept="image/*" 
-            style={{ display: 'none' }} 
-            onChange={async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              // Simulação de Upload Permanente para o Supabase
-              // O URL temporário é apenas para visualização imediata antes do refresh
-              const reader = new FileReader();
-              reader.onload = async (event) => {
-                const base64 = event.target.result;
-                const { error } = await supabase.from('profiles').update({ avatar_url: base64 }).eq('cpf', userCpf);
-                if (error) alert('Erro ao salvar foto.');
-                else window.location.reload(); // Recarrega para sincronizar App.jsx
-              };
-              reader.readAsDataURL(file);
-            }} 
-          />
+        <label onClick={handleUpdateAvatar} style={{ cursor: 'pointer', position: 'relative' }}>
           <div style={{ 
-            width: '70px', 
-            height: '70px', 
+            width: '74px', 
+            height: '74px', 
             borderRadius: '50%', 
             background: 'rgba(255,255,255,0.1)', 
             border: '2px solid var(--gold)',
@@ -129,6 +136,11 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScan
             }}>
               <Camera size={10} color="white" />
             </div>
+            {uploading && (
+               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="pulse" style={{ width: '12px', height: '12px', background: 'white', borderRadius: '50%' }}></div>
+               </div>
+            )}
           </div>
         </label>
         <div>

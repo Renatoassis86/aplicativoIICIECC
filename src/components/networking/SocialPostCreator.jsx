@@ -2,12 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Image as ImageIcon, X, Send, Video, Search } from 'lucide-react';
 import { createPost } from '../../services/social/socialService';
 import { supabase } from '../../lib/supabase';
+import { ImagePersistenceService } from '../../services/imagePersistence';
+import { CameraSource } from '@capacitor/camera';
 
 const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId }) => {
   const [caption, setCaption] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+
+  const fetchMedia = async (source) => {
+    setUploadingMedia(true);
+    const photo = await ImagePersistenceService.capturePhoto(source);
+    if (photo) {
+      setMediaFiles(prev => [...prev, {
+        file: photo.blob,
+        url: photo.webPath,
+        base64: null,
+        type: 'image'
+      }]);
+    }
+    setUploadingMedia(false);
+  };
   // Mentions Logic
   const [allUsers, setAllUsers] = useState([]);
   const [showMentionsList, setShowMentionsList] = useState(false);
@@ -27,39 +43,22 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   }, []);
 
   const handleFileChange = async (e) => {
+    // Fallback para input tradicional se necessário, mas o foco agora é no Service
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
     
-    // Mostrando progresso visual se necessário (opcional)
-    const newMedia = [];
-    
     for (const file of files) {
-      // Cria o preview de segurança (blob)
       const previewUrl = URL.createObjectURL(file);
-      
-      // Converte para Base64 para fallback (caso o storage falhe no congresso)
-      const base64 = await toBase64(file);
-      
-      newMedia.push({
+      const base64 = await ImagePersistenceService.blobToBase64(file);
+      setMediaFiles(prev => [...prev, {
         file,
         url: previewUrl,
         base64,
         type: file.type.startsWith('video') ? 'reel' : 'image'
-      });
+      }]);
     }
-
-    setMediaFiles(prev => [...prev, ...newMedia]);
-    
-    // Limpa o input para permitir selecionar o mesmo arquivo se deletado
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
-
-  const toBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
 
   const handleCaptionChange = (e) => {
     const val = e.target.value;
@@ -274,6 +273,11 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
                 )}
               </div>
             ))}
+            {uploadingMedia && (
+               <div style={{ width: '200px', height: '240px', background: '#f5f5f5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className="pulse" style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+               </div>
+            )}
           </div>
         )}
       </div>
@@ -292,11 +296,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           onChange={handleFileChange}
         />
         <button 
-          onClick={() => {
-            fileInputRef.current.removeAttribute('capture');
-            fileInputRef.current.setAttribute('capture', 'environment');
-            fileInputRef.current.click();
-          }}
+          onClick={() => fetchMedia(CameraSource.Camera)}
           style={{ 
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
             background: 'none', border: 'none', color: 'var(--primary)' 
@@ -309,10 +309,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         </button>
 
         <button 
-           onClick={() => {
-            fileInputRef.current.removeAttribute('capture');
-            fileInputRef.current.click();
-          }}
+           onClick={() => fetchMedia(CameraSource.Photos)}
           style={{ 
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
             background: 'none', border: 'none', color: 'var(--primary)' 
