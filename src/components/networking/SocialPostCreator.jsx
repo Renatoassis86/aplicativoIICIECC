@@ -1,24 +1,35 @@
-import React, { useState, useRef } from 'react';
-import { Camera, Image as ImageIcon, X, Send, Video } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Camera, Image as ImageIcon, X, Send, Video, Search } from 'lucide-react';
 import { createPost } from '../../services/social/socialService';
+import { supabase } from '../../lib/supabase';
 
-/**
- * Interface exclusiva de postagem para Patrocinadores/Expositores.
- * Chama as APIs nativas do celular (Camera ou Galeria) via input "capture" HTML5.
- */
 const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId }) => {
   const [caption, setCaption] = useState('');
-  const [mentions, setMentions] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   
+  // Mentions Logic
+  const [allUsers, setAllUsers] = useState([]);
+  const [showMentionsList, setShowMentionsList] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [cursorPos, setCursorPos] = useState(0);
+
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    // Busca usuários para mentions
+    const fetchUsers = async () => {
+      const { data } = await supabase.from('profiles').select('name').limit(200);
+      setAllUsers(data || []);
+    };
+    fetchUsers();
+  }, []);
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
     
-    // Suporte a multi-upload (Carrossel Nativo).
     const newMedia = files.map(file => ({
       file,
       url: URL.createObjectURL(file),
@@ -28,49 +39,90 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
     setMediaFiles(prev => [...prev, ...newMedia]);
   };
 
-  const removeMedia = (index) => {
-    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+  const handleCaptionChange = (e) => {
+    const val = e.target.value;
+    const pos = e.target.selectionStart;
+    setCaption(val);
+    setCursorPos(pos);
+
+    // Detect @
+    const textBefore = val.slice(0, pos);
+    const words = textBefore.split(/\s/);
+    const lastWord = words[words.length - 1];
+
+    if (lastWord.startsWith('@')) {
+       setShowMentionsList(true);
+       setMentionQuery(lastWord.slice(1).toLowerCase());
+    } else {
+       setShowMentionsList(false);
+    }
+  };
+
+  const selectMention = (name) => {
+    const textBefore = caption.slice(0, cursorPos);
+    const words = textBefore.split(/\s/);
+    words[words.length - 1] = `@${name} `;
+    const newTextBefore = words.join(' ');
+    const newCaption = newTextBefore + caption.slice(cursorPos);
+    setCaption(newCaption);
+    setShowMentionsList(false);
+    textareaRef.current?.focus();
   };
 
   const handlePost = async () => {
     if (mediaFiles.length === 0 && !caption.trim()) return;
-
     setLoading(true);
 
     try {
-      // 1. Arquitetura Futura: Upload Supabase Storage
-      // for (const m of mediaFiles) {
-      //   const ext = m.file.name.split('.').pop();
-      //   await supabase.storage.from('social_media').upload(`posts/${Date.now()}.${ext}`, m.file);
-      // }
-
-      // 2. Insere Tabela (Supabase DB)
+      const uploadedUrls = [];
       
-      const parsedUrls = mediaFiles.map(m => m.url); // temporario para urls mocadas blobs locale
-      // default: ouro para teste visual
-      const mockTier = 3; 
+      // 1. Upload to Supabase Storage
+      for (const m of mediaFiles) {
+        const fileExt = m.file.name.split('.').pop();
+        const fileName = `posts/${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('posts_media')
+          .upload(fileName, m.file);
+          
+        if (error) {
+          console.error("Storage Error:", error);
+          // Fallback manual blob se o bucket não existir/permitir
+          uploadedUrls.push(m.url);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('posts_media')
+            .getPublicUrl(fileName);
+          uploadedUrls.push(publicUrl);
+        }
+      }
 
-      const finalCaption = mentions ? `${caption} \n\n@${mentions.replace('@', '')}` : caption;
+      // 2. Insert to Social Posts Table
+      const mockTier = 3; // Default Ouro
 
       await createPost(
         sponsorName, 
         sponsorRole || 'Patrocinador', 
         mockTier, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
-        parsedUrls, 
-        finalCaption, 
+        uploadedUrls, 
+        caption, 
         userId || 'Anon'
       );
 
-      onSuccess(); // Sinaliza para o feed regarregar
+      onSuccess();
 
     } catch (err) {
       console.error(err);
-      alert('Erro ao processar postagem.');
+      alert('Erro ao processar postagem. Verifique as tabelas de posts no Supabase.');
     } finally {
       setLoading(false);
     }
   };
+
+  const filteredUsers = allUsers.filter(u => 
+    u.name?.toLowerCase().includes(mentionQuery)
+  ).slice(0, 5);
 
   return (
     <div style={{
@@ -106,9 +158,31 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         </button>
       </header>
 
-      <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
+      <div style={{ padding: '20px', flex: 1, overflowY: 'auto', position: 'relative' }}>
         
-        {/* Identificação de quem está postando */}
+        {/* Mentions Dropdown */}
+        {showMentionsList && filteredUsers.length > 0 && (
+          <div style={{ 
+            position: 'absolute', top: '120px', left: '20px', right: '20px',
+            background: 'white', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            zIndex: 300, border: '1px solid var(--border)', overflow: 'hidden'
+          }}>
+             {filteredUsers.map(u => (
+               <button 
+                 key={u.name}
+                 onClick={() => selectMention(u.name)}
+                 style={{ 
+                   display: 'block', width: '100%', padding: '12px 20px', textAlign: 'left',
+                   background: 'none', border: 'none', borderBottom: '1px solid var(--border)',
+                   fontSize: '14px', fontWeight: '700', color: 'var(--secondary)'
+                 }}
+               >
+                 {u.name}
+               </button>
+             ))}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ 
               width: '40px', height: '40px', borderRadius: '50%',
@@ -121,30 +195,19 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
             <p style={{ fontWeight: '700', color: 'var(--secondary)' }}>{sponsorName}</p>
         </div>
 
-        {/* Text Area */}
         <textarea 
-          placeholder="Escreva uma legenda envolvente para o evento..."
+          ref={textareaRef}
+          placeholder="Escreva uma legenda envolvente e use @ para mencionar alguém..."
           value={caption}
-          onChange={e => setCaption(e.target.value)}
+          onChange={handleCaptionChange}
           style={{
-            width: '100%', height: '100px',
+            width: '100%', height: '120px',
             border: 'none', resize: 'none', outline: 'none',
             fontSize: '16px', color: 'var(--text-main)',
             marginBottom: '10px'
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#F8F9FA', borderRadius: '12px', marginBottom: '20px' }}>
-           <span style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '18px' }}>@</span>
-           <input 
-             placeholder="Marcar participante ou palestrante..."
-             value={mentions}
-             onChange={e => setMentions(e.target.value)}
-             style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', fontWeight: '600' }}
-           />
-        </div>
-
-        {/* Media Preview (Grid Nativos Customizados) */}
         {mediaFiles.length > 0 && (
           <div style={{ 
             display: 'flex', gap: '12px', overflowX: 'auto', 
@@ -157,10 +220,8 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
                 ) : (
                   <img src={media.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="preview" />
                 )}
-                
-                {/* Remove Image btn */}
                 <button 
-                  onClick={() => removeMedia(i)}
+                  onClick={() => setMediaFiles(prev => prev.filter((_, idx) => idx !== i))}
                   style={{
                     position: 'absolute', top: '8px', right: '8px',
                     width: '32px', height: '32px', borderRadius: '50%',
@@ -170,8 +231,6 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
                 >
                   <X size={16} />
                 </button>
-
-                {/* Badge Identificadora se Vídeo */}
                 {media.type === 'reel' && (
                   <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
                     <Video size={14} /> <span style={{fontSize:'11px', fontWeight:'700'}}>Reel</span>
@@ -181,34 +240,26 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
             ))}
           </div>
         )}
-
       </div>
 
-      {/* Toolbar Inferior Nativamente linkável ao celular HTML5 (Camera/Galeria) */}
       <footer style={{ 
         padding: '16px 20px', 
         borderTop: '1px solid rgba(0,0,0,0.05)',
         display: 'flex', gap: '20px'
       }}>
-        
-        {/* Input Oculto Principal */}
         <input 
           type="file" 
           ref={fileInputRef} 
           style={{ display: 'none' }} 
           accept="image/*,video/*" 
-          multiple // Permite carrossel
+          multiple 
           onChange={handleFileChange}
         />
-
-        {/* Botão Câmera (Foca em capturar no momento usando capture="environment") */}
         <button 
           onClick={() => {
-            if(fileInputRef.current) {
-               fileInputRef.current.removeAttribute('capture');
-               fileInputRef.current.setAttribute('capture', 'environment');
-               fileInputRef.current.click();
-            }
+            fileInputRef.current.removeAttribute('capture');
+            fileInputRef.current.setAttribute('capture', 'environment');
+            fileInputRef.current.click();
           }}
           style={{ 
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
@@ -221,13 +272,10 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           <span style={{ fontSize: '12px', fontWeight: '600' }}>Câmera</span>
         </button>
 
-        {/* Botão Galeria / Carrossel */}
         <button 
            onClick={() => {
-            if(fileInputRef.current) {
-               fileInputRef.current.removeAttribute('capture');
-               fileInputRef.current.click();
-            }
+            fileInputRef.current.removeAttribute('capture');
+            fileInputRef.current.click();
           }}
           style={{ 
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
@@ -244,7 +292,6 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
       `}} />
-
     </div>
   );
 };

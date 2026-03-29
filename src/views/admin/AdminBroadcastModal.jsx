@@ -135,9 +135,9 @@ export default function AdminBroadcastModal({ onClose, staffCpf }) {
               />
             </div>
 
-            {status === 'error' && (
-              <p style={{ color: '#E53E3E', fontSize: '12px', fontWeight: '600' }}>Falha ao conectar aos servidores Capacitor. Tente Novamente.</p>
-            )}
+              {status === 'error' && (
+                <p style={{ color: '#E53E3E', fontSize: '12px', fontWeight: '600' }}>Falha ao registrar mensagem no servidor. Verifique sua conexão.</p>
+              )}
 
             <button 
               onClick={handleSend}
