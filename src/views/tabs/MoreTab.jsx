@@ -16,7 +16,7 @@ import {
   Briefcase
 } from 'lucide-react';
 
-const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenBroadcast, onOpenAdminPortal }) => {
+const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -69,41 +69,64 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenB
     <div className="tab-content fade-in" style={{ padding: '0 0 40px' }}>
       {/* Profile Header */}
       <header style={{ 
-        padding: '32px 20px 24px', 
+        padding: 'env(safe-area-inset-top, 32px) 20px 24px', 
         background: 'var(--secondary)', 
         color: 'white',
         display: 'flex',
         alignItems: 'center',
         gap: '20px'
       }}>
-        <div style={{ 
-          width: '70px', 
-          height: '70px', 
-          borderRadius: '50%', 
-          background: 'rgba(255,255,255,0.1)', 
-          border: '2px solid rgba(255,255,255,0.2)',
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          fontSize: '24px',
-          fontWeight: '700'
-        }}>
-          {initial}
-        </div>
+        <label style={{ cursor: 'pointer', position: 'relative' }}>
+          <input 
+            type="file" 
+            accept="image/*" 
+            style={{ display: 'none' }} 
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              // Simulação de Upload Permanente para o Supabase
+              // O URL temporário é apenas para visualização imediata antes do refresh
+              const reader = new FileReader();
+              reader.onload = async (event) => {
+                const base64 = event.target.result;
+                const { error } = await supabase.from('profiles').update({ avatar_url: base64 }).eq('cpf', userCpf);
+                if (error) alert('Erro ao salvar foto.');
+                else window.location.reload(); // Recarrega para sincronizar App.jsx
+              };
+              reader.readAsDataURL(file);
+            }} 
+          />
+          <div style={{ 
+            width: '70px', 
+            height: '70px', 
+            borderRadius: '50%', 
+            background: 'rgba(255,255,255,0.1)', 
+            border: '2px solid var(--gold)',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            fontSize: '24px',
+            fontWeight: '700',
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            {userAvatar ? (
+              <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initial
+            )}
+            <div style={{ 
+              position: 'absolute', bottom: 0, right: 0, left: 0, 
+              background: 'rgba(0,0,0,0.5)', height: '20px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center' 
+            }}>
+              <Camera size={10} color="white" />
+            </div>
+          </div>
+        </label>
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>{userName || 'Visitante'}</h2>
           <p style={{ fontSize: '13px', opacity: 0.6, marginTop: '4px' }}>{formatUserType(userType)}</p>
-          <button style={{ 
-            marginTop: '8px', 
-            fontSize: '11px', 
-            fontWeight: '600', 
-            color: 'var(--primary)', 
-            background: 'white', 
-            padding: '4px 10px', 
-            borderRadius: '4px' 
-          }}>
-            Ver Perfil Público
-          </button>
         </div>
       </header>
 

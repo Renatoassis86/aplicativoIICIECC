@@ -19,8 +19,10 @@ import {
   Megaphone
 } from 'lucide-react';
 import CountdownTimer from '../../components/home/CountdownTimer';
+import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 
-const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
+const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
+  const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -49,7 +51,7 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
       
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
-        padding: '24px 20px 48px', 
+        padding: 'env(safe-area-inset-top, 44px) 20px 48px', 
         background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
@@ -76,17 +78,18 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '500', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>Bem-vindo,</span>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '2px' }}>Bem-vindo,</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--gold)' }}>{firstName}</span>
                 <span style={{ 
-                  fontSize: '10px', fontWeight: '900', background: 'var(--gold)', color: 'var(--secondary)', 
-                  padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase'
+                  fontSize: '9px', fontWeight: '900', background: 'var(--gold)', color: '#111', 
+                  padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                 }}>
                   {formatUserType(userType)}
                 </span>
               </div>
-              <span style={{ fontSize: '22px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--gold)' }}>{firstName}</span>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {userType === 'staff' && (
@@ -107,8 +110,21 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
                   </div>
                 )}
               </button>
-              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: '#111', fontSize: '18px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-                {initial}
+              <div 
+                onClick={onOpenTicket}
+                style={{ 
+                  width: '44px', height: '44px', borderRadius: '50%', 
+                  background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  fontWeight: '900', color: '#111', fontSize: '18px', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  overflow: 'hidden',
+                  cursor: 'pointer'
+                }}>
+                {userAvatar ? (
+                  <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  initial
+                )}
               </div>
             </div>
           </div>
@@ -208,14 +224,17 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
             { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
             { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
           ].map(p => (
-            <div key={p.name} style={{ 
-              minWidth: '140px', 
-              scrollSnapAlign: 'start',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}>
+            <div key={p.name}
+              onClick={() => setSelectedSpeaker(p)}
+              style={{ 
+                minWidth: '140px', 
+                scrollSnapAlign: 'start',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}>
               <div style={{ 
                 width: '80px', height: '80px', 
                 borderRadius: '50%', 
@@ -223,7 +242,7 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
                 padding: '3px',
                 marginBottom: '12px'
               }}>
-                <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'crop' }} />
+                <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
               </div>
               <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2', marginBottom: '4px' }}>{p.name}</p>
               <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2' }}>{p.desc}</p>
@@ -330,12 +349,45 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
         </div>
       </section>
 
+      {/* 7. Seção de Favoritos Personalizada */}
+      <section style={{ padding: '24px 20px' }}>
+        <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Star size={18} fill="var(--gold)" color="var(--gold)" /> Seus Favoritos
+        </h4>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '20px', 
+          padding: '24px', 
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-sm)',
+          border: '1px dashed var(--border)'
+        }}>
+           <div style={{ background: '#F8F9FA', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Bookmark size={20} color="var(--text-muted)" />
+           </div>
+           <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '4px' }}>Nada salvo ainda?</p>
+           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Salve publicações, palestras e parceiros para vê-los aqui rapidamente.</p>
+           <button style={{ background: 'var(--accent)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}>
+              EXPLORAR EVENTO
+           </button>
+        </div>
+      </section>
+
       {/* Rodapé da Home (Placeholder Institucional) */}
       <footer style={{ marginTop: '40px', padding: '0 20px', textAlign: 'center', opacity: 0.5 }}>
         <div style={{ width: '40px', height: '1px', background: 'var(--border)', margin: '0 auto 20px' }}></div>
         <p style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>II Congresso Internacional CIECC</p>
         <p style={{ fontSize: '10px', marginTop: '4px' }}>Educação Cristã Clássica para as Nações</p>
       </footer>
+
+      {/* MODAL DETALHE PALESTRANTE */}
+      {selectedSpeaker && (
+        <SpeakerDetailModal 
+          speaker={selectedSpeaker} 
+          onClose={() => setSelectedSpeaker(null)} 
+          onSaveFavorite={(s) => console.log('Favoritou palestrante:', s)}
+        />
+      )}
 
     </div>
   );

@@ -14,6 +14,7 @@ function App() {
   const [selectedType, setSelectedType] = useState(null);
   const [currentUserCpf, setCurrentUserCpf] = useState(null);
   const [userName, setUserName] = useState('');
+  const [userAvatar, setUserAvatar] = useState(null);
 
   // Carregar estado inicial
   useEffect(() => {
@@ -40,11 +41,13 @@ function App() {
           return;
         }
 
-        if (profile.onboarding_completed) {
-          setSelectedType({ id: profile.user_type }); // Simplificado para o roteamento
+        if (profile.onboarding_completed || profile.user_type === 'admin' || profile.user_type === 'staff' || profile.user_type?.includes('patrocinador')) {
+          setSelectedType(profile.user_type || 'admin');
+          setUserAvatar(profile.avatar_url);
           setAuthStatus('logged-in');
         } else if (profile.user_type) {
-          setSelectedType({ id: profile.user_type });
+          setSelectedType(profile.user_type);
+          setUserAvatar(profile.avatar_url);
           setAuthStatus('questionnaire');
         } else if (profile.password_reset) {
           setAuthStatus('select-type');
@@ -135,15 +138,18 @@ function App() {
         setCurrentUserCpf(cpf);
         localStorage.setItem('current_user_cpf', cpf);
         
-        if (currentProfile.onboarding_completed || currentProfile.user_type === 'admin' || currentProfile.user_type === 'staff' || currentProfile.user_type?.includes('patrocinador')) {
-          setSelectedType(currentProfile.user_type || 'admin');
-          setAuthStatus('logged-in');
-        } else if (currentProfile.user_type) {
-          setSelectedType(currentProfile.user_type);
-          setAuthStatus('questionnaire');
-        } else {
-          setAuthStatus('select-type');
-        }
+          setUserName(member.name);
+          setUserAvatar(currentProfile.avatar_url);
+
+          if (currentProfile.onboarding_completed || currentProfile.user_type === 'admin' || currentProfile.user_type === 'staff' || currentProfile.user_type?.includes('patrocinador')) {
+            setSelectedType(currentProfile.user_type || 'admin');
+            setAuthStatus('logged-in');
+          } else if (currentProfile.user_type) {
+            setSelectedType(currentProfile.user_type);
+            setAuthStatus('questionnaire');
+          } else {
+            setAuthStatus('select-type');
+          }
       } else {
         alert('Senha incorreta.');
         setAuthStatus('logged-out');

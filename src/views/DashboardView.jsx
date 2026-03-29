@@ -22,7 +22,7 @@ import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 
-const DashboardView = ({ onLogout, userType, userName, userCpf, onOpenAdminPortal }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOpenAdminPortal }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -44,11 +44,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, onOpenAdminPorta
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <HomeTab userName={userName} userType={userType} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
+      case 'home': return <HomeTab userName={userName} userType={userType} userAvatar={userAvatar} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
-      case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} />;
-      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} />;
+      case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
+      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} userAvatar={userAvatar} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} />;
       default: return <HomeTab />;
     }
   };

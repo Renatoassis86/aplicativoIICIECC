@@ -21,7 +21,12 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
 
   // Determina se pode postar
-  const canPost = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin'].includes(userType);
+  // Lógica de autorização para postagem (Case Insensitive)
+  const userRole = (userType || 'congressista').toLowerCase();
+  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador'];
+  const canPost = allowedRoles.some(role => userRole.includes(role));
+
+  console.log('[MediaTab] User:', userName, 'Role:', userRole, 'CanPost:', canPost);
 
   const loadPosts = async () => {
     setLoading(true);

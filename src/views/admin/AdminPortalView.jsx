@@ -15,9 +15,14 @@ import {
   ArrowLeft,
   Settings,
   MoreVertical,
-  Briefcase
+  Briefcase,
+  Search,
+  Download,
+  Filter,
+  Activity,
+  UserPlus
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
@@ -32,16 +37,16 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
   const loadData = async () => {
     setLoading(true);
-    // 1. Stats
-    const { count: userCount } = await supabase.from('members').select('*', { count: 'exact', head: true });
-    const { count: postCount } = await supabase.from('social_posts').select('*', { count: 'exact', head: true });
-    const { count: notifCount } = await supabase.from('system_notifications').select('*', { count: 'exact', head: true });
-    
-    setStats({ attendees: userCount || 0, posts: postCount || 0, notifications: notifCount || 0 });
+    try {
+      const { count: userCount } = await supabase.from('members').select('*', { count: 'exact', head: true });
+      const { count: postCount } = await supabase.from('social_posts').select('*', { count: 'exact', head: true });
+      const { count: notifCount } = await supabase.from('system_notifications').select('*', { count: 'exact', head: true });
+      
+      setStats({ attendees: userCount || 0, posts: postCount || 0, notifications: notifCount || 0 });
 
-    // 2. Posts for moderation
-    const feed = await fetchFeedPosts(userCpf);
-    setPosts(feed);
+      const feed = await fetchFeedPosts(userCpf);
+      setPosts(feed);
+    } catch (e) { console.error('Error loading admin data:', e); }
     setLoading(false);
   };
 
@@ -52,150 +57,232 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     }
   };
 
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard Geral', icon: <LayoutDashboard size={20} /> },
+    { id: 'agenda', label: 'Gestão de Agenda', icon: <Calendar size={20} /> },
+    { id: 'moderation', label: 'Moderação de Feed', icon: <ImageIcon size={20} /> },
+    { id: 'sponsors', label: 'Painel de Patrocinadores', icon: <Briefcase size={20} /> },
+    { id: 'notifications', label: 'Central de Push', icon: <Send size={20} /> },
+    { id: 'attendees', label: 'Lista de Congressistas', icon: <Users size={20} /> },
+  ];
+
   return (
     <div style={{ 
       display: 'flex', 
       height: '100vh', 
-      background: '#F4F7F6',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      color: '#1A202C'
+      background: '#F1F3F9',
+      fontFamily: "'Inter', system-ui, sans-serif",
+      color: '#1E293B'
     }}>
       
-      {/* Sidebar Desktop */}
+      {/* SIDEBAR - PREMIUM DARK */}
       <aside style={{ 
         width: '280px', 
-        background: 'var(--primary)', 
+        background: '#0F172A', 
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '4px 0 10px rgba(0,0,0,0.1)',
-        zIndex: 10
+        boxShadow: '10px 0 30px rgba(0,0,0,0.05)',
+        zIndex: 50
       }}>
-        <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ padding: '40px 32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <img src="/logo.png" alt="CIECC" style={{ height: '32px', filter: 'brightness(0) invert(1)' }} />
-            <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '0.5px' }}>STAFF HUB</h1>
+            <div style={{ width: '40px', height: '40px', background: 'var(--gold)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <img src="/logo.png" alt="" style={{ height: '24px', filter: 'brightness(0)' }} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '-0.5px' }}>CIECC</h1>
+              <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>ADMIN CONSOLE</p>
+            </div>
           </div>
-          <p style={{ fontSize: '12px', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '1px' }}>Portal de Gestão v2.0</p>
         </div>
 
-        <nav style={{ flex: 1, padding: '24px 12px' }}>
-          {[
-            { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-            { id: 'agenda', label: 'Programação (Agenda)', icon: <Calendar size={20} /> },
-            { id: 'moderation', label: 'Moderação Feed', icon: <ImageIcon size={20} /> },
-            { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} /> },
-            { id: 'notifications', label: 'Disparos Push', icon: <Send size={20} /> },
-            { id: 'attendees', label: 'Congressistas', icon: <Users size={20} /> },
-          ].map(item => (
+        <nav style={{ flex: 1, padding: '0 16px' }}>
+          {menuItems.map(item => (
             <button 
               key={item.id}
               onClick={() => setActiveMenu(item.id)}
               style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: '16px',
+                width: '100%', display: 'flex', alignItems: 'center', gap: '14px',
                 padding: '14px 20px', borderRadius: '12px', border: 'none',
-                background: activeMenu === item.id ? 'rgba(255,255,255,0.1)' : 'transparent',
-                color: activeMenu === item.id ? 'var(--gold)' : 'white',
+                background: activeMenu === item.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+                color: activeMenu === item.id ? 'white' : '#64748B',
                 fontWeight: activeMenu === item.id ? '700' : '500',
-                cursor: 'pointer', transition: 'all 0.2s', marginBottom: '4px',
+                cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', marginBottom: '8px',
                 fontSize: '14px'
               }}
             >
-              {item.icon}
+              <div style={{ 
+                color: activeMenu === item.id ? 'var(--gold)' : 'inherit',
+                transition: 'color 0.3s'
+              }}>
+                {item.icon}
+              </div>
               {item.label}
+              {activeMenu === item.id && (
+                <div style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--gold)' }}></div>
+              )}
             </button>
           ))}
         </nav>
 
-        <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ padding: '32px 16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <button 
              onClick={onBackToApp}
              style={{ 
                width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-               background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none',
-               padding: '12px', borderRadius: '8px', cursor: 'pointer', marginBottom: '12px'
+               background: 'rgba(255,255,255,0.03)', color: '#CBD5E1', border: '1px solid rgba(255,255,255,0.05)',
+               padding: '14px', borderRadius: '12px', cursor: 'pointer', marginBottom: '12px', fontSize: '13px', fontWeight: '600'
              }}>
-            <ArrowLeft size={18} /> Ver como Congressista
+            <ArrowLeft size={16} /> Ver App Mobile
           </button>
           <button 
              onClick={onLogout}
              style={{ 
                width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-               background: 'transparent', color: '#FEB2B2', border: 'none',
-               padding: '12px', borderRadius: '8px', cursor: 'pointer'
+               background: 'transparent', color: '#F87171', border: 'none',
+               padding: '12px', borderRadius: '12px', cursor: 'pointer', fontSize: '13px', fontWeight: '700'
              }}>
-            <LogOut size={18} /> Encerrar Sessão
+            <LogOut size={16} /> Sair do Sistema
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: 'auto', padding: '40px' }}>
+      {/* MAIN VIEWPORT */}
+      <main style={{ flex: 1, overflowY: 'auto', padding: '48px 60px' }}>
         
-        {/* Header Superior */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        {/* TOP BAR / GREETING */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '48px' }}>
           <div>
-            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>
-              {activeMenu.charAt(0).toUpperCase() + activeMenu.slice(1)}
+            <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#0F172A', letterSpacing: '-1px' }}>
+              {menuItems.find(i => i.id === activeMenu)?.label}
             </h2>
-            <p style={{ color: '#718096', marginTop: '4px' }}>Logado como: <strong>{userName}</strong> (Organização)</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+              <div style={{ width: '8px', height: '8px', background: '#22C55E', borderRadius: '50%', boxShadow: '0 0 10px rgba(34,197,94,0.5)' }}></div>
+              <p style={{ color: '#64748B', fontSize: '14px', fontWeight: '500' }}>Terminal Ativo: <strong>{userName}</strong> (Root Admin)</p>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button onClick={loadData} style={{ padding: '10px 20px', borderRadius: '10px', border: '1px solid #CBD5E0', background: 'white', fontWeight: '600' }}>Atualizar Dados</button>
-            <button className="btn-primary" style={{ padding: '10px 24px', borderRadius: '10px', width: 'auto' }}><Plus size={20} /> Novo Lançamento</button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ background: 'white', padding: '10px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0' }}>
+               <Search size={18} color="#94A3B8" />
+               <input placeholder="Busca global..." style={{ border: 'none', outline: 'none', fontSize: '14px', width: '200px' }} />
+            </div>
+            <button onClick={loadData} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 20px', borderRadius: '12px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>SINCRONIZAR</button>
           </div>
         </header>
 
+        {/* CONTENT SWITCHER */}
         {activeMenu === 'dashboard' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
-             {[
-               { label: 'Inscritos Reais', value: stats.attendees, icon: <Users />, color: '#3182CE' },
-               { label: 'Postagens Sociais', value: stats.posts, icon: <ImageIcon />, color: '#38A169' },
-               { label: 'Push Enviados', value: stats.notifications, icon: <Send />, color: 'var(--primary)' },
-               { label: 'Check-ins Hoje', value: '412', icon: <CheckCircle />, color: 'var(--gold)' }
-             ].map((stat, i) => (
-               <div key={i} className="card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                 <div style={{ background: `${stat.color}15`, color: stat.color, padding: '16px', borderRadius: '16px' }}>{stat.icon}</div>
-                 <div>
-                   <p style={{ fontSize: '14px', color: '#718096', fontWeight: '600' }}>{stat.label}</p>
-                   <h3 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--secondary)' }}>{stat.value}</h3>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
+               {[
+                 { label: 'Congressistas', value: stats.attendees, trend: '+12%', icon: <Users />, color: '#6366F1' },
+                 { label: 'Interações Feed', value: stats.posts * 10, trend: '+45%', icon: <ImageIcon />, color: '#10B981' },
+                 { label: 'Push Deliverability', value: '98.4%', trend: 'Estável', icon: <Send />, color: '#F59E0B' },
+                 { label: 'Active Sessions', value: '84', trend: 'Live', icon: <Activity />, color: '#EF4444' }
+               ].map((stat, i) => (
+                 <div key={i} style={{ 
+                    background: 'white', padding: '24px', borderRadius: '24px', 
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.02)',
+                    position: 'relative', overflow: 'hidden'
+                 }}>
+                   <div style={{ position: 'absolute', top: 0, right: 0, padding: '20px', opacity: 0.1 }}>{stat.icon}</div>
+                   <p style={{ fontSize: '13px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>{stat.label}</p>
+                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+                      <h3 style={{ fontSize: '32px', fontWeight: '900', color: '#0F172A' }}>{stat.value}</h3>
+                      <span style={{ fontSize: '12px', fontWeight: '800', color: stat.color, background: `${stat.color}15`, padding: '4px 8px', borderRadius: '6px', marginBottom: '6px' }}>{stat.trend}</span>
+                   </div>
                  </div>
+               ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+               <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                    <h4 style={{ fontWeight: '800', fontSize: '18px' }}>Log de Atividade Recente</h4>
+                    <button style={{ color: '#6366F1', border: 'none', background: 'none', fontSize: '13px', fontWeight: '700' }}>Ver Tudo</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {[1,2,3].map(i => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', background: '#F8FAFC' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <UserPlus size={18} color="#6366F1" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: '14px', fontWeight: '700' }}>Novo congressista cadastrado via QR</p>
+                          <p style={{ fontSize: '12px', color: '#64748B' }}>Há 4 minutos • VIP Silver</p>
+                        </div>
+                        <ChevronRight size={18} color="#CBD5E1" />
+                      </div>
+                    ))}
+                  </div>
                </div>
-             ))}
+               
+               <div style={{ background: 'var(--primary)', borderRadius: '24px', padding: '32px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', zIndex: 10 }}>
+                    <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px' }}>Broadcast de Emergência</h4>
+                    <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '24px' }}>Envie um comunicado para todos os dispositivos logados agora.</p>
+                    <textarea 
+                      placeholder="Digite o alerta aqui..."
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', color: 'white', fontSize: '14px', marginBottom: '16px', resize: 'none' }}
+                      rows={4}
+                    />
+                    <button style={{ width: '100%', background: 'var(--gold)', color: '#000', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      <Send size={18} /> DISPARAR ALERTA
+                    </button>
+                  </div>
+                  <Activity style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', opacity: 0.05 }} />
+               </div>
+            </div>
           </div>
         )}
 
+        {/* MODERACAO TAB - ULTRA CLEAN TABLE */}
         {activeMenu === 'moderation' && (
-          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead style={{ background: '#F8F9FA' }}>
-                <tr>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', textTransform: 'uppercase', color: '#718096' }}>Sponsor / Autor</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', textTransform: 'uppercase', color: '#718096' }}>Legenda / Preview</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', textTransform: 'uppercase', color: '#718096' }}>Data</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', textTransform: 'uppercase', color: '#718096' }}>Ações</th>
+          <div style={{ background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div style={{ display: 'flex', gap: '12px' }}>
+                 <button style={{ padding: '8px 16px', borderRadius: '8px', background: '#F1F5F9', border: 'none', fontSize: '13px', fontWeight: '700' }}>Pendentes</button>
+                 <button style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: 'none', fontSize: '13px', fontWeight: '600', color: '#64748B' }}>Aprovados</button>
+               </div>
+               <div style={{ display: 'flex', gap: '8px' }}>
+                 <button style={{ padding: '8px', borderRadius: '8px', background: 'white', border: '1px solid #E2E8F0' }}><Filter size={16} /></button>
+                 <button style={{ padding: '8px', borderRadius: '8px', background: 'white', border: '1px solid #E2E8F0' }}><Download size={16} /></button>
+               </div>
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', background: '#F8FAFC' }}>
+                  <th style={{ padding: '16px 32px', fontSize: '12px', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Autor</th>
+                  <th style={{ padding: '16px 32px', fontSize: '12px', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Conteúdo</th>
+                  <th style={{ padding: '16px 32px', fontSize: '12px', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Status</th>
+                  <th style={{ padding: '16px 32px', fontSize: '12px', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {posts.map(post => (
-                  <tr key={post.id} style={{ borderBottom: '1px solid #EDF2F7' }}>
-                    <td style={{ padding: '20px 24px' }}>
+                {posts.length === 0 ? (
+                  <tr><td colSpan={4} style={{ padding: '100px', textAlign: 'center', color: '#94A3B8' }}>Nenhuma postagem pendente para moderação</td></tr>
+                ) : posts.map(post => (
+                  <tr key={post.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.2s' }} className="table-row-hover">
+                    <td style={{ padding: '20px 32px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800' }}>{post.sponsorAvatar}</div>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gold)20', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>{post.sponsorAvatar}</div>
                         <div>
-                          <p style={{ fontWeight: '700', fontSize: '14px' }}>{post.sponsorName}</p>
-                          <p style={{ fontSize: '11px', color: '#A0AEC0' }}>{post.sponsorRole}</p>
+                          <p style={{ fontWeight: '800', fontSize: '14px' }}>{post.sponsorName}</p>
+                          <p style={{ fontSize: '11px', color: '#94A3B8' }}>{post.timeAgo}</p>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '20px 24px', fontSize: '14px', maxWidth: '300px' }}>
-                       <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.caption}</p>
+                    <td style={{ padding: '20px 32px', maxWidth: '400px' }}>
+                       <p style={{ fontSize: '14px', color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.caption}</p>
                     </td>
-                    <td style={{ padding: '20px 24px', fontSize: '13px', color: '#718096' }}>{post.timeAgo}</td>
-                    <td style={{ padding: '20px 24px' }}>
+                    <td style={{ padding: '20px 32px' }}>
+                       <span style={{ padding: '6px 12px', borderRadius: '20px', background: '#FEF3C7', color: '#D97706', fontSize: '11px', fontWeight: '800' }}>EM ANÁLISE</span>
+                    </td>
+                    <td style={{ padding: '20px 32px' }}>
                        <div style={{ display: 'flex', gap: '8px' }}>
-                         <button onClick={() => handleDeletePost(post.id)} style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#FFF5F5', color: '#E53E3E', cursor: 'pointer' }}><Trash2 size={16} /></button>
-                         <button style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#F8F9FA', color: '#4A5568', cursor: 'pointer' }}><Settings size={16} /></button>
+                          <button style={{ background: '#DCFCE7', color: '#166534', border: 'none', padding: '8px', borderRadius: '10px' }}><CheckCircle size={18} /></button>
+                          <button onClick={() => handleDeletePost(post.id)} style={{ background: '#FEE2E2', color: '#991B1B', border: 'none', padding: '8px', borderRadius: '10px' }}><Trash2 size={18} /></button>
                        </div>
                     </td>
                   </tr>
@@ -205,44 +292,22 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           </div>
         )}
 
-        {/* Mensagem Organizadores Interna */}
-        {activeMenu === 'notifications' && (
-           <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '32px' }}>
-              <div className="card" style={{ padding: '32px' }}>
-                 <h4 style={{ marginBottom: '24px', fontWeight: '800' }}>Disparar Novo Alarme</h4>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div>
-                      <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Target Audience</label>
-                      <select style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #CBD5E0' }}>
-                        <option>Todos os Inscritos</option>
-                        <option>Apenas Patrocinadores</option>
-                        <option>Alinhamento Interno (Apenas Equipe)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Título para o PUSH</label>
-                      <input placeholder="Ex: Mudança de Sala Urgente" style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #CBD5E0' }} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Mensagem Detalhada</label>
-                      <textarea rows={5} placeholder="Descreva o comunicado..." style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #CBD5E0' }} />
-                    </div>
-                    <button className="btn-primary" style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                      <Send size={20} /> Disparar Mensagem Global
-                    </button>
-                 </div>
-              </div>
-              <div className="card" style={{ background: '#2D3748', color: 'white' }}>
-                 <h4 style={{ fontWeight: '800', marginBottom: '20px' }}>Status das Campanhas</h4>
-                 <p style={{ fontSize: '13px', opacity: 0.7, lineHeight: '1.6' }}>Último disparo: 14:02<br/>Taxa de Abertura: 84%<br/>Canal: Capacitor / FCM</p>
-                 <div style={{ marginTop: '20px', padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
-                    <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--gold)' }}>DICA</p>
-                    <p style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Mensagens curtas (até 40 caracteres) têm 3x mais clique na barra de notificações do Android.</p>
-                 </div>
-              </div>
-           </div>
-        )}
       </main>
+
+      {/* GLOBAL STYLES FOR ADMIN HUB */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .table-row-hover:hover { background: #F8FAFC; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; borderRadius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+      `}} />
     </div>
   );
 }
+
+const ChevronRight = ({ size, color }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m9 18 6-6-6-6"/>
+  </svg>
+);
