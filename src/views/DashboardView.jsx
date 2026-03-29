@@ -217,4 +217,4 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   );
 };
 
-export default DashboardView;w;
+export default DashboardView;
