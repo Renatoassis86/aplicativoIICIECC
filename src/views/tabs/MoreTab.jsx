@@ -48,7 +48,7 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar: initialAva
 
     try {
       const fileName = `avatars/${userCpf}_${Date.now()}.jpg`;
-      const publicUrlOrBase64 = await ImagePersistenceService.uploadToStorage('profiles_avatars', fileName, photo.blob);
+      const publicUrlOrBase64 = await ImagePersistenceService.uploadToStorage('profiles', fileName, photo.blob);
       const { error } = await supabase.from('profiles').update({ avatar_url: publicUrlOrBase64 }).eq('cpf', userCpf);
       if (error) throw error;
       console.log("[MoreTab] Foto persistida.");

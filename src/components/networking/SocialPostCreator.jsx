@@ -136,7 +136,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
         caption, 
-        userId || 'Anon'
+        userId || 'Renato'
       );
 
       console.log("[Social] Post created successfully!");
@@ -220,36 +220,37 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ 
-              width: '40px', height: '40px', borderRadius: '50%',
+              width: '44px', height: '44px', borderRadius: '50%',
               background: 'var(--gold)', color: 'var(--primary)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-serif)', fontWeight: '900', fontSize: '18px'
+              fontFamily: 'var(--font-serif)', fontWeight: '900', fontSize: '20px',
+              overflow: 'hidden', border: '2px solid var(--gold)'
             }}>
-              {sponsorName.charAt(0)}
+              {userAvatar ? <img src={userAvatar} style={{width:'100%', height:'100%', objectFit:'cover'}} /> : sponsorName.charAt(0)}
             </div>
-            <p style={{ fontWeight: '700', color: 'var(--secondary)' }}>{sponsorName}</p>
+            <div>
+              <p style={{ fontWeight: '800', color: 'var(--secondary)', fontSize: '15px' }}>{sponsorName}</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Criando nova publicação...</p>
+            </div>
         </div>
 
-        <textarea 
-          ref={textareaRef}
-          placeholder="Escreva uma legenda envolvente e use @ para mencionar alguém..."
-          value={caption}
-          onChange={handleCaptionChange}
-          style={{
-            width: '100%', height: '120px',
-            border: 'none', resize: 'none', outline: 'none',
-            fontSize: '16px', color: 'var(--text-main)',
-            marginBottom: '10px'
-          }}
-        />
-
-        {mediaFiles.length > 0 && (
+        {/* Media Preview Area - IMEDIATO E INTEGRADO */}
+        {mediaFiles.length > 0 ? (
           <div style={{ 
             display: 'flex', gap: '12px', overflowX: 'auto', 
-            paddingBottom: '12px', margin: '20px 0', scrollbarWidth: 'none' 
+            paddingBottom: '16px', marginBottom: '16px', scrollbarWidth: 'none' 
           }}>
             {mediaFiles.map((media, i) => (
-              <div key={i} style={{ position: 'relative', width: '200px', height: '240px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+              <div key={i} style={{ 
+                position: 'relative', 
+                width: '240px', 
+                height: '280px', 
+                flexShrink: 0, 
+                borderRadius: '16px', 
+                overflow: 'hidden',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                border: '1px solid var(--border)'
+              }}>
                 {media.type === 'reel' ? (
                   <video src={media.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} controls={false} autoPlay loop muted />
                 ) : (
@@ -258,28 +259,44 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
                 <button 
                   onClick={() => setMediaFiles(prev => prev.filter((_, idx) => idx !== i))}
                   style={{
-                    position: 'absolute', top: '8px', right: '8px',
+                    position: 'absolute', top: '12px', right: '12px',
                     width: '32px', height: '32px', borderRadius: '50%',
                     background: 'rgba(0,0,0,0.6)', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none',
+                    backdropFilter: 'blur(4px)'
                   }}
                 >
                   <X size={16} />
                 </button>
-                {media.type === 'reel' && (
-                  <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', borderRadius: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <Video size={14} /> <span style={{fontSize:'11px', fontWeight:'700'}}>Reel</span>
-                  </div>
-                )}
               </div>
             ))}
             {uploadingMedia && (
-               <div style={{ width: '200px', height: '240px', background: '#f5f5f5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <div className="pulse" style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+               <div style={{ width: '240px', height: '280px', background: '#f5f5f5', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className="pulse-fast" style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%' }}></div>
                </div>
             )}
           </div>
+        ) : (
+          uploadingMedia && (
+            <div style={{ width: '100%', height: '200px', background: '#f5f5f5', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+               <div className="pulse-fast" style={{ width: '30px', height: '30px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+            </div>
+          )
         )}
+
+        <textarea 
+          ref={textareaRef}
+          placeholder="O que você está pensando? Marque amigos com @..."
+          value={caption}
+          onChange={handleCaptionChange}
+          style={{
+            width: '100%', minHeight: '150px',
+            border: 'none', resize: 'none', outline: 'none',
+            fontSize: '17px', color: 'var(--text-main)',
+            lineHeight: '1.5',
+            padding: '4px'
+          }}
+        />
       </div>
 
       <footer style={{ 

@@ -59,7 +59,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       tierColor: '#B9F2FF',
       logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?w=400&h=400&fit=crop&q=80',
       tagline: 'Líder em gestão académica clássica.',
-      bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina, oferecendo suporte estratégico a mais de 100 colégios.',
+      bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina.',
       website: 'https://oikos.com.br',
       booth: 'Pavilhão Central • Estande 01'
     },
@@ -70,7 +70,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       tierColor: '#B9F2FF',
       logo: 'https://images.unsplash.com/photo-1543286386-713bdd54865e?w=400&h=400&fit=crop&q=80',
       tagline: 'Consultoria e Implantação.',
-      bio: 'A PACTUM atua no suporte estratégico, pedagógico e institucional a igrejas e mantenedores que buscam a restauração da educação clássica.',
+      bio: 'A PACTUM atua no suporte estratégico e institucional a escolas clássicas.',
       website: 'https://pactum.edu.br',
       booth: 'Pavilhão Norte • Estande 12'
     },
@@ -92,9 +92,20 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       tierColor: '#CBD5E0',
       logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=400&h=400&fit=crop&q=80',
       tagline: 'Educação Superior Clássica.',
-      bio: 'Pós-graduação e formação contínua de professores para a restauração das Artes Liberais.',
+      bio: 'Pós-graduação e formação contínua de professores.',
       website: 'https://ficv.edu.br',
       booth: 'Hall de Entrada'
+    },
+    {
+      id: 5,
+      name: 'Cidade Viva',
+      tierName: 'Realizador',
+      tierColor: '#4A101D',
+      logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=400&fit=crop&q=80',
+      tagline: 'Educação para o Reino.',
+      bio: 'Fundação Cidade Viva apoiando o II CIECC.',
+      website: 'https://cidadeviva.org',
+      booth: 'VIP Lounge'
     }
   ];
 
@@ -267,56 +278,56 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
         )}
       </section>
 
-      {/* NOVO: PALESTRANTES CONFIRMADOS */}
-      <section style={{ padding: '32px 0 0 20px' }}>
-        <div style={{ paddingRight: '20px' }}>
+      {/* PARTICIPANTES CONFIRMADOS - AUTO MARQUEE */}
+      <section style={{ padding: '32px 0 0 0' }}>
+        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
           <h4 className="section-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '20px' }}>
             Participantes Confirmados
-            <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '700' }}>Ver Todos</span>
           </h4>
         </div>
         
-        <div style={{ 
-          display: 'flex', 
-          overflowX: 'auto', 
-          gap: '16px', 
-          paddingBottom: '16px',
-          paddingRight: '20px',
-          scrollSnapType: 'x mandatory',
-          scrollbarWidth: 'none'
-        }}>
-          {[
-            { name: 'Dr. Christopher Schlect', desc: 'New St. Andrews (USA)', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
-            { name: 'Dr. Keith Nix', desc: 'Veritas School (Richmond)', img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop' },
-            { name: 'Ms. Thiago Dutra', desc: 'Diretor Schola Classics', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop' },
-            { name: 'Esp. Matheus Macedo', desc: 'Diretor Zoe Christian School', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-            { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-            { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
-          ].map(p => (
-            <div key={p.name}
-              onClick={() => setSelectedSpeaker(p)}
-              style={{ 
-                minWidth: '140px', 
-                scrollSnapAlign: 'start',
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}>
-              <div style={{ 
-                width: '80px', height: '80px', 
-                borderRadius: '50%', 
-                border: '2px solid var(--gold)',
-                padding: '3px',
-                marginBottom: '12px'
-              }}>
-                <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+        <div className="marquee-container" style={{ background: 'transparent', border: 'none', padding: '0' }}>
+          <div className="marquee-content" style={{ animationDuration: '25s', gap: '20px' }}>
+            {[...[
+              { name: 'Dr. Christopher Schlect', desc: 'New St. Andrews (USA)', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
+              { name: 'Dr. Keith Nix', desc: 'Veritas School (Richmond)', img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop' },
+              { name: 'Ms. Thiago Dutra', desc: 'Diretor Schola Classics', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop' },
+              { name: 'Esp. Matheus Macedo', desc: 'Diretor Zoe Christian School', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+              { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+              { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
+            ], ...[
+              { name: 'Dr. Christopher Schlect', desc: 'New St. Andrews (USA)', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
+              { name: 'Dr. Keith Nix', desc: 'Veritas School (Richmond)', img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop' },
+              { name: 'Ms. Thiago Dutra', desc: 'Diretor Schola Classics', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop' },
+              { name: 'Esp. Matheus Macedo', desc: 'Diretor Zoe Christian School', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+              { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+              { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
+            ]].map((p, idx) => (
+              <div key={`${p.name}-${idx}`}
+                onClick={() => setSelectedSpeaker(p)}
+                style={{ 
+                  minWidth: '150px', 
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}>
+                <div style={{ 
+                  width: '90px', height: '90px', 
+                  borderRadius: '50%', 
+                  border: '3px solid var(--gold)',
+                  padding: '4px',
+                  marginBottom: '12px',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                }}>
+                  <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                </div>
+                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2', marginBottom: '4px' }}>{p.name}</p>
+                <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2' }}>{p.desc}</p>
               </div>
-              <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2', marginBottom: '4px' }}>{p.name}</p>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2' }}>{p.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -379,68 +390,57 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
         </div>
       </section>
 
-      {/* 6. Bloco Comercial / Carrossel de Patrocinadores Master */}
+      {/* 6. Carrossel de Patrocinadores Master - FULL WIDTH & FAST */}
       <section style={{ padding: '0 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div style={{ 
+          background: 'white', 
+          borderRadius: 'var(--radius-lg)', 
+          padding: '24px 0',
+          border: '2px solid var(--gold)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          boxShadow: 'var(--shadow-lg)'
+        }}>
+          <p style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', textAlign: 'center', marginBottom: '20px' }}>
+             NOSSOS PATROCINADORES MASTER
+          </p>
           
-          {/* Sessão Carrossel de Patrocinadores (Master/Diamante) */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: 'var(--radius-md)', 
-            padding: '16px 0',
-            border: '1px solid var(--gold)',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center'
-          }}>
-            <p style={{ fontSize: '10px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center', marginBottom: '12px' }}>
-               PATROCINADORES
-            </p>
-            
-            <div className="marquee-container">
-               <div className="marquee-content" style={{ animationDuration: '30s' }}>
-                 {[...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
-                   <div 
-                     key={`${s.id}-${idx}`} 
-                     onClick={() => setSelectedSponsor(s)}
-                     className="marquee-item"
-                     style={{ cursor: 'pointer' }}
-                   >
-                     <img src={s.logo} alt={s.name} style={{ width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px', background: '#f8f9fa', padding: '4px' }} />
-                     <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
-                     <span style={{ fontSize: '7px', fontWeight: '700', padding: '2px 6px', background: s.tierColor + '40', borderRadius: '4px', textTransform: 'uppercase' }}>{s.tierName.split(' ')[1] || s.tierName}</span>
-                   </div>
-                 ))}
-               </div>
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: '12px' }}>
-               <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '700', opacity: 0.8 }}>TOQUE PARA VER DETALHES</span>
-            </div>
+          <div className="marquee-container" style={{ height: '140px' }}>
+             <div className="marquee-content" style={{ animationDuration: '20s' }}>
+                {[...sponsors, ...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
+                  <div 
+                    key={`${s.id}-${idx}`} 
+                    onClick={() => setSelectedSponsor(s)}
+                    className="marquee-item"
+                    style={{ 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center',
+                      gap: '8px',
+                      minWidth: '150px'
+                    }}
+                  >
+                    <div style={{
+                      width: '100px', height: '100px', 
+                      background: 'white', borderRadius: '16px',
+                      padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                      border: '1px solid #f0f0f0'
+                    }}>
+                       <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
+                  </div>
+                ))}
+             </div>
           </div>
 
-          {/* Galeria Oficial */}
-          <div style={{ 
-            background: 'var(--secondary)', 
-            borderRadius: 'var(--radius-md)', 
-            padding: '24px',
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center'
-          }}>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '50%', marginBottom: '12px' }}>
-              <Camera size={26} color="var(--primary)" />
-            </div>
-            <p style={{ fontSize: '16px', fontWeight: '800', marginBottom: '4px' }}>Galeria Oficial</p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>Fotos da cobertura</p>
-            <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800' }}>
-              Acessar <PlayCircle size={14} />
-            </div>
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+             <span style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '900', letterSpacing: '0.5px' }}>TOQUE PARA VER DETALHES</span>
           </div>
         </div>
       </section>
