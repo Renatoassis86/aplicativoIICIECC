@@ -17,10 +17,26 @@ import NetworkTab from './tabs/NetworkTab';
 import MediaTab from './tabs/MediaTab';
 import MoreTab from './tabs/MoreTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
+import NotificationsSheet from '../components/notifications/NotificationsSheet';
+import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    // 1. Inicializa Motores de Push Nativo (Para App Stores)
+    initPushNotifications(userCpf);
+    
+    // 2. Traz estado atual da Inbox
+    const syncInbox = async () => {
+      const { unreadCount } = await fetchInbox(userCpf);
+      setUnreadCount(unreadCount);
+    };
+    syncInbox();
+  }, [userCpf]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -68,9 +84,26 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
             }} 
           />
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <Bell size={22} color="white" />
+            <button 
+              onClick={() => setShowNotifications(true)} 
+              style={{ background: 'none', border: 'none', padding: '4px', position: 'relative' }}
+            >
+              <Bell size={22} color="white" />
+              {unreadCount > 0 && (
+                <div style={{
+                  position: 'absolute', top: '0px', right: '0px',
+                  width: '16px', height: '16px', borderRadius: '50%',
+                  background: '#E53E3E', color: 'white',
+                  fontSize: '10px', fontWeight: '800',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--primary)'
+                }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
+            </button>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: 'var(--secondary)', fontSize: '13px' }}>
-              R
+              {userName.charAt(0)}
             </div>
           </div>
         </header>
@@ -126,6 +159,18 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
           onClose={() => setShowTicketModal(false)} 
           userName={userName}
           userCpf={userCpf}
+        />
+      )}
+
+      {/* Notifications Inbox (In-App Push) */}
+      {showNotifications && (
+        <NotificationsSheet 
+           userId={userCpf}
+           onClose={() => {
+             setShowNotifications(false);
+             // Reescanear após fechar para limpar badges
+             fetchInbox(userCpf).then(r => setUnreadCount(r.unreadCount));
+           }}
         />
       )}
     </div>

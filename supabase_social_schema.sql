@@ -53,3 +53,36 @@ CREATE POLICY "Deleção de comentarios" ON social_comments FOR DELETE USING (tr
 CREATE POLICY "Leitura engajamentos" ON social_engagements FOR SELECT USING (true);
 CREATE POLICY "Inserção engajamentos" ON social_engagements FOR INSERT WITH CHECK (true);
 CREATE POLICY "Deleção engajamentos" ON social_engagements FOR DELETE USING (true);
+
+
+-- ==========================================
+-- 4. Notificações Push Locais (In-App Inbox)
+-- Organização emite mensagens globais que chegam via FCM/APNS e ficam cacheadas aqui
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS system_notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  sender_role TEXT DEFAULT 'staff' -- Apenas admin/organização posta nisto
+);
+
+-- Tabela de relacionamento para saber se o usuário já leu a notificação
+CREATE TABLE IF NOT EXISTS system_notifications_reads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  notification_id UUID REFERENCES system_notifications(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  UNIQUE(notification_id, user_id)
+);
+
+ALTER TABLE system_notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_notifications_reads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Leitura global notifs" ON system_notifications FOR SELECT USING (true);
+CREATE POLICY "Gestor posta notifs" ON system_notifications FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Leitura leiturados" ON system_notifications_reads FOR SELECT USING (true);
+CREATE POLICY "Marcacao como lido" ON system_notifications_reads FOR INSERT WITH CHECK (true);
+
