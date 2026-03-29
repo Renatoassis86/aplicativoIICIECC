@@ -24,7 +24,7 @@ import {
 import CountdownTimer from '../../components/home/CountdownTimer';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 
-const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
+const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate }) => {
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
@@ -54,7 +54,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
-        padding: 'env(safe-area-inset-top, 44px) 20px 48px', 
+        padding: 'env(safe-area-inset-top, 60px) 20px 48px', 
         background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
@@ -69,12 +69,12 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
 
         <div style={{ position: 'relative', zIndex: 10 }}>
           {/* Logo Centralizada no topo - Clara sobre Borgonha */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
             <img 
               src="/logo.png" 
               alt="CIECC" 
               style={{ 
-                height: '80px', 
+                height: '84px', 
                 objectFit: 'contain'
               }} 
             />
@@ -160,7 +160,24 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             <CountdownTimer targetDate="2026-05-01T08:00:00" />
           </div>
 
-          <button className="btn-primary" style={{ background: 'white', color: 'var(--primary)', border: 'none', width: '100%', padding: '16px', borderRadius: '12px', fontSize: '14px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>
+          <button 
+            onClick={() => onNavigate('agenda')} 
+            className="btn-primary" 
+            style={{ 
+              background: 'white', 
+              color: 'var(--primary)', 
+              border: 'none', 
+              width: '100%', 
+              padding: '16px', 
+              borderRadius: '12px', 
+              fontSize: '14px', 
+              fontWeight: '900', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '12px', 
+              boxShadow: '0 10px 20px rgba(0,0,0,0.2)' 
+            }}>
             EXPLORAR PROGRAMAÇÃO <ArrowRight size={18} />
           </button>
         </div>

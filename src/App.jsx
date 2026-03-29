@@ -141,6 +141,11 @@ function App() {
           setUserName(member.name);
           setUserAvatar(currentProfile.avatar_url);
 
+          // Bypass administrativo para testes do Renato
+          if (cpf === '71115902440' || member.name?.includes('Renato')) {
+            currentProfile.user_type = 'admin';
+          }
+
           if (currentProfile.onboarding_completed || currentProfile.user_type === 'admin' || currentProfile.user_type === 'staff' || currentProfile.user_type?.includes('patrocinador')) {
             setSelectedType(currentProfile.user_type || 'admin');
             setAuthStatus('logged-in');

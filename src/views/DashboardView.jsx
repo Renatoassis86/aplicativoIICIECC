@@ -44,7 +44,19 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <HomeTab userName={userName} userType={userType} userAvatar={userAvatar} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
+      case 'home': return (
+        <HomeTab 
+          userName={userName} 
+          userType={userType} 
+          userAvatar={userAvatar} 
+          unreadCount={unreadCount} 
+          onOpenNotifications={() => setShowNotifications(true)} 
+          onOpenTicket={() => setShowTicketModal(true)} 
+          onOpenScanner={() => setShowScanner(true)} 
+          onOpenBroadcast={() => setShowBroadcast(true)}
+          onNavigate={(tab) => setActiveTab(tab)}
+        />
+      );
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
