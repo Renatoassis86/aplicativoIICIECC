@@ -3,7 +3,7 @@ import {
   Home, 
   Calendar, 
   Users, 
-  PlayCircle,
+  Image,
   MoreVertical,
   Bell,
   User,
@@ -38,7 +38,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
       case 'home': return ''; // Home tem seu próprio header visual
       case 'agenda': return 'Agenda Geral';
       case 'network': return 'Networking';
-      case 'media': return 'Mídia & Fotos';
+      case 'media': return 'Feed Social';
       case 'more': return 'Ajustes e Mais';
       default: return '';
     }
@@ -108,8 +108,8 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
           className={`nav-item ${activeTab === 'media' ? 'active' : ''}`} 
           onClick={() => setActiveTab('media')}
         >
-          <PlayCircle size={22} />
-          <span>Mídia</span>
+          <Image size={22} />
+          <span>Feed</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'more' ? 'active' : ''}`} 
