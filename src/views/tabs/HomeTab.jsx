@@ -23,9 +23,11 @@ import {
 } from 'lucide-react';
 import CountdownTimer from '../../components/home/CountdownTimer';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
+import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
 
 const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate }) => {
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
+  const [selectedSponsor, setSelectedSponsor] = React.useState(null);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -49,12 +51,59 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
     { label: 'FAQ', icon: <HelpCircle color="#D81E1E" size={24} />, bg: '#FDF2F2' },
   ];
 
+  const sponsors = [
+    {
+      id: 1,
+      name: 'OIKOS',
+      tierName: 'Patrocinador Master',
+      tierColor: '#B9F2FF',
+      logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?w=400&h=400&fit=crop&q=80',
+      tagline: 'Líder em gestão académica clássica.',
+      bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina, oferecendo suporte estratégico a mais de 100 colégios.',
+      website: 'https://oikos.com.br',
+      booth: 'Pavilhão Central • Estande 01'
+    },
+    {
+      id: 2,
+      name: 'PACTUM',
+      tierName: 'Patrocinador Diamante',
+      tierColor: '#B9F2FF',
+      logo: 'https://images.unsplash.com/photo-1543286386-713bdd54865e?w=400&h=400&fit=crop&q=80',
+      tagline: 'Consultoria e Implantação.',
+      bio: 'A PACTUM atua no suporte estratégico, pedagógico e institucional a igrejas e mantenedores que buscam a restauração da educação clássica.',
+      website: 'https://pactum.edu.br',
+      booth: 'Pavilhão Norte • Estande 12'
+    },
+    {
+      id: 3,
+      name: 'Editora Trinitas',
+      tierName: 'Patrocinador Ouro',
+      tierColor: '#FFD700',
+      logo: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80',
+      tagline: 'Livros e Formação.',
+      bio: 'A maior editora especializada em conteúdos clássicos e cristãos do Brasil.',
+      website: 'https://editoratrinitas.com.br',
+      booth: 'Lounge dos Autores'
+    },
+    {
+      id: 4,
+      name: 'FICV',
+      tierName: 'Parceiro',
+      tierColor: '#CBD5E0',
+      logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=400&h=400&fit=crop&q=80',
+      tagline: 'Educação Superior Clássica.',
+      bio: 'Pós-graduação e formação contínua de professores para a restauração das Artes Liberais.',
+      website: 'https://ficv.edu.br',
+      booth: 'Hall de Entrada'
+    }
+  ];
+
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px' }}>
       
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
-        padding: 'env(safe-area-inset-top, 60px) 20px 48px', 
+        padding: 'env(safe-area-inset-top, 100px) 20px 48px', 
         background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
@@ -69,7 +118,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
 
         <div style={{ position: 'relative', zIndex: 10 }}>
           {/* Logo Centralizada no topo - Clara sobre Borgonha */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', marginTop: '32px' }}>
             <img 
               src="/logo.png" 
               alt="CIECC" 
@@ -330,42 +379,69 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
         </div>
       </section>
 
-      {/* 6. Bloco Comercial / Institucional e 7. Cobertura Oficial */}
+      {/* 6. Bloco Comercial / Carrossel de Patrocinadores Master */}
       <section style={{ padding: '0 20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           
-          {/* Comercial */}
+          {/* Sessão Carrossel de Patrocinadores (Master/Diamante) */}
           <div style={{ 
             background: 'white', 
             borderRadius: 'var(--radius-md)', 
-            padding: '20px',
+            padding: '16px 0',
             border: '1px solid var(--gold)',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
           }}>
-            <Award size={24} color="var(--gold)" style={{ marginBottom: '12px' }} />
-            <p style={{ fontSize: '14px', fontWeight: '800', marginBottom: '4px' }}>Patrocínio Diamante</p>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>Conheça as soluções da OIKOS</p>
-            <div style={{ color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: '700' }}>
-              Ver Mais <ExternalLink size={12} />
+            <p style={{ fontSize: '10px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center', marginBottom: '12px' }}>
+               PATROCINADORES
+            </p>
+            
+            <div className="marquee-container">
+               <div className="marquee-content" style={{ animationDuration: '30s' }}>
+                 {[...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
+                   <div 
+                     key={`${s.id}-${idx}`} 
+                     onClick={() => setSelectedSponsor(s)}
+                     className="marquee-item"
+                     style={{ cursor: 'pointer' }}
+                   >
+                     <img src={s.logo} alt={s.name} style={{ width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px', background: '#f8f9fa', padding: '4px' }} />
+                     <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
+                     <span style={{ fontSize: '7px', fontWeight: '700', padding: '2px 6px', background: s.tierColor + '40', borderRadius: '4px', textTransform: 'uppercase' }}>{s.tierName.split(' ')[1] || s.tierName}</span>
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '12px' }}>
+               <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '700', opacity: 0.8 }}>TOQUE PARA VER DETALHES</span>
             </div>
           </div>
 
-          {/* Cobertura */}
+          {/* Galeria Oficial */}
           <div style={{ 
             background: 'var(--secondary)', 
             borderRadius: 'var(--radius-md)', 
-            padding: '20px',
-            color: 'white'
+            padding: '24px',
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
           }}>
-            <Camera size={24} color="var(--primary)" style={{ marginBottom: '12px' }} />
-            <p style={{ fontSize: '14px', fontWeight: '800', marginBottom: '4px' }}>Galeria Oficial</p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>Fotos e vídeos da cobertura</p>
-            <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: '700' }}>
-              Acessar <PlayCircle size={12} />
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '50%', marginBottom: '12px' }}>
+              <Camera size={26} color="var(--primary)" />
+            </div>
+            <p style={{ fontSize: '16px', fontWeight: '800', marginBottom: '4px' }}>Galeria Oficial</p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>Fotos da cobertura</p>
+            <div style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800' }}>
+              Acessar <PlayCircle size={14} />
             </div>
           </div>
-
         </div>
       </section>
 

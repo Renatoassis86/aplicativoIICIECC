@@ -22,7 +22,7 @@ import {
   Activity,
   UserPlus
 } from 'lucide-react';
-import { supabase } from '../../supabase';
+import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
@@ -30,6 +30,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState({ attendees: 0, posts: 0, notifications: 0 });
   const [loading, setLoading] = useState(true);
+  const [emergencyText, setEmergencyText] = useState('');
 
   useEffect(() => {
     loadData();
@@ -224,10 +225,27 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                     <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '24px' }}>Envie um comunicado para todos os dispositivos logados agora.</p>
                     <textarea 
                       placeholder="Digite o alerta aqui..."
+                      value={emergencyText}
+                      onChange={(e) => setEmergencyText(e.target.value)}
                       style={{ width: '100%', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', color: 'white', fontSize: '14px', marginBottom: '16px', resize: 'none' }}
                       rows={4}
                     />
-                    <button style={{ width: '100%', background: 'var(--gold)', color: '#000', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    <button 
+                      onClick={async () => {
+                        if(!emergencyText) return;
+                        const { error } = await supabase.from('system_notifications').insert({
+                          title: 'ALERTA DASHBOARD',
+                          message: emergencyText,
+                          type: 'alert'
+                        });
+                        if (error) alert('Erro ao disparar: ' + error.message);
+                        else {
+                          alert('Alerta disparado com sucesso!');
+                          setEmergencyText('');
+                          loadData();
+                        }
+                      }}
+                      style={{ width: '100%', background: 'var(--gold)', color: '#000', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                       <Send size={18} /> DISPARAR ALERTA
                     </button>
                   </div>

@@ -136,7 +136,11 @@ export default function AdminBroadcastModal({ onClose, staffCpf }) {
             </div>
 
               {status === 'error' && (
-                <p style={{ color: '#E53E3E', fontSize: '12px', fontWeight: '600' }}>Falha ao registrar mensagem no servidor. Verifique sua conexão.</p>
+                <div style={{ background: '#FFF5F5', padding: '10px', borderRadius: '8px', border: '1px solid #FEB2B2' }}>
+                  <p style={{ color: '#C53030', fontSize: '12px', fontWeight: '700', textAlign: 'center' }}>
+                    Sincronização mal-sucedida. Verifique sua conexão ou as permissões administrativas no Supabase.
+                  </p>
+                </div>
               )}
 
             <button 

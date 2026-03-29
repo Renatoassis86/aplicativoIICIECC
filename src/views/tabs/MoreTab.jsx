@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../../supabase';
+import { supabase } from '../../lib/supabase';
 import { 
   HelpCircle, 
   User, 
@@ -12,10 +12,14 @@ import {
   Ticket,
   BookOpen,
   BellRing,
-  Monitor,
+  Users,
+  ExternalLink,
+  Award,
+  Calendar,
+  Camera,
   Star,
   Briefcase,
-  Camera
+  Monitor
 } from 'lucide-react';
 
 const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate }) => {

@@ -91,27 +91,83 @@ const OfficialMediaTab = () => {
       {/* Grid de Seções */}
       <div style={{ padding: '0 20px' }}>
         
-        {/* Banner de Destaque - Mensagem do Palestrante */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, var(--primary) 0%, #4A101D 100%)', 
-          borderRadius: '20px', 
-          padding: '24px', 
-          color: 'white', 
-          marginBottom: '32px',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: 'var(--shadow-md)'
-        }}>
-          <div style={{ position: 'relative', zIndex: 2 }}>
-             <span style={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', background: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '4px' }}>Destaque do Dia</span>
-             <h3 style={{ fontSize: '20px', fontWeight: '800', marginTop: '12px', marginBottom: '8px' }}>A Mensagem do Dr. Christopher</h3>
-             <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '20px', lineHeight: '1.5' }}>Confira o recado especial deixado para os congressistas sobre o futuro da CCD.</p>
-             <button style={{ background: 'var(--gold)', color: '#111', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: '900', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <PlayCircle size={18} /> ASSISTIR AGORA
-             </button>
+        {/* DESTAQUE - TRANSMISSÃO AO VIVO (YOUTUBE EMBED) */}
+        <div style={{ marginBottom: '40px' }} className="fade-in">
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            marginBottom: '16px' 
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ 
+                height: '8px', width: '8px', 
+                borderRadius: '50%', 
+                background: '#EF4444', 
+                animation: 'blink 1s infinite' 
+              }}></span>
+              <span style={{ 
+                fontSize: '11px', 
+                fontWeight: '900', 
+                color: '#EF4444', 
+                textTransform: 'uppercase', 
+                letterSpacing: '1px' 
+              }}>AO VIVO AGORA</span>
+            </div>
+            <span style={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', background: 'var(--accent)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '6px' }}>
+              Destaque do Dia
+            </span>
           </div>
-          <PlayCircle size={120} style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1, color: 'white' }} />
+
+          <div style={{ 
+            borderRadius: '24px', 
+            overflow: 'hidden', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            aspectRatio: '16/9',
+            background: '#000',
+            border: '1px solid rgba(212,193,156,0.2)',
+            transform: 'translateZ(0)'
+          }}>
+            <iframe 
+              width="100%" 
+              height="100%" 
+              src="https://www.youtube.com/embed/fcqS1WTO9ds?autoplay=0&rel=0" 
+              title="CIECC Transmissão Ao Vivo" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowFullScreen
+              style={{ border: 'none' }}
+            ></iframe>
+          </div>
+          
+          <div style={{ marginTop: '20px', padding: '0 4px' }}>
+            <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--secondary)', fontFamily: 'var(--font-serif)', marginBottom: '6px' }}>
+              Abertura Oficial II CIECC
+            </h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+              Acompanhe em tempo real a abertura e as principais conferências do Hub Digital. Conhecimento e tradição em um só lugar.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+               <button 
+                 onClick={() => window.open('https://www.youtube.com/watch?v=fcqS1WTO9ds', '_blank')}
+                 style={{ 
+                   background: 'var(--primary)', color: 'white', border: 'none', 
+                   padding: '10px 18px', borderRadius: '12px', fontWeight: '800', 
+                   fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' 
+                 }}
+               >
+                 <ExternalLink size={16} /> Abrir no YouTube
+               </button>
+            </div>
+          </div>
         </div>
+
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+          .pulse { animation: pulseAnim 2s infinite; }
+          @keyframes pulseAnim { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        `}} />
+
 
         {sections.map((section, sIndex) => (
           <div key={section.title} style={{ marginBottom: '40px' }}>

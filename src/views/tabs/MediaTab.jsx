@@ -23,7 +23,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
   // Determina se pode postar
   // Lógica de autorização para postagem (Case Insensitive)
   const userRole = (userType || 'congressista').toLowerCase();
-  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador'];
+  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
   const canPost = allowedRoles.some(role => userRole.includes(role));
 
   console.log('[MediaTab] User:', userName, 'Role:', userRole, 'CanPost:', canPost);

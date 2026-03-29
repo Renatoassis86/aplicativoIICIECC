@@ -21,20 +21,36 @@ const getSponsorTierByLevel = (level) => {
 // ============================================
 export const fetchFeedPosts = async (userId) => {
   try {
+    console.log("[SocialService] Fetching posts for user:", userId);
+    
     // 1. Busca os Posts puros
-    const { data: rawPosts, error: postErr } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
-    if (postErr) throw postErr;
+    const { data: rawPosts, error: postErr } = await supabase
+      .from('social_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (postErr) {
+      console.warn("[SocialService] Error fetching posts (maybe table doesn't exist):", postErr.message);
+      return [];
+    }
     
     // Se o banco estiver zerado, popula com exemplos
     if (!rawPosts || rawPosts.length === 0) {
-      await seedMockPosts(userId);
-      const { data: retryPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
-      return processPostsResponse(retryPosts || [], userId);
+      console.log("[SocialService] Feed empty, seeding mock posts...");
+      const seeded = await seedMockPosts(userId);
+      if (seeded) {
+        const { data: retryPosts } = await supabase
+          .from('social_posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        return processPostsResponse(retryPosts || [], userId);
+      }
     }
 
     return processPostsResponse(rawPosts, userId);
   } catch (err) {
-    console.error("Supabase Social Error: ", err);
+    console.error("[SocialService] Critical Error: ", err);
     return [];
   }
 };
@@ -184,27 +200,58 @@ export const toggleLikeComment = async (commentId, currentState, userId) => {
 export const seedMockPosts = async (userId) => {
   const mocks = [
     {
-      sponsor_name: 'ARKOS Education',
+      sponsor_name: 'PACTUM',
       sponsor_role: 'Patrocinador Diamante',
       tier_level: 4,
-      sponsor_avatar: 'A',
-      media_type: 'image',
-      media_urls: ['https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?auto=format&fit=crop&q=80&w=1000'],
-      caption: '🚀 Bem-vindos ao II CIECC 2026! A ARKOS está aqui para revolucionar o networking educacional.',
+      sponsor_avatar: 'P',
+      media_type: 'carousel',
+      media_urls: [
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&fit=crop'
+      ],
+      caption: '✅ Consultoria e implementação de escolas clássicas. A PACTUM está presente no II CIECC apoiando a expansão da educação clássica no Brasil. #PACTUM #CIECC2026',
       owner_id: userId
     },
     {
-      sponsor_name: 'Tech Learning',
-      sponsor_role: 'Sponsor Ouro',
+      sponsor_name: 'Cidade Viva Education',
+      sponsor_role: 'Parceiro Institucional',
+      tier_level: 3,
+      sponsor_avatar: 'E',
+      media_type: 'image',
+      media_urls: ['https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&fit=crop'],
+      caption: '🚀 Transformando gerações através do modelo clássico. Venha conhecer nossas escolas hoje no auditório principal!',
+      owner_id: userId
+    },
+    {
+      sponsor_name: 'Editora Trinitas',
+      sponsor_role: 'Patrocinador Ouro',
       tier_level: 3,
       sponsor_avatar: 'T',
+      media_type: 'carousel',
+      media_urls: [
+        'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&fit=crop',
+        'https://images.unsplash.com/photo-1491841573634-28140fc7ced7?w=800&fit=crop'
+      ],
+      caption: '📚 Lançamentos exclusivos para o II CIECC! Visite nosso estande e garanta as obras fundamentais da CCD traduzidas.',
+      owner_id: userId
+    },
+    {
+      sponsor_name: 'FICV',
+      sponsor_role: 'Instituição de Ensino Superior',
+      tier_level: 4,
+      sponsor_avatar: 'F',
       media_type: 'image',
-      media_urls: ['https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000'],
-      caption: 'Venha conhecer as novas soluções de IA para salas de aula no nosso estande B-12.',
+      media_urls: ['https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=800&fit=crop'],
+      caption: '🎓 Pós-graduação em Educação Cristã Clássica. Formando professores para a restauração da Trivium.',
       owner_id: userId
     }
   ];
-  await supabase.from('social_posts').insert(mocks);
+  const { error } = await supabase.from('social_posts').insert(mocks);
+  if (error) {
+    console.warn("[SocialService] Seed failed:", error.message);
+    return false;
+  }
+  return true;
 };
 
 // ============================================

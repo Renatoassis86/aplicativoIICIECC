@@ -26,18 +26,40 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
     fetchUsers();
   }, []);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
     
-    const newMedia = files.map(file => ({
-      file,
-      url: URL.createObjectURL(file),
-      type: file.type.startsWith('video') ? 'reel' : 'image'
-    }));
+    // Mostrando progresso visual se necessário (opcional)
+    const newMedia = [];
+    
+    for (const file of files) {
+      // Cria o preview de segurança (blob)
+      const previewUrl = URL.createObjectURL(file);
+      
+      // Converte para Base64 para fallback (caso o storage falhe no congresso)
+      const base64 = await toBase64(file);
+      
+      newMedia.push({
+        file,
+        url: previewUrl,
+        base64,
+        type: file.type.startsWith('video') ? 'reel' : 'image'
+      });
+    }
 
     setMediaFiles(prev => [...prev, ...newMedia]);
+    
+    // Limpa o input para permitir selecionar o mesmo arquivo se deletado
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
 
   const handleCaptionChange = (e) => {
     const val = e.target.value;
@@ -78,31 +100,39 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
       
       // 1. Upload to Supabase Storage
       for (const m of mediaFiles) {
-        const fileExt = m.file.name.split('.').pop();
-        const fileName = `posts/${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        
-        const { data, error } = await supabase.storage
-          .from('posts_media')
-          .upload(fileName, m.file);
+        try {
+          const fileExt = m.file.name.split('.').pop();
+          const fileName = `posts/${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
           
-        if (error) {
-          console.error("Storage Error:", error);
-          // Fallback manual blob se o bucket não existir/permitir
-          uploadedUrls.push(m.url);
-        } else {
-          const { data: { publicUrl } } = supabase.storage
+          const { data, error } = await supabase.storage
             .from('posts_media')
-            .getPublicUrl(fileName);
-          uploadedUrls.push(publicUrl);
+            .upload(fileName, m.file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+            
+          if (error) {
+             throw error;
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('posts_media')
+              .getPublicUrl(fileName);
+            uploadedUrls.push(publicUrl);
+          }
+        } catch (storageErr) {
+          console.error("Storage upload failed, using Base64 fallback:", storageErr);
+          // Fallback: Se o bucket falhar, tentamos salvar a Base64 no banco (limitado pelo tamanho da coluna texto)
+          // Em um app real, o bucket deve estar pronto de antemão. No congresso, é um safety-net.
+          uploadedUrls.push(m.base64);
         }
       }
 
       // 2. Insert to Social Posts Table
-      const mockTier = 3; // Default Ouro
+      const mockTier = 4; // Organizadores/Patrocinadores Master
 
       await createPost(
         sponsorName, 
-        sponsorRole || 'Patrocinador', 
+        sponsorRole || 'Organizador', 
         mockTier, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
@@ -110,11 +140,12 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         userId || 'Anon'
       );
 
+      console.log("[Social] Post created successfully!");
       onSuccess();
 
     } catch (err) {
-      console.error(err);
-      alert('Erro ao processar postagem. Verifique as tabelas de posts no Supabase.');
+      console.error("[Post Error Details]", err);
+      alert(`Erro na postagem: ${err.message || 'Verifique as tabelas de posts no Supabase.'}`);
     } finally {
       setLoading(false);
     }
@@ -148,15 +179,20 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           onClick={handlePost}
           disabled={loading || (mediaFiles.length === 0 && !caption.trim())}
           style={{ 
-            background: 'none', border: 'none', 
-            color: (mediaFiles.length === 0 && !caption.trim()) ? 'var(--text-muted)' : 'var(--primary)',
-            fontSize: '16px', fontWeight: '800',
-            opacity: loading ? 0.5 : 1
+            background: loading ? 'rgba(0,0,0,0.05)' : 'var(--primary)', 
+            border: 'none', 
+            color: 'white',
+            padding: '8px 24px',
+            borderRadius: '20px',
+            fontSize: '14px', fontWeight: '900',
+            opacity: loading ? 0.7 : 1,
+            transition: 'all 0.2s'
           }}
         >
-          {loading ? 'Publicando...' : 'Compartilhar'}
+          {loading ? 'PUBLICANDO...' : 'PUBLICAR'}
         </button>
       </header>
+
 
       <div style={{ padding: '20px', flex: 1, overflowY: 'auto', position: 'relative' }}>
         
