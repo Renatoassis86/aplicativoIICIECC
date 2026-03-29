@@ -16,10 +16,11 @@ import {
   Camera,
   Search,
   Award,
-  ScanLine
+  ScanLine,
+  Megaphone
 } from 'lucide-react';
 
-const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner }) => {
+const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = userName ? userName.charAt(0) : 'C';
 
@@ -126,11 +127,12 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
       </section>
 
       {/* 3. Comunicados Oficiais */}
-      <section 
-        onClick={onOpenNotifications}
-        style={{ padding: '0 20px', marginTop: '-20px', position: 'relative', zIndex: 20, cursor: 'pointer' }}
-      >
-        <div className="card" style={{ borderLeft: '4px solid var(--gold)', display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', boxShadow: 'var(--shadow-md)' }}>
+      <section style={{ padding: '0 20px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
+        <div 
+           onClick={onOpenNotifications}
+           className="card" 
+           style={{ borderLeft: '4px solid var(--gold)', display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', boxShadow: 'var(--shadow-md)', cursor: 'pointer' }}
+        >
           <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px' }}>
             <Bell size={20} color="var(--primary)" />
           </div>
@@ -144,6 +146,19 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
           </div>
           <ChevronRight size={18} color="var(--border)" />
         </div>
+
+        {(userType === 'staff' || userType === 'admin') && (
+          <button 
+            onClick={onOpenBroadcast}
+            style={{ 
+              width: '100%', padding: '12px', marginTop: '12px', borderRadius: '10px',
+              background: 'white', border: '1px solid var(--primary)', color: 'var(--primary)',
+              fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+            }}
+          >
+            <Megaphone size={16} /> Disparar Novo Alarme (Staff)
+          </button>
+        )}
       </section>
 
       {/* NOVO: PALESTRANTES CONFIRMADOS */}

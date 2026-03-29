@@ -11,10 +11,22 @@ import {
   Star, 
   Briefcase, 
   Ticket,
-  BookOpen
+  BookOpen,
+  BellRing
 } from 'lucide-react';
 
-const MoreTab = ({ onLogout }) => {
+const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenBroadcast }) => {
+  const firstName = userName ? userName.split(' ')[0] : 'Congressista';
+  const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
+
+  const formatUserType = (type) => {
+    if (!type || typeof type !== 'string') return 'Congressista';
+    if (type === 'staff') return 'Staff / Organização';
+    if (type === 'admin') return 'Administrador';
+    if (type === 'patrocinador_diamante') return 'Patrocinador Diamante';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   const menuGroups = [
     {
       title: 'Configurações do Perfil',
@@ -36,7 +48,10 @@ const MoreTab = ({ onLogout }) => {
     {
       title: 'Suporte & Ação',
       items: [
-        { label: 'Scanner QR Code', icon: <QrCode size={18} color="#111" /> },
+        ...(userType === 'staff' || userType === 'admin' ? [
+          { label: 'Scanner QR Code', icon: <QrCode size={18} color="#111" />, action: onOpenScanner },
+          { label: 'Nova Notificação (Push)', icon: <BellRing size={18} color="#D69E2E" />, action: onOpenBroadcast },
+        ] : []),
         { label: 'Fale com a Organização', icon: <Phone size={18} color="#3182CE" /> },
       ]
     }
@@ -65,11 +80,11 @@ const MoreTab = ({ onLogout }) => {
           fontSize: '24px',
           fontWeight: '700'
         }}>
-          R
+          {initial}
         </div>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>Renato Assis</h2>
-          <p style={{ fontSize: '13px', opacity: 0.6, marginTop: '4px' }}>Congressista • #ID-2026</p>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>{userName || 'Visitante'}</h2>
+          <p style={{ fontSize: '13px', opacity: 0.6, marginTop: '4px' }}>{formatUserType(userType)}</p>
           <button style={{ 
             marginTop: '8px', 
             fontSize: '11px', 
@@ -93,13 +108,18 @@ const MoreTab = ({ onLogout }) => {
             </h4>
             <div className="card" style={{ padding: '4px' }}>
               {group.items.map((item, index) => (
-                <div key={item.label} style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  padding: '14px 12px',
-                  borderBottom: index === group.items.length - 1 ? 'none' : '1px solid var(--border)'
-                }}>
+                <div 
+                  key={item.label} 
+                  onClick={item.action}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between', 
+                    padding: '14px 12px',
+                    borderBottom: index === group.items.length - 1 ? 'none' : '1px solid var(--border)',
+                    cursor: item.action ? 'pointer' : 'default'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ background: '#F8F9FA', padding: '8px', borderRadius: '8px' }}>
                       {item.icon}

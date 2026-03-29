@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Home, 
   Calendar, 
@@ -19,6 +19,7 @@ import MoreTab from './tabs/MoreTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
 import ScannerStaffView from './ScannerStaffView';
+import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
@@ -26,6 +27,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showBroadcast, setShowBroadcast] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -42,11 +44,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <HomeTab userName={userName} userType={userType} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} />;
+      case 'home': return <HomeTab userName={userName} userType={userType} unreadCount={unreadCount} onOpenNotifications={() => setShowNotifications(true)} onOpenTicket={() => setShowTicketModal(true)} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} />;
-      case 'more': return <MoreTab onLogout={onLogout} />;
+      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
       default: return <HomeTab />;
     }
   };
@@ -176,10 +178,18 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
       )}
 
       {/* Staff QR Scanner */}
-      {showScanner && userType === 'staff' && (
+      {showScanner && (userType === 'staff' || userType === 'admin') && (
         <ScannerStaffView 
           staffCpf={userCpf} 
           onClose={() => setShowScanner(false)} 
+        />
+      )}
+
+      {/* Admin Broadcast System */}
+      {showBroadcast && (userType === 'staff' || userType === 'admin') && (
+        <AdminBroadcastModal 
+          staffCpf={userCpf} 
+          onClose={() => setShowBroadcast(false)} 
         />
       )}
     </div>
