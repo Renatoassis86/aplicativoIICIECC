@@ -17,6 +17,7 @@ import NetworkTab from './tabs/NetworkTab';
 import OfficialMediaTab from './tabs/OfficialMediaTab';
 import MediaTab from './tabs/MediaTab'; // Feed Social
 import MoreTab from './tabs/MoreTab';
+import SpeakersTab from './tabs/SpeakersTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
 import ScannerStaffView from './ScannerStaffView';
@@ -63,6 +64,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       case 'network': return <NetworkTab />;
       case 'media': return <OfficialMediaTab />;
       case 'feed': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
+      case 'speakers': return <SpeakersTab onNavigate={(tab) => setActiveTab(tab)} />;
       case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} userAvatar={userAvatar} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} onNavigate={(tab) => setActiveTab(tab)} />;
       default: return <HomeTab />;
     }
@@ -84,12 +86,12 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
     <div className="dashboard-container" style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
       
       {/* Top Navigation Global (exceto na Home e Mídia que tem header custom) */}
-      {activeTab !== 'home' && activeTab !== 'more' && activeTab !== 'media' && (
+      {activeTab !== 'home' && activeTab !== 'media' && (
         <header className="top-nav-global" style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between', 
-          padding: '16px 20px', 
+          padding: '24px 20px 16px', 
           background: 'var(--primary)', 
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           position: 'sticky',
@@ -103,7 +105,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
               height: '35px'
             }} 
           />
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
             <button 
               onClick={() => setShowNotifications(true)} 
               style={{ background: 'none', border: 'none', padding: '4px', position: 'relative' }}
@@ -122,9 +124,12 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
                 </div>
               )}
             </button>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: 'var(--secondary)', fontSize: '13px' }}>
-              {(userName && typeof userName === 'string') ? userName.charAt(0) : 'C'}
-            </div>
+            <button 
+              onClick={() => setActiveTab('more')} 
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '6px', borderRadius: '8px' }}
+            >
+              <Menu size={22} color="white" />
+            </button>
           </div>
         </header>
       )}
@@ -165,11 +170,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           <span>Feed</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'more' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('more')}
+          className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('speakers')}
         >
-          <Menu size={22} />
-          <span>Mais</span>
+          <Users size={22} />
+          <span>Palestrantes</span>
         </button>
       </nav>
 
