@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play } from 'lucide-react';
-import { fetchFeedPosts, toggleLikePost, toggleSavePost } from '../../services/social/socialService';
+import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment } from '../../services/social/socialService';
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
+import PostOptionsModal from '../../components/networking/PostOptionsModal';
+import CommentsSheet from '../../components/networking/CommentsSheet';
 
 /**
  * SOCIAL / MEDIA TAB
  * Feed Institucional estilo Instagram com Algoritmo de Patrocínios.
  * Suporta Carrossel, Imagem Única e Reels.
  */
-export default function MediaTab({ userType, userName }) {
+export default function MediaTab({ userType, userName, userCpf }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // UI States
   const [showCreator, setShowCreator] = useState(false);
   const [viewingSaved, setViewingSaved] = useState(false);
+  const [activeOptionsPost, setActiveOptionsPost] = useState(null);
+  const [activeCommentsPost, setActiveCommentsPost] = useState(null);
 
   // Determina se pode postar
   const canPost = ['expositor', 'parceiro', 'palestrante', 'staff'].includes(userType);
 
   const loadPosts = async () => {
     setLoading(true);
-    const data = await fetchFeedPosts();
+    const data = await fetchFeedPosts(userCpf);
     setPosts(data);
     setLoading(false);
   };
@@ -32,12 +36,51 @@ export default function MediaTab({ userType, userName }) {
 
   const handleLike = async (postId, currentState) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likedByMe: !currentState, likes: currentState ? p.likes - 1 : p.likes + 1 } : p));
-    await toggleLikePost(postId, currentState);
+    await toggleLikePost(postId, currentState, userCpf);
   };
 
   const handleSave = async (postId, currentState) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, savedByMe: !currentState } : p));
-    await toggleSavePost(postId, currentState);
+    await toggleSavePost(postId, currentState, userCpf);
+  };
+
+  const handleAddComment = async (postId, text) => {
+    const newComment = await postComment(postId, text, userName || 'Congressista', userCpf);
+    if (!newComment) return; // Se falhou a query do Supabase
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), newComment] } : p));
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== commentId) } : p));
+    await deleteCommentApi(commentId);
+  };
+
+  const handleLikeComment = async (postId, commentId, currentState, isReply = false) => {
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+         return {
+           ...p,
+           comments: p.comments.map(c => {
+             if (c.id === commentId && !isReply) return { ...c, likedByMe: !currentState, likes: currentState ? c.likes - 1 : c.likes + 1 };
+             if (isReply) {
+                return { ...c, replies: c.replies ? c.replies.map(r => r.id === commentId ? { ...r, likedByMe: !currentState } : r) : [] };
+             }
+             return c;
+           })
+         };
+      }
+      return p;
+    }));
+    await toggleLikeComment(commentId, currentState, userCpf);
+  };
+
+  const handleDeletePost = async (postId) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+    await deletePostApi(postId);
+  };
+
+  const handleHidePost = (postId) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
   };
 
   const visiblePosts = viewingSaved ? posts.filter(p => p.savedByMe) : posts;
@@ -149,7 +192,9 @@ export default function MediaTab({ userType, userName }) {
                     )}
                   </div>
                 </div>
-                <MoreHorizontal size={20} color="var(--text-muted)" />
+                <button onClick={() => setActiveOptionsPost(post)} style={{ background: 'none', border: 'none', padding: '4px' }}>
+                  <MoreHorizontal size={20} color="var(--text-muted)" />
+                </button>
               </div>
 
               {/* Mídia Dinâmica (Reel, Carousel, IMG) */}
@@ -161,7 +206,7 @@ export default function MediaTab({ userType, userName }) {
                   <button onClick={() => handleLike(post.id, post.likedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
                     <Heart size={26} color={post.likedByMe ? "#E53E3E" : "var(--text-main)"} fill={post.likedByMe ? "#E53E3E" : "none"} style={{ transition: 'all 0.2s' }} />
                   </button>
-                  <button style={{ background: 'none', border: 'none', padding: 0 }}>
+                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0 }}>
                     <MessageCircle size={26} color="var(--text-main)" />
                   </button>
                 </div>
@@ -179,6 +224,11 @@ export default function MediaTab({ userType, userName }) {
                   <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{post.sponsorName}</span>
                   {post.caption}
                 </p>
+                {(post.comments && post.comments.length > 0) && (
+                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '14px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                    Ver todos os {post.comments.length} comentários
+                  </button>
+                )}
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: '600' }}>
                   {post.timeAgo}
                 </p>
@@ -192,8 +242,36 @@ export default function MediaTab({ userType, userName }) {
       {showCreator && (
         <SocialPostCreator 
           sponsorName={userName || 'Expositor'} 
+          sponsorRole={userType || 'sponsor'}
+          userId={userCpf}
           onClose={() => setShowCreator(false)} 
           onSuccess={() => { setShowCreator(false); loadPosts(); }} 
+        />
+      )}
+
+      {/* MODALS DA INTEGRAÇÃO INSTAGRAM */}
+      {activeOptionsPost && (
+        <PostOptionsModal 
+           post={activeOptionsPost} 
+           userType={userType} 
+           userName={userName} 
+           onClose={() => setActiveOptionsPost(null)} 
+           onDelete={handleDeletePost}
+           onHide={handleHidePost}
+        />
+      )}
+
+      {activeCommentsPost && (
+        <CommentsSheet
+           postId={activeCommentsPost.id}
+           comments={posts.find(p => p.id === activeCommentsPost.id)?.comments || []}
+           userName={userName}
+           userType={userType}
+           ownerName={activeCommentsPost.sponsorName}
+           onClose={() => setActiveCommentsPost(null)}
+           onAddComment={handleAddComment}
+           onDeleteComment={handleDeleteComment}
+           onLike={handleLikeComment}
         />
       )}
 

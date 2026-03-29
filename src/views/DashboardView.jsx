@@ -27,7 +27,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
       case 'home': return <HomeTab userName={userName} onOpenTicket={() => setShowTicketModal(true)} />;
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
-      case 'media': return <MediaTab userType={userType} userName={userName} />;
+      case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} />;
       case 'more': return <MoreTab onLogout={onLogout} />;
       default: return <HomeTab />;
     }

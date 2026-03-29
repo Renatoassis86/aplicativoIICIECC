@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Image as ImageIcon, X, Send, Video } from 'lucide-react';
+import { createPost } from '../../services/social/socialService';
 
 /**
  * Interface exclusiva de postagem para Patrocinadores/Expositores.
  * Chama as APIs nativas do celular (Camera ou Galeria) via input "capture" HTML5.
  */
-const SocialPostCreator = ({ onClose, onSuccess, sponsorName }) => {
+const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId }) => {
   const [caption, setCaption] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,10 +43,22 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName }) => {
       //   await supabase.storage.from('social_media').upload(`posts/${Date.now()}.${ext}`, m.file);
       // }
 
-      // 2. Insere Tabela (Supabase DB) com as URLs
+      // 2. Insere Tabela (Supabase DB)
+      
+      const parsedUrls = mediaFiles.map(m => m.url); // temporario para urls mocadas blobs locale
+      // default: ouro para teste visual
+      const mockTier = 3; 
 
-      // Simulação momentânea:
-      await new Promise(res => setTimeout(res, 1500));
+      await createPost(
+        sponsorName, 
+        sponsorRole || 'Patrocinador', 
+        mockTier, 
+        mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
+        parsedUrls, 
+        caption, 
+        userId || 'Anon'
+      );
+
       onSuccess(); // Sinaliza para o feed regarregar
 
     } catch (err) {
