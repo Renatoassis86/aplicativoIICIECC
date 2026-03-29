@@ -9,46 +9,70 @@ import {
 } from 'lucide-react';
 
 const AgendaTab = () => {
-  const [selectedDay, setSelectedDay] = useState('29/03');
+  const [selectedDay, setSelectedDay] = useState('01/05');
   const [favorites, setFavorites] = useState([]);
 
-  const days = ['28/03', '29/03', '30/03'];
+  const days = ['01/05', '02/05'];
   const events = [
     { 
       id: 1, 
-      time: '09:00', 
-      title: 'Abertura Institucional', 
-      speaker: 'Equipe FICV & Cidade Viva', 
-      room: 'Auditório Principal',
+      date: '02/05',
+      time: '18:45', 
+      title: 'Abertura: Futuro', 
+      speaker: 'Equipe CIECC', 
+      room: 'Plenária Principal',
       category: 'Geral',
       color: '#FDF2F2'
     },
     { 
       id: 2, 
-      time: '10:30', 
-      title: 'Princípios da Educação Clássica', 
-      speaker: 'Palestrante Internacional', 
-      room: 'Auditório Principal',
-      category: 'Trilha Teolórgica',
+      date: '02/05',
+      time: '19:00', 
+      title: 'O professor Clássico do Futuro', 
+      speaker: 'Esp. Matheus Macedo', 
+      room: 'Plenária Principal',
+      category: 'Palestra',
       color: '#F0FFF4'
     },
     { 
       id: 3, 
-      time: '14:00', 
-      title: 'Workshop: Gestão Escolar', 
-      speaker: 'Dra. Marina Silva', 
-      room: 'Sala de Conferência A',
-      category: 'Workshop',
+      date: '02/05',
+      time: '19:45', 
+      title: 'A formação clássica generalista em um mundo de especialistas', 
+      speaker: 'Esp. Maurício Fonseca', 
+      room: 'Plenária Principal',
+      category: 'Palestra',
       color: '#EBF8FF'
     },
     { 
       id: 4, 
-      time: '14:00', 
-      title: 'Educação no Lar (Homeschooling)', 
-      speaker: 'Dra. Luiza Melo', 
-      room: 'Sala de Conferência B',
-      category: 'Família',
+      date: '02/05',
+      time: '20:30', 
+      title: 'Educação Cristã Clássica e a IA', 
+      speaker: 'Ms. Elmer Pires', 
+      room: 'Plenária Principal',
+      category: 'Palestra',
       color: '#FAF5FF'
+    },
+    { 
+      id: 5, 
+      date: '02/05',
+      time: '21:15', 
+      title: 'Mesa Redonda 3', 
+      speaker: 'Convidados', 
+      room: 'Plenária Principal',
+      category: 'Painel',
+      color: '#FDF2F2'
+    },
+    { 
+      id: 6, 
+      date: '02/05',
+      time: '21:45', 
+      title: 'Encerramento', 
+      speaker: 'Equipe Organizadora', 
+      room: 'Plenária Principal',
+      category: 'Geral',
+      color: '#F0FFF4'
     },
   ];
 
@@ -101,10 +125,10 @@ const AgendaTab = () => {
 
       <section style={{ padding: '20px' }}>
         <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', marginBottom: '20px' }}>
-          {selectedDay === '29/03' ? 'Hoje, Domingo' : `Dia ${selectedDay}`}
+          {selectedDay === '01/05' ? '1º Dia (Sexta-feira)' : '2º Dia (Sábado)'}
         </p>
 
-        {events.map(event => (
+        {events.filter(e => e.date === selectedDay).map(event => (
           <div key={event.id} className="card" style={{ padding: '20px', marginBottom: '16px', display: 'flex', gap: '16px' }}>
             <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
               <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
