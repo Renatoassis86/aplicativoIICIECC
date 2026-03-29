@@ -8,14 +8,13 @@ import {
   Phone, 
   LogOut, 
   ChevronRight, 
-  Star, 
-  Briefcase, 
   Ticket,
   BookOpen,
-  BellRing
+  BellRing,
+  Monitor
 } from 'lucide-react';
 
-const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenBroadcast }) => {
+const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenBroadcast, onOpenAdminPortal }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -52,7 +51,14 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenB
           { label: 'Scanner QR Code', icon: <QrCode size={18} color="#111" />, action: onOpenScanner },
           { label: 'Nova Notificação (Push)', icon: <BellRing size={18} color="#D69E2E" />, action: onOpenBroadcast },
         ] : []),
-        { label: 'Fale com a Organização', icon: <Phone size={18} color="#3182CE" /> },
+        ...(userType === 'admin' ? [
+          { label: 'Portal Administrativo (PC)', icon: <Monitor size={18} color="var(--primary)" />, action: onOpenAdminPortal },
+        ] : []),
+        { 
+          label: 'Fale com a Organização', 
+          icon: <Phone size={18} color="#3182CE" />, 
+          action: () => window.open('https://wa.me/558393322457', '_blank')
+        },
       ]
     }
   ];

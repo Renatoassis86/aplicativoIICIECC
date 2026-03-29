@@ -6,9 +6,11 @@ import PasswordResetView from './views/PasswordResetView';
 import UserTypeSelectionView from './views/UserTypeSelectionView';
 import QuestionnaireController from './views/questionnaires/QuestionnaireController';
 import AdminImportView from './views/admin/AdminImportView';
+import AdminPortalView from './views/admin/AdminPortalView';
 
 function App() {
   const [authStatus, setAuthStatus] = useState('loading'); 
+  const [view, setView] = useState('app'); // 'app' ou 'admin-portal'
   const [selectedType, setSelectedType] = useState(null);
   const [currentUserCpf, setCurrentUserCpf] = useState(null);
   const [userName, setUserName] = useState('');
@@ -59,6 +61,22 @@ function App() {
 
   const handleLogin = async (cpf, password) => {
     setAuthStatus('loading');
+
+    // 0. Bypass Organizadores (Renato e Emanuel)
+    const ORG_MASTERS = {
+      '05875164450': { name: 'Renato Assis', type: 'admin' },
+      '71115902440': { name: 'Emanuel', type: 'admin' }
+    };
+
+    if (ORG_MASTERS[cpf] && password === 'admin') {
+      setCurrentUserCpf(cpf);
+      localStorage.setItem('current_user_cpf', cpf);
+      setUserName(ORG_MASTERS[cpf].name);
+      setSelectedType('admin'); // String pura
+      setAuthStatus('logged-in'); 
+      return;
+    }
+
     try {
       // 1. Verificar se o membro existe
       const { data: member, error: memberError } = await supabase
@@ -94,14 +112,14 @@ function App() {
       }
 
       // 3. Validar Senha
-      // Se ainda não resetou, aceita a inicial 'congresso2026'
+      // Se ainda não resetou, aceita a inicial 'admin' ou 'congresso2026'
       if (!currentProfile.password_reset) {
-        if (password === 'congresso2026') {
+        if (password === 'admin' || password === 'congresso2026') {
           setCurrentUserCpf(cpf);
           localStorage.setItem('current_user_cpf', cpf);
           setAuthStatus('reset-password');
         } else {
-          alert('Senha incorreta para o primeiro acesso. Use a senha padrão.');
+          alert('Senha incorreta para o primeiro acesso. Use a senha padrão (admin ou congresso2026).');
           setAuthStatus('logged-out');
         }
         return;
@@ -112,11 +130,11 @@ function App() {
         setCurrentUserCpf(cpf);
         localStorage.setItem('current_user_cpf', cpf);
         
-        if (currentProfile.onboarding_completed) {
-          setSelectedType({ id: currentProfile.user_type });
+        if (currentProfile.onboarding_completed || currentProfile.user_type === 'admin' || currentProfile.user_type === 'staff' || currentProfile.user_type?.includes('patrocinador')) {
+          setSelectedType(currentProfile.user_type || 'admin');
           setAuthStatus('logged-in');
         } else if (currentProfile.user_type) {
-          setSelectedType({ id: currentProfile.user_type });
+          setSelectedType(currentProfile.user_type);
           setAuthStatus('questionnaire');
         } else {
           setAuthStatus('select-type');
@@ -224,11 +242,21 @@ function App() {
         <QuestionnaireController userType={selectedType} onComplete={handleQuestionnaireComplete} />
       )}
       
-      {authStatus === 'logged-in' && (
+      {authStatus === 'logged-in' && view === 'app' && (
         <DashboardView 
           onLogout={handleLogout} 
           userType={typeof selectedType === 'object' ? (selectedType?.id || 'congressista') : (selectedType || 'congressista')} 
           userName={userName || 'Visitante'} 
+          userCpf={currentUserCpf}
+          onOpenAdminPortal={() => setView('admin-portal')}
+        />
+      )}
+
+      {authStatus === 'logged-in' && view === 'admin-portal' && (
+        <AdminPortalView 
+          onLogout={handleLogout}
+          onBackToApp={() => setView('app')}
+          userName={userName}
           userCpf={currentUserCpf}
         />
       )}

@@ -24,24 +24,34 @@ export const fetchFeedPosts = async (userId) => {
     // 1. Busca os Posts puros
     const { data: rawPosts, error: postErr } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     if (postErr) throw postErr;
-    if (!rawPosts) return [];
-
-    // 2. Busca Comentários (para mapear nos posts depois)
-    const { data: comments, error: commErr } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
     
-    // 3. Busca Todos Engajamentos do Sistema
-    const { data: engagements, error: engErr } = await supabase.from('social_engagements').select('*');
+    // Se o banco estiver zerado, popula com exemplos
+    if (!rawPosts || rawPosts.length === 0) {
+      await seedMockPosts(userId);
+      const { data: retryPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+      return processPostsResponse(retryPosts || [], userId);
+    }
 
-    // 4. Transformação/Hydration (Montando JSON igual ao mock para o UI Componente não quebrar)
+    return processPostsResponse(rawPosts, userId);
+  } catch (err) {
+    console.error("Supabase Social Error: ", err);
+    return [];
+  }
+};
+
+const processPostsResponse = async (rawPosts, userId) => {
+    // 2. Busca Comentários
+    const { data: comments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
+    // 3. Busca Todos Engajamentos
+    const { data: engagements } = await supabase.from('social_engagements').select('*');
+
+    // 4. Transformação/Hydration
     const hydratedPosts = rawPosts.map(post => {
       
-      // Filtra comentários root deste post (sem parent_id)
       const postComments = (comments || []).filter(c => c.post_id === post.id && !c.parent_id);
       
       const mappedComments = postComments.map(c => {
-         // Likes no comentário?
          const cLikes = (engagements || []).filter(e => e.target_type === 'comment_like' && e.target_id === c.id);
-         // Respostas ao comentário
          const replies = (comments || []).filter(r => r.parent_id === c.id).map(r => {
            const rLikes = (engagements || []).filter(e => e.target_type === 'comment_like' && e.target_id === r.id);
            return {
@@ -61,9 +71,7 @@ export const fetchFeedPosts = async (userId) => {
          };
       });
 
-      // Likes do Post
       const pLikes = (engagements || []).filter(e => e.target_type === 'post_like' && e.target_id === post.id);
-      // Saves do Post
       const pSaves = (engagements || []).filter(e => e.target_type === 'post_save' && e.target_id === post.id);
 
       return {
@@ -75,28 +83,20 @@ export const fetchFeedPosts = async (userId) => {
         mediaType: post.media_type,
         mediaUrls: post.media_urls || [],
         caption: post.caption,
-        isSponsor: true, // todos la sao
+        isSponsor: true, 
         comments: mappedComments,
-        
-        // Metadados Dinâmicos do Usuário Vigente
         likes: pLikes.length,
         likedByMe: pLikes.some(e => e.user_id === userId),
         savedByMe: pSaves.some(e => e.user_id === userId),
-        timeAgo: agilizarTempoRelativo(post.created_at) // helper interno
+        timeAgo: agilizarTempoRelativo(post.created_at)
       };
     });
 
-    // 5. Algoritmo de Ranking final:
-    return hydratedPosts.sort((a, b) => b.tier.level - a.tier.level);
-
-  } catch (err) {
-    console.error("Supabase Social Error: ", err);
-    return [];
-  }
+    return hydratedPosts.sort((a, b) => (b.tier?.level || 0) - (a.tier?.level || 0));
 };
 
 // ============================================
-// CRIAR E DELETAR POSTAGENS (EXCLUSIVO SPONSOR)
+// CRIAR E DELETAR POSTAGENS
 // ============================================
 export const createPost = async (sponsorName, sponsorRole, tierLevel, mediaType, mediaUrls, caption, userId) => {
   const { data, error } = await supabase.from('social_posts').insert({
@@ -119,14 +119,12 @@ export const deletePostApi = async (postId) => {
 };
 
 // ============================================
-// ENGAJAMENTO DE POSTAGEM (LIKE / SAVE)
+// ENGAJAMENTO (LIKE / SAVE)
 // ============================================
 export const toggleLikePost = async (postId, currentState, userId) => {
   if (currentState) {
-    // Removendo (estava curtido)
     await supabase.from('social_engagements').delete().match({ user_id: userId, target_type: 'post_like', target_id: postId});
   } else {
-    // Adicionando
     await supabase.from('social_engagements').insert({ user_id: userId, target_type: 'post_like', target_id: postId});
   }
   return !currentState;
@@ -142,7 +140,7 @@ export const toggleSavePost = async (postId, currentState, userId) => {
 };
 
 // ============================================
-// COMENTÁRIOS E SEU ENGAJAMENTO
+// COMENTÁRIOS 
 // ============================================
 export const postComment = async (postId, text, authorName, authorId) => {
   const { data, error } = await supabase.from('social_comments').insert({
@@ -152,11 +150,8 @@ export const postComment = async (postId, text, authorName, authorId) => {
     author_id: authorId
   }).select().single();
   
-  if (error) {
-    console.error(error);
-    return null;
-  }
-  // Retorna forma mock adaptada pro front instantaneamente re-renderizar
+  if (error) return null;
+  
   return {
     id: data.id,
     authorName: data.author_name,
@@ -181,6 +176,35 @@ export const toggleLikeComment = async (commentId, currentState, userId) => {
     await supabase.from('social_engagements').insert({ user_id: userId, target_type: 'comment_like', target_id: commentId});
   }
   return !currentState;
+};
+
+// ============================================
+// SEEDING
+// ============================================
+export const seedMockPosts = async (userId) => {
+  const mocks = [
+    {
+      sponsor_name: 'ARKOS Education',
+      sponsor_role: 'Patrocinador Diamante',
+      tier_level: 4,
+      sponsor_avatar: 'A',
+      media_type: 'image',
+      media_urls: ['https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?auto=format&fit=crop&q=80&w=1000'],
+      caption: '🚀 Bem-vindos ao II CIECC 2026! A ARKOS está aqui para revolucionar o networking educacional.',
+      owner_id: userId
+    },
+    {
+      sponsor_name: 'Tech Learning',
+      sponsor_role: 'Sponsor Ouro',
+      tier_level: 3,
+      sponsor_avatar: 'T',
+      media_type: 'image',
+      media_urls: ['https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000'],
+      caption: 'Venha conhecer as novas soluções de IA para salas de aula no nosso estande B-12.',
+      owner_id: userId
+    }
+  ];
+  await supabase.from('social_posts').insert(mocks);
 };
 
 // ============================================

@@ -5,6 +5,7 @@ import { X, Send, BellRing, AlertCircle } from 'lucide-react';
 export default function AdminBroadcastModal({ onClose, staffCpf }) {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [audience, setAudience] = useState('all'); // all, staff, sponsors
   const [isSending, setIsSending] = useState(false);
   const [status, setStatus] = useState(null);
 
@@ -15,11 +16,11 @@ export default function AdminBroadcastModal({ onClose, staffCpf }) {
     setStatus(null);
 
     try {
-      // Cria a notificação global
       const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
         message: message.trim(),
-        author_id: staffCpf
+        author_id: staffCpf,
+        target_audience: audience
       });
 
       if (error) throw error;
@@ -78,6 +79,30 @@ export default function AdminBroadcastModal({ onClose, staffCpf }) {
                <p style={{ fontSize: '11px', color: '#9B2C2C', lineHeight: '1.4', fontWeight: '500' }}>
                  Aviso: Essa mensagem irá gerar um PUSH NATIVO no celular de todos os participantes cadastrados e badalará o ícone de sino deles com o contador vermelho.
                </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '6px', display: 'block' }}>Quem deve receber?</label>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                {[
+                  { id: 'all', label: 'Todos' },
+                  { id: 'sponsors', label: 'Patrocinadores' },
+                  { id: 'staff', label: 'Equipe Interna' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setAudience(opt.id)}
+                    style={{
+                      flex: 1, padding: '10px 4px', borderRadius: '8px', fontSize: '11px', fontWeight: '700',
+                      background: audience === opt.id ? '#6B141A' : '#f0f0f0',
+                      color: audience === opt.id ? 'white' : 'var(--text-muted)',
+                      border: 'none', transition: 'all 0.2s'
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div>

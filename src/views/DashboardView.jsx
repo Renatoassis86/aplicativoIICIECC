@@ -22,7 +22,7 @@ import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 
-const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf, onOpenAdminPortal }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -48,7 +48,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf }) => {
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} />;
-      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} />;
+      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} />;
       default: return <HomeTab />;
     }
   };

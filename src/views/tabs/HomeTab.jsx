@@ -16,9 +16,9 @@ import {
   Camera,
   Search,
   Award,
-  ScanLine,
   Megaphone
 } from 'lucide-react';
+import CountdownTimer from '../../components/home/CountdownTimer';
 
 const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
@@ -118,6 +118,10 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
               <Calendar size={12} color="var(--gold)" /> 01 e 02 Mai
             </div>
+          </div>
+
+          <div style={{ padding: '0 0px', margin: '16px 0 24px' }}>
+            <CountdownTimer targetDate="2026-05-01T08:00:00" />
           </div>
 
           <button className="btn-primary" style={{ background: 'white', color: 'var(--primary)', border: 'none', width: '100%', padding: '16px', borderRadius: '12px', fontSize: '14px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>
