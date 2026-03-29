@@ -41,10 +41,10 @@ Este documento registra a evolução do projeto, decisões técnicas e o status 
 - **Visual**: Definido o Vermelho (#D81E1E) como cor de ação principal, contrastando com tons escuros para sofisticação.
 - **Atividade**: Gerada uma imagem premium de biblioteca clássica para servir de "Hero" na autenticação, elevando o valor institucional percebido.
 
-### [29/03/2026] - Integração da Logo Oficial
-- **Ação**: Inclusão da logo oficial do II CIECC em todas as telas (Login e Dashboard).
-- **Design**: A logo foi posicionada em destaque na tela de login e integrada ao cabeçalho do hub digital, reforçando a identidade visual dourada e clássica.
-- **Melhoria**: Ajuste de layout no Dashboard para um aspecto mais compacto e profissional (estilo mobile-app).
+### [29/03/2026] - Integração da Logo Oficial & Branding Arkos
+- **Ação**: Inclusão da logo oficial do II CIECC em todas as telas.
+- **Branding**: Adicionada a atribuição "Desenvolvido por Arkos" com logo no rodapé da tela de login e do dashboard, garantindo os créditos de criação de forma sofisticada.
+- **Design**: Ajuste de layout para acomodar os novos elementos visuais sem poluir a interface.
 
 ### [29/03/2026] - Finalização do Protótipo de Alta Fidelidade (Etapa 1)
 - **Ação**: Implementação das telas de Login e Dashboard.
