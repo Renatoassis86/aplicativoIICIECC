@@ -22,7 +22,16 @@ import CountdownTimer from '../../components/home/CountdownTimer';
 
 const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
-  const initial = userName ? userName.charAt(0) : 'C';
+  const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
+
+  const formatUserType = (type) => {
+    if (!type || typeof type !== 'string') return 'Congressista';
+    if (type === 'admin') return 'Organizador';
+    if (type === 'staff') return 'Staff';
+    if (type.includes('patrocinador')) return 'Patrocinador';
+    if (type === 'palestrante') return 'Palestrante';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
 
   const shortcuts = [
     { label: 'Programação', icon: <Calendar color="var(--primary)" size={24} />, bg: 'var(--accent)' },
@@ -68,7 +77,15 @@ const HomeTab = ({ userName, userType, unreadCount, onOpenNotifications, onOpenT
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '13px', fontWeight: '500', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>Bem-vindo,</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '500', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>Bem-vindo,</span>
+                <span style={{ 
+                  fontSize: '10px', fontWeight: '900', background: 'var(--gold)', color: 'var(--secondary)', 
+                  padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase'
+                }}>
+                  {formatUserType(userType)}
+                </span>
+              </div>
               <span style={{ fontSize: '22px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--gold)' }}>{firstName}</span>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>

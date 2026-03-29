@@ -112,14 +112,19 @@ function App() {
       }
 
       // 3. Validar Senha
-      // Se ainda não resetou, aceita a inicial 'admin' ou 'congresso2026'
+      // Se ainda não resetou (Primeiro Acesso)
       if (!currentProfile.password_reset) {
-        if (password === 'admin' || password === 'congresso2026') {
+        const type = currentProfile.user_type || member.user_type;
+        const isAdminType = type === 'admin' || type === 'staff' || cpf === '05875164450' || cpf === '71115902440';
+        
+        const expectedPassword = isAdminType ? 'admin' : 'congresso2026';
+
+        if (password === expectedPassword) {
           setCurrentUserCpf(cpf);
           localStorage.setItem('current_user_cpf', cpf);
           setAuthStatus('reset-password');
         } else {
-          alert('Senha incorreta para o primeiro acesso. Use a senha padrão (admin ou congresso2026).');
+          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão de ${isAdminType ? 'Organizador (admin)' : 'Inscrito (congresso2026)'}.`);
           setAuthStatus('logged-out');
         }
         return;
@@ -151,15 +156,28 @@ function App() {
 
   const handlePasswordResetComplete = async (newPassword) => {
     try {
-      await supabase
+      const { data: updatedProfile } = await supabase
         .from('profiles')
         .update({ 
           password_reset: true, 
           current_password: newPassword 
         })
-        .eq('cpf', currentUserCpf);
+        .eq('cpf', currentUserCpf)
+        .select()
+        .single();
       
-      setAuthStatus('select-type');
+      const type = updatedProfile?.user_type;
+      const isStaffOrSponsor = type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
+
+      if (isStaffOrSponsor) {
+        setSelectedType(type || 'admin');
+        setAuthStatus('logged-in');
+      } else if (type) {
+        setSelectedType(type);
+        setAuthStatus('questionnaire');
+      } else {
+        setAuthStatus('select-type');
+      }
     } catch (e) {
       alert('Erro ao salvar nova senha.');
     }
