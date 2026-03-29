@@ -8,6 +8,7 @@ import { createPost } from '../../services/social/socialService';
  */
 const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId }) => {
   const [caption, setCaption] = useState('');
+  const [mentions, setMentions] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   
@@ -49,13 +50,15 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
       // default: ouro para teste visual
       const mockTier = 3; 
 
+      const finalCaption = mentions ? `${caption} \n\n@${mentions.replace('@', '')}` : caption;
+
       await createPost(
         sponsorName, 
         sponsorRole || 'Patrocinador', 
         mockTier, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         parsedUrls, 
-        caption, 
+        finalCaption, 
         userId || 'Anon'
       );
 
@@ -124,11 +127,22 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           value={caption}
           onChange={e => setCaption(e.target.value)}
           style={{
-            width: '100%', height: '120px',
+            width: '100%', height: '100px',
             border: 'none', resize: 'none', outline: 'none',
-            fontSize: '16px', color: 'var(--text-main)'
+            fontSize: '16px', color: 'var(--text-main)',
+            marginBottom: '10px'
           }}
         />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', background: '#F8F9FA', borderRadius: '12px', marginBottom: '20px' }}>
+           <span style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '18px' }}>@</span>
+           <input 
+             placeholder="Marcar participante ou palestrante..."
+             value={mentions}
+             onChange={e => setMentions(e.target.value)}
+             style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', fontWeight: '600' }}
+           />
+        </div>
 
         {/* Media Preview (Grid Nativos Customizados) */}
         {mediaFiles.length > 0 && (

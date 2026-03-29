@@ -11,7 +11,9 @@ import {
   Ticket,
   BookOpen,
   BellRing,
-  Monitor
+  Monitor,
+  Star,
+  Briefcase
 } from 'lucide-react';
 
 const MoreTab = ({ onLogout, userName, userType, userCpf, onOpenScanner, onOpenBroadcast, onOpenAdminPortal }) => {

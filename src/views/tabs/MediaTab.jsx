@@ -21,7 +21,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
 
   // Determina se pode postar
-  const canPost = ['expositor', 'parceiro', 'palestrante', 'staff'].includes(userType);
+  const canPost = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin'].includes(userType);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -100,25 +100,38 @@ export default function MediaTab({ userType, userName, userCpf }) {
       );
     }
     
-    if (post.mediaType === 'carousel' && post.mediaUrls.length > 1) {
-      return (
-        <div style={{ width: '100%', aspectRatio: '4/5', display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}>
-          {post.mediaUrls.map((url, i) => (
-            <div key={i} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', position: 'relative' }}>
-              <img src={url} alt="carousel" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800' }}>
-                {i + 1} / {post.mediaUrls.length}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // Single Image Default
+    // Se for carousel ou imagem única, usamos object-fit: contain dentro de um fundo preto 
+    // ou mantemos o 4/5 para padronização de feed. O Instagram usa 4/5 (portrait) ou 1:1.
+    // Para aceitar 'qualquer uma', removemos o aspectRatio fixo e usamos minHeight.
     return (
-      <div style={{ width: '100%', aspectRatio: '4/5', background: '#e0e0e0', position: 'relative' }}>
-        <img src={post.mediaUrls[0] || post.imageUrl} alt="feed" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ 
+        width: '100%', 
+        minHeight: '200px', 
+        maxHeight: '600px',
+        background: '#000', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        {post.mediaType === 'carousel' ? (
+           <div style={{ width: '100%', display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}>
+            {post.mediaUrls.map((url, i) => (
+              <div key={i} style={{ minWidth: '100%', scrollSnapAlign: 'start', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src={url} alt="carousel" style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} />
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800' }}>
+                  {i + 1} / {post.mediaUrls.length}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <img 
+             src={post.mediaUrls[0] || post.imageUrl} 
+             alt="feed" 
+             style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} 
+          />
+        )}
       </div>
     );
   };
