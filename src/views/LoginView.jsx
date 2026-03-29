@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock, ArrowRight } from 'lucide-react';
 
-const LoginView = ({ onLogin }) => {
+const LoginView = ({ onLogin, onAdminAccess }) => {
   const [loginCpf, setLoginCpf] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [isForgotMode, setIsForgotMode] = useState(false);
@@ -136,13 +136,22 @@ const LoginView = ({ onLogin }) => {
             Acessar Hub <ArrowRight size={20} />
           </button>
 
-          <button 
-            type="button" 
-            onClick={() => setIsForgotMode(true)}
-            style={{ width: '100%', marginTop: '20px', color: 'rgba(255,255,255,0.5)', fontSize: '13px', border: 'none', background: 'none' }}
-          >
-            Esqueci minha senha
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+            <button 
+              type="button" 
+              onClick={() => setIsForgotMode(true)}
+              style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', border: 'none', background: 'none' }}
+            >
+              Esqueci minha senha
+            </button>
+            <button 
+              type="button" 
+              onClick={onAdminAccess}
+              style={{ color: 'var(--gold)', fontSize: '13px', border: 'none', background: 'none', fontWeight: 'bold' }}
+            >
+              Portal Admin
+            </button>
+          </div>
         </form>
 
 

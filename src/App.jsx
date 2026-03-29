@@ -5,6 +5,7 @@ import DashboardView from './views/DashboardView';
 import PasswordResetView from './views/PasswordResetView';
 import UserTypeSelectionView from './views/UserTypeSelectionView';
 import QuestionnaireController from './views/questionnaires/QuestionnaireController';
+import AdminImportView from './views/admin/AdminImportView';
 
 function App() {
   const [authStatus, setAuthStatus] = useState('loading'); 
@@ -201,7 +202,14 @@ function App() {
   return (
     <div className="App">
       {authStatus === 'logged-out' && (
-        <LoginView onLogin={handleLogin} />
+        <LoginView 
+          onLogin={handleLogin} 
+          onAdminAccess={() => setAuthStatus('admin-portal')} 
+        />
+      )}
+      
+      {authStatus === 'admin-portal' && (
+        <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
       )}
       
       {authStatus === 'reset-password' && (
