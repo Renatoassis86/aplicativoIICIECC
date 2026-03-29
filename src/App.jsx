@@ -193,10 +193,10 @@ function App() {
     try {
       await supabase
         .from('profiles')
-        .update({ user_type: type.id })
+        .update({ user_type: type.id || type })
         .eq('cpf', currentUserCpf);
       
-      setSelectedType(type);
+      setSelectedType(type.id || type);
       setAuthStatus('questionnaire');
     } catch (e) {
       alert('Erro ao salvar tipo de inscrição.');
@@ -242,11 +242,16 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App" style={{ background: '#F7F8FA', minHeight: '100vh' }}>
       {authStatus === 'logged-out' && (
         <LoginView 
           onLogin={handleLogin} 
-          onAdminAccess={() => setAuthStatus('admin-portal')} 
+          onAdminAccess={() => {
+            // Se o master quiser ver o portal admin sem logar (apenas para visualização rápida)
+            // Mas no fluxo oficial o portal admin exige que authStatus === 'logged-in' && view === 'admin-portal'
+            // Vamos permitir que ele veja o ImportView (antigo) via Login
+            setAuthStatus('admin-portal');
+          }} 
         />
       )}
       
@@ -269,9 +274,10 @@ function App() {
       {authStatus === 'logged-in' && view === 'app' && (
         <DashboardView 
           onLogout={handleLogout} 
-          userType={typeof selectedType === 'object' ? (selectedType?.id || 'congressista') : (selectedType || 'congressista')} 
+          userType={selectedType || 'congressista'} 
           userName={userName || 'Visitante'} 
           userCpf={currentUserCpf}
+          userAvatar={userAvatar}
           onOpenAdminPortal={() => setView('admin-portal')}
         />
       )}
@@ -283,6 +289,14 @@ function App() {
           userName={userName}
           userCpf={currentUserCpf}
         />
+      )}
+
+      {/* Fallback de Segurança - Se cair em um estado inválido, volta pro login em vez de tela branca */}
+      {![ 'loading', 'logged-out', 'admin-portal', 'reset-password', 'select-type', 'questionnaire', 'logged-in'].includes(authStatus) && (
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+           <p>Estado de sessão inválido. Redirecionando...</p>
+           <button onClick={() => setAuthStatus('logged-out')} className="btn-primary" style={{ width: 'auto', marginTop: '20px' }}>Voltar ao Login</button>
+        </div>
       )}
     </div>
   );

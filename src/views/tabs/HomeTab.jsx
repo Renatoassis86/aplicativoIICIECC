@@ -16,7 +16,9 @@ import {
   Camera,
   Search,
   Award,
-  Megaphone
+  Megaphone,
+  Bookmark,
+  Heart
 } from 'lucide-react';
 import CountdownTimer from '../../components/home/CountdownTimer';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
