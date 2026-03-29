@@ -59,11 +59,10 @@ const DashboardView = ({ onLogout, userType, userName }) => {
           zIndex: 100
         }}>
           <img 
-            src="/logo2.png" 
+            src="/logo.png" 
             alt="CIECC" 
             style={{ 
-              height: '35px', 
-              mixBlendMode: 'multiply' 
+              height: '35px'
             }} 
           />
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>

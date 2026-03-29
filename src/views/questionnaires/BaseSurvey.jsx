@@ -44,7 +44,7 @@ const BaseSurvey = ({ steps, onComplete, themeColor = 'var(--primary)' }) => {
         borderBottomLeftRadius: '20px',
         borderBottomRightRadius: '20px'
       }}>
-        <img src="/logo.png" alt="CIECC" style={{ height: '45px', mixBlendMode: 'multiply' }} />
+        <img src="/logo.png" alt="CIECC" style={{ height: '45px' }} />
       </div>
 
       {/* Progress Header */}

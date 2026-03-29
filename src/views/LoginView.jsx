@@ -84,12 +84,11 @@ const LoginView = ({ onLogin }) => {
       <div className="login-content fade-in" style={{ zIndex: 2, textAlign: 'center' }}>
         <div style={{ marginBottom: '40px' }}>
           <img 
-            src="/logo2.png" 
+            src="/logo.png" 
             alt="CIECC" 
             style={{ 
               width: '80%', 
-              maxWidth: '280px', 
-              mixBlendMode: 'multiply',
+              maxWidth: '280px',
               filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))' 
             }} 
           />

@@ -35,7 +35,7 @@ const UserTypeSelectionView = ({ onSelect }) => {
         borderBottomRightRadius: '24px',
         marginBottom: '32px'
       }}>
-        <img src="/logo.png" alt="CIECC" style={{ height: '55px', mixBlendMode: 'multiply' }} />
+        <img src="/logo.png" alt="CIECC" style={{ height: '55px' }} />
       </div>
 
       <header style={{ padding: '0 24px', marginBottom: '32px' }}>

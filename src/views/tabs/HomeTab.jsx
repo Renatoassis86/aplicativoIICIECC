@@ -55,11 +55,10 @@ const HomeTab = ({ userName }) => {
           {/* Logo Centralizada no topo - Clara sobre Borgonha */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
             <img 
-              src="/logo2.png" 
+              src="/logo.png" 
               alt="CIECC" 
               style={{ 
-                height: '75px', 
-                mixBlendMode: 'multiply',
+                height: '80px', 
                 objectFit: 'contain'
               }} 
             />
