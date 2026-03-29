@@ -1,24 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
-  --primary: #d61f26; /* Mockup action red */
-  --primary-bg: rgba(214, 31, 38, 0.1);
-  --accent: #111827; /* Near black */
-  --bg-main: #eef1f4;
-  --bg-app: #f7f8fa;
-  --bg-card: #ffffff;
-  --bg-highlight: #f8fafc;
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --text-light: #9ca3af;
-  --border-light: #e5e7eb;
-  --radius-app: 32px;
-  --radius-card: 24px;
-  --radius-item: 20px;
-  --radius-xs: 12px;
-  --font-heading: 'Cinzel', serif;
-  --font-body: 'Outfit', -apple-system, sans-serif;
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  /* Color Palette - CIECC Identity */
+  --primary: #D81E1E; /* Action Red */
+  --primary-hover: #B71919;
+  --secondary: #111111; /* Deep Charcoal/Black */
+  --bg-app: #F5F7FA;
+  --bg-card: #FFFFFF;
+  --text-main: #1A1A1A;
+  --text-muted: #6C757D;
+  --white: #FFFFFF;
+  --border: #E9ECEF;
+  --accent: #FDF2F2; /* Soft red tint */
+  
+  /* Typography */
+  --font-main: 'Outfit', sans-serif;
+  --font-serif: 'Playfair Display', serif; /* For "Classical" feel */
+  
+  /* Layout */
+  --nav-height: 70px;
+  --safe-area: 20px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
+  /* Effects */
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 12px 24px -6px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -29,64 +38,125 @@
 }
 
 body {
-  font-family: var(--font-body);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-main);
   line-height: 1.6;
+  overscroll-behavior-y: contain;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-main);
   cursor: pointer;
   border: none;
-  outline: none;
-  transition: all 0.2s ease;
+  background: none;
+  transition: var(--transition);
 }
 
 input {
-  font-family: inherit;
+  font-family: var(--font-main);
   outline: none;
+  transition: var(--transition);
 }
 
-/* App Container */
-#root {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.mobile-container {
-  max-width: 480px;
+/* Base App Wrapper for Mobile-First Experience */
+.app-container {
+  max-width: 480px; /* Limits width on desktop to mimic mobile */
   margin: 0 auto;
-  width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  background: var(--bg-app);
   position: relative;
-  background: var(--bg-primary);
+  box-shadow: 0 0 100px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
 }
 
-/* Components */
+@media (max-width: 480px) {
+  .app-container {
+    box-shadow: none;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Global Navigation Bottom Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+  height: var(--nav-height);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Reusable UI Components */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
 .btn-primary {
-  background-color: var(--primary);
+  background: var(--primary);
   color: white;
   padding: 14px 24px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 1rem;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2);
-  border: 1px solid var(--accent); /* Subtle gold border on buttons */
+  text-align: center;
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
-  background-color: var(--primary-dark);
+.btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(216, 30, 30, 0.3);
 }
 
 .input-group {
@@ -95,84 +165,25 @@ input {
 
 .input-label {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
   margin-bottom: 8px;
-  color: var(--text-secondary);
+  letter-spacing: 0.5px;
 }
 
 .input-field {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 1rem;
-  transition: border-color 0.2s;
+  padding: 14px;
+  background: #F1F3F5;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
 }
 
 .input-field:focus {
-  border-color: var(--primary);
-}
-
-/* General Layout Classes */
-.p-20 { padding: 20px; }
-.pt-60 { padding-top: 60px; }
-.flex-grow { flex-grow: 1; }
-.text-center { text-align: center; }
-
-h1 { 
-  font-family: var(--font-heading);
-  font-size: 1.75rem; 
-  font-weight: 700; 
-  color: var(--primary); 
-  letter-spacing: 0.02em;
-}
-/* Classical Backgrounds & Textures */
-.bg-burgundy-texture {
-  background-color: var(--primary);
-  background-image: 
-    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03)),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 100%);
-  background-size: 40px 40px, 100% 100%;
-  position: relative;
-  color: white;
-}
-
-.laurel-decor {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  opacity: 0.1;
-  pointer-events: none;
-  background-image: url('https://www.transparenttextures.com/patterns/black-paper.png'); /* Pattern substitute */
-}
-
-.academic-card {
   background: white;
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
-}
-
-.academic-card:active {
-  transform: scale(0.98);
-}
-
-.gold-text { color: var(--accent); }
-.serif { font-family: var(--font-heading); }
-.uppercase { text-transform: uppercase; }
-.tracking-widest { letter-spacing: 0.2em; }
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 10px;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(216, 30, 30, 0.1);
 }
