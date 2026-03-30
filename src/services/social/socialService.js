@@ -131,6 +131,29 @@ export const postComment = async (postId, text, authorName, authorId) => {
   };
 };
 
+export const toggleSavePost = async (postId, currentState, userId) => {
+  if (currentState) {
+    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'save', post_id: postId});
+  } else {
+    await supabase.from('social_engagements').insert({ user_id: userId, type: 'save', post_id: postId});
+  }
+  return !currentState;
+};
+
+export const deleteCommentApi = async (commentId) => {
+  await supabase.from('social_comments').delete().eq('id', commentId);
+  return true;
+};
+
+export const toggleLikeComment = async (commentId, currentState, userId) => {
+  if (currentState) {
+    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'like_comment', post_id: commentId});
+  } else {
+    await supabase.from('social_engagements').insert({ user_id: userId, type: 'like_comment', post_id: commentId});
+  }
+  return !currentState;
+};
+
 export const seedMockPosts = async (userId) => {
   const mocks = [
     {
