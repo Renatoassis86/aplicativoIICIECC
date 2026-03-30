@@ -24,7 +24,11 @@ import {
 
 import { ImagePersistenceService } from '../../services/imagePersistence';
 
-const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar: initialAvatar, onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate }) => {
+const MoreTab = ({ 
+  onLogout, userName, userType, userCpf, userAvatar: initialAvatar, 
+  onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate,
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenTicket
+}) => {
   const [userAvatar, setUserAvatar] = useState(initialAvatar);
   const [uploading, setUploading] = useState(false);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
@@ -64,8 +68,8 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar: initialAva
     {
       title: 'Configurações do Perfil',
       items: [
-        { label: 'Meus Tickets', icon: <Ticket size={18} color="#D69E2E" /> },
-        { label: 'Minha Agenda', icon: <BookOpen size={18} color="#2B6CB0" /> },
+        { label: 'Meus Tickets', icon: <Ticket size={18} color="#D69E2E" />, action: onOpenTicket },
+        { label: 'Minha Agenda', icon: <BookOpen size={18} color="#2B6CB0" />, action: () => onNavigate('agenda') },
         { label: 'Configurações', icon: <Settings size={18} color="#718096" /> },
       ]
     },
@@ -73,10 +77,10 @@ const MoreTab = ({ onLogout, userName, userType, userCpf, userAvatar: initialAva
       title: 'Informações do Evento',
       items: [
         { label: 'Network de Participantes', icon: <Users size={18} color="#48BB78" />, action: () => onNavigate('network') },
-        { label: 'FAQ (Perguntas Frequentes)', icon: <HelpCircle size={18} color="#38A169" /> },
-        { label: 'Palestrantes', icon: <Star size={18} color="#805AD5" /> },
-        { label: 'Patrocinadores & Parceiros', icon: <Briefcase size={18} color="var(--primary)" /> },
-        { label: 'Mapa / Localização', icon: <MapPin size={18} color="#E53E3E" /> },
+        { label: 'FAQ (Perguntas Frequentes)', icon: <HelpCircle size={18} color="#38A169" />, action: onOpenFAQ },
+        { label: 'Palestrantes', icon: <Star size={18} color="#805AD5" />, action: () => onNavigate('speakers') },
+        { label: 'Patrocinadores & Parceiros', icon: <Briefcase size={18} color="var(--primary)" />, action: onOpenSponsors },
+        { label: 'Mapa / Localização', icon: <MapPin size={18} color="#E53E3E" />, action: onOpenMap },
       ]
     },
     {

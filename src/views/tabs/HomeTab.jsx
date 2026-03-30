@@ -25,7 +25,11 @@ import CountdownTimer from '../../components/home/CountdownTimer';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
 
-const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate }) => {
+const HomeTab = ({ 
+  userName, userType, userAvatar, unreadCount, 
+  onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
+  onOpenFAQ, onOpenSponsors, onOpenMap
+}) => {
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
@@ -41,14 +45,14 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
   };
 
   const shortcuts = [
-    { label: 'Programação', icon: <Calendar color="var(--primary)" size={24} />, bg: 'var(--accent)' },
-    { label: 'Palestrantes', icon: <Star color="#D69E2E" size={24} />, bg: '#FFFFF0' },
-    { label: 'Parceiros', icon: <Briefcase color="#2B6CB0" size={24} />, bg: '#EBF8FF' },
-    { label: 'Patrocinadores', icon: <Award color="#38A169" size={24} />, bg: '#F0FFF4' },
+    { label: 'Programação', icon: <Calendar color="var(--primary)" size={24} />, bg: 'var(--accent)', action: () => onNavigate('agenda') },
+    { label: 'Palestrantes', icon: <Star color="#D69E2E" size={24} />, bg: '#FFFFF0', action: () => onNavigate('speakers') },
+    { label: 'Parceiros', icon: <Briefcase color="#2B6CB0" size={24} />, bg: '#EBF8FF', action: onOpenSponsors },
+    { label: 'Patrocinadores', icon: <Award color="#38A169" size={24} />, bg: '#F0FFF4', action: onOpenSponsors },
     { label: 'Meu QR Code', icon: <QrCode color="#E53E3E" size={24} />, bg: '#FFF5F5', action: onOpenTicket },
-    { label: 'Meus Tickets', icon: <Ticket color="#805AD5" size={24} />, bg: '#FAF5FF' },
-    { label: 'Como chegar', icon: <MapPin color="#718096" size={24} />, bg: '#F7FAFC' },
-    { label: 'FAQ', icon: <HelpCircle color="#D81E1E" size={24} />, bg: '#FDF2F2' },
+    { label: 'Meus Tickets', icon: <Ticket color="#805AD5" size={24} />, bg: '#FAF5FF', action: onOpenTicket },
+    { label: 'Como chegar', icon: <MapPin color="#718096" size={24} />, bg: '#F7FAFC', action: onOpenMap },
+    { label: 'FAQ', icon: <HelpCircle color="#D81E1E" size={24} />, bg: '#FDF2F2', action: onOpenFAQ },
   ];
 
   const sponsors = [
@@ -151,19 +155,36 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
 
         <div style={{ position: 'relative', zIndex: 10 }}>
           {/* TOP BAR: MENU MAIS & CIRECLE-AVATAR */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <button 
-              onClick={() => onNavigate('more')}
-              style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ width: '20px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
-                <div style={{ width: '14px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
-                <div style={{ width: '20px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+          {/* TOP BAR: PERFIL (ESQUERDA) & AÇÕES (DIREITA) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+            {/* PERFIL (ESQUERDA) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div 
+                onClick={() => onNavigate('more')}
+                style={{ 
+                  width: '56px', height: '56px', borderRadius: '20px', 
+                  background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  fontWeight: '900', color: '#111', fontSize: '20px', 
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  border: '2px solid white'
+                }}>
+                {userAvatar ? (
+                  <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontFamily: 'var(--font-serif)' }}>{initial}</span>
+                )}
               </div>
-            </button>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', letterSpacing: '0.5px' }}>{firstName}</span>
+                <span style={{ fontSize: '10px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px' }}>{formatUserType(userType)}</span>
+              </div>
+            </div>
+
+            {/* AÇÕES (DIREITA) */}
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <button onClick={onOpenNotifications} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
+              <button onClick={onOpenNotifications} style={{ background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
                 <Bell size={20} color="white" />
                 {unreadCount > 0 && (
                   <div style={{
@@ -176,23 +197,16 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
                   </div>
                 )}
               </button>
-              <div 
+              <button 
                 onClick={() => onNavigate('more')}
-                style={{ 
-                  width: '44px', height: '44px', borderRadius: '50%', 
-                  background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontWeight: '900', color: '#111', fontSize: '18px', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: '2px solid white'
-                }}>
-                {userAvatar ? (
-                  <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <Camera size={20} color="var(--primary)" />
-                )}
-              </div>
+                style={{ background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ width: '20px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+                  <div style={{ width: '14px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+                  <div style={{ width: '18px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+                </div>
+              </button>
             </div>
           </div>
 
@@ -220,7 +234,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             color: 'white'
           }}>
             II CIECC 2026: <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>O Fórum Nacional para a Discussão e Disseminação da Educação Cristã Clássica</span>
+            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>O Fórum de Excelência para a Discussão e Disseminação da Educação Cristã Clássica</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
@@ -229,6 +243,40 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
               <Calendar size={12} color="var(--gold)" /> 01 e 02 Mai
+            </div>
+          </div>
+
+          {/* VÍDEO INTRODUTÓRIO OTIMIZADO (POO - Preview On-load) */}
+          <div style={{ 
+            width: '100%', 
+            borderRadius: '16px', 
+            overflow: 'hidden', 
+            marginBottom: '24px', 
+            boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+            background: 'black',
+            aspectRatio: '16/9',
+            position: 'relative',
+            cursor: 'pointer'
+          }} onClick={() => {
+            const container = document.getElementById('video-container');
+            if (container) {
+              container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/t5CB9rnexOY?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
+            }
+          }} id="video-container">
+            <img 
+              src="https://img.youtube.com/vi/t5CB9rnexOY/maxresdefault.jpg" 
+              alt="Preview II CIECC" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
+            />
+            <div style={{ 
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              background: 'var(--primary)', color: 'white', padding: '16px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--primary)'
+            }}>
+              <PlayCircle size={32} />
+            </div>
+            <div style={{ position: 'absolute', bottom: '12px', left: '16px', color: 'white', fontSize: '12px', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              ASSISTIR VÍDEO PROMOCIONAL
             </div>
           </div>
 
@@ -256,6 +304,74 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             }}>
             EXPLORAR PROGRAMAÇÃO <ArrowRight size={18} />
           </button>
+        </div>
+      </section>
+
+      {/* OFICINAS CONFIRMADAS - BASEADO NO PRINT */}
+      <section style={{ padding: '40px 20px 24px' }}>
+        <div style={{ marginBottom: '24px' }}>
+           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', color: 'var(--secondary)', marginBottom: '8px' }}>Oficinas Confirmadas</h3>
+           <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+             As oficinas ocorrerão durante a tarde do dia 02/05. Confira os temas e palestrantes (<strong>Importante:</strong> Serão transmitidas 2 oficinas online, a serem escolhidas pela Coordenação. As demais serão exclusivamente presenciais).
+           </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {[
+            { name: 'Cauê Oliveira', title: 'O papel do pai como educador' },
+            { name: 'Rosely Garcia', title: 'Treinamento e Formação de Professores' },
+            { name: 'Elmer Pires', title: 'Liturgias na Escola Clássica' },
+            { name: 'Maurício Fonseca', title: 'Educando meninos e Educando Meninas' },
+            { name: 'Matheus Macedo', title: 'A beleza em uma escola Clássica' },
+            { name: 'Cleiton Balieiro', title: 'Quadrivium' },
+            { name: 'Thiago Dutra', title: 'Transicionando uma escola para a educação clássica' },
+            { name: 'Rodrigo Brotto', title: 'Disciplina Virtuosa' },
+            { name: 'Marília Chimara', title: 'Trivium e Literatura' },
+            { name: 'Anderson Queiroz', title: 'Educação domiciliar e as Umbrella Schools' }
+          ].map((oficina, idx) => (
+            <div key={idx} className="card" style={{ 
+              padding: '16px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              textAlign: 'center',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{ 
+                width: '60px', height: '60px', 
+                borderRadius: '50%', 
+                background: '#F8F9FA', 
+                border: '2px solid var(--gold)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '10px',
+                fontSize: '18px',
+                fontWeight: '800',
+                color: 'var(--gold)',
+                fontFamily: 'var(--font-serif)'
+              }}>
+                {oficina.name.charAt(0)}
+              </div>
+              <p style={{ 
+                fontSize: '10px', 
+                fontWeight: '900', 
+                color: 'var(--gold)', 
+                textTransform: 'uppercase', 
+                letterSpacing: '1px',
+                marginBottom: '4px'
+              }}>
+                {oficina.name}
+              </p>
+              <p style={{ 
+                fontSize: '12px', 
+                fontWeight: '700', 
+                color: 'var(--secondary)',
+                fontFamily: 'var(--font-serif)',
+                lineHeight: '1.2'
+              }}>
+                {oficina.title}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 

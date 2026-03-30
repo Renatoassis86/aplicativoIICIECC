@@ -19,6 +19,11 @@ import MediaTab from './tabs/MediaTab'; // Feed Social
 import MoreTab from './tabs/MoreTab';
 import SpeakersTab from './tabs/SpeakersTab';
 import MyTicketModal from '../components/ticket/MyTicketModal';
+
+// Modais de Informação
+import FAQView from './info/FAQView';
+import SponsorsView from './info/SponsorsView';
+import MapLocationView from './info/MapLocationView';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
@@ -31,6 +36,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   const [showNotifications, setShowNotifications] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showSponsors, setShowSponsors] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -58,6 +66,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           onOpenScanner={() => setShowScanner(true)} 
           onOpenBroadcast={() => setShowBroadcast(true)}
           onNavigate={(tab) => setActiveTab(tab)}
+          onOpenFAQ={() => setShowFAQ(true)}
+          onOpenSponsors={() => setShowSponsors(true)}
+          onOpenMap={() => setShowMap(true)}
         />
       );
       case 'agenda': return <AgendaTab />;
@@ -65,7 +76,23 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       case 'media': return <OfficialMediaTab />;
       case 'feed': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
       case 'speakers': return <SpeakersTab onNavigate={(tab) => setActiveTab(tab)} />;
-      case 'more': return <MoreTab onLogout={onLogout} userName={userName} userType={userType} userCpf={userCpf} userAvatar={userAvatar} onOpenScanner={() => setShowScanner(true)} onOpenBroadcast={() => setShowBroadcast(true)} onOpenAdminPortal={onOpenAdminPortal} onNavigate={(tab) => setActiveTab(tab)} />;
+      case 'more': return (
+        <MoreTab 
+          onLogout={onLogout} 
+          userName={userName} 
+          userType={userType} 
+          userCpf={userCpf} 
+          userAvatar={userAvatar} 
+          onOpenScanner={() => setShowScanner(true)} 
+          onOpenBroadcast={() => setShowBroadcast(true)} 
+          onOpenAdminPortal={onOpenAdminPortal} 
+          onNavigate={(tab) => setActiveTab(tab)}
+          onOpenFAQ={() => setShowFAQ(true)}
+          onOpenSponsors={() => setShowSponsors(true)}
+          onOpenMap={() => setShowMap(true)}
+          onOpenTicket={() => setShowTicketModal(true)}
+        />
+      );
       default: return <HomeTab />;
     }
   };
@@ -213,6 +240,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           onClose={() => setShowBroadcast(false)} 
         />
       )}
+
+      {/* Modais de Informação Adicional */}
+      {showFAQ && <FAQView onClose={() => setShowFAQ(false)} />}
+      {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
+      {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
     </div>
   );
 };
