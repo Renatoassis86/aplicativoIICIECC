@@ -5,7 +5,7 @@ import {
   Camera, Star, ExternalLink, ArrowRight
 } from 'lucide-react';
 
-const Home = () => {
+const Home = ({ userName }) => {
   const atalhos = [
     { icon: Calendar, label: 'Programação' },
     { icon: Users, label: 'Palestrantes' },
@@ -17,6 +17,8 @@ const Home = () => {
     { icon: HelpCircle, label: 'FAQ' },
   ];
 
+  const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'RA';
+
   return (
     <div className="home-container">
       {/* 1. Cabeçalho Institucional */}
@@ -27,11 +29,11 @@ const Home = () => {
             <h1 className="serif uppercase tracking-widest text-primary text-sm mt-4">II CIECC 2026</h1>
           </div>
           <div className="user-avatar-circle">
-            <span className="serif text-xs font-bold">RA</span>
+            <span className="serif text-xs font-bold">{initial}</span>
           </div>
         </div>
         <div className="header-greeting mt-16">
-          <p className="text-gray-500 text-sm">Olá, <span className="text-primary font-bold">Renato Assis</span></p>
+          <p className="text-gray-500 text-sm">Olá, <span className="text-primary font-bold">{userName || 'Congressista'}</span></p>
           <h2 className="serif text-xl text-accent mt-4">Bem-vindo ao Congresso</h2>
         </div>
       </header>

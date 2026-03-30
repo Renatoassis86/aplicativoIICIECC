@@ -1,29 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Image as ImageIcon, X, Send, Video, Search } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Send, Video, Search, ChevronLeft } from 'lucide-react';
 import { createPost } from '../../services/social/socialService';
 import { supabase } from '../../lib/supabase';
 import { ImagePersistenceService } from '../../services/imagePersistence';
 import { CameraSource } from '@capacitor/camera';
 
-const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId }) => {
+const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId, userAvatar }) => {
   const [caption, setCaption] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [step, setStep] = useState(1); // 1: Seletor, 2: Detalhes (Legenda)
 
-  const fetchMedia = async (source) => {
-    setUploadingMedia(true);
-    const photo = await ImagePersistenceService.capturePhoto(source);
-    if (photo) {
-      setMediaFiles(prev => [...prev, {
-        file: photo.blob,
-        url: photo.webPath,
-        base64: null,
-        type: 'image'
-      }]);
-    }
-    setUploadingMedia(false);
-  };
   // Mentions Logic
   const [allUsers, setAllUsers] = useState([]);
   const [showMentionsList, setShowMentionsList] = useState(false);
@@ -34,7 +22,6 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    // Busca usuários para mentions
     const fetchUsers = async () => {
       const { data } = await supabase.from('profiles').select('name').limit(200);
       setAllUsers(data || []);
@@ -42,21 +29,41 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
     fetchUsers();
   }, []);
 
+  const fetchMedia = async (source) => {
+    setUploadingMedia(true);
+    try {
+      const photo = await ImagePersistenceService.capturePhoto(source);
+      if (photo) {
+        const base64 = await ImagePersistenceService.blobToBase64(photo.blob);
+        setMediaFiles([{
+          file: photo.blob,
+          url: photo.webPath,
+          base64: base64,
+          type: 'image'
+        }]);
+        setStep(2); // Vai direto para legenda após escolher
+      }
+    } catch (e) {
+      console.error("[Creator] Erro ao buscar media:", e);
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
   const handleFileChange = async (e) => {
-    // Fallback para input tradicional se necessário, mas o foco agora é no Service
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
     
-    for (const file of files) {
-      const previewUrl = URL.createObjectURL(file);
-      const base64 = await ImagePersistenceService.blobToBase64(file);
-      setMediaFiles(prev => [...prev, {
-        file,
-        url: previewUrl,
-        base64,
-        type: file.type.startsWith('video') ? 'reel' : 'image'
-      }]);
-    }
+    const file = files[0];
+    const previewUrl = URL.createObjectURL(file);
+    const base64 = await ImagePersistenceService.blobToBase64(file);
+    setMediaFiles([{
+      file,
+      url: previewUrl,
+      base64,
+      type: file.type.startsWith('video') ? 'reel' : 'image'
+    }]);
+    setStep(2);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -66,7 +73,6 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
     setCaption(val);
     setCursorPos(pos);
 
-    // Detect @
     const textBefore = val.slice(0, pos);
     const words = textBefore.split(/\s/);
     const lastWord = words[words.length - 1];
@@ -96,55 +102,32 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
 
     try {
       const uploadedUrls = [];
-      
-      // 1. Upload to Supabase Storage
       for (const m of mediaFiles) {
         try {
-          const fileExt = m.file.name.split('.').pop();
+          const fileExt = m.file.name ? m.file.name.split('.').pop() : 'jpg';
           const fileName = `posts/${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-          
-          const { data, error } = await supabase.storage
-            .from('posts_media')
-            .upload(fileName, m.file, {
-              cacheControl: '3600',
-              upsert: false
-            });
-            
-          if (error) {
-             throw error;
-          } else {
-            const { data: { publicUrl } } = supabase.storage
-              .from('posts_media')
-              .getPublicUrl(fileName);
-            uploadedUrls.push(publicUrl);
-          }
+          const { data, error } = await supabase.storage.from('posts_media').upload(fileName, m.file);
+          if (error) throw error;
+          const { data: { publicUrl } } = supabase.storage.from('posts_media').getPublicUrl(fileName);
+          uploadedUrls.push(publicUrl);
         } catch (storageErr) {
-          console.error("Storage upload failed, using Base64 fallback:", storageErr);
-          // Fallback: Se o bucket falhar, tentamos salvar a Base64 no banco (limitado pelo tamanho da coluna texto)
-          // Em um app real, o bucket deve estar pronto de antemão. No congresso, é um safety-net.
+          console.error("Storage fallback to base64", storageErr);
           uploadedUrls.push(m.base64);
         }
       }
 
-      // 2. Insert to Social Posts Table
-      const mockTier = 4; // Organizadores/Patrocinadores Master
-
       await createPost(
         sponsorName, 
         sponsorRole || 'Organizador', 
-        mockTier, 
+        4, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
         caption, 
-        userId || 'Renato'
+        userId || 'CIECC_SYSTEM'
       );
-
-      console.log("[Social] Post created successfully!");
       onSuccess();
-
     } catch (err) {
-      console.error("[Post Error Details]", err);
-      alert(`Erro na postagem: ${err.message || 'Verifique as tabelas de posts no Supabase.'}`);
+      alert(`Erro na postagem: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -157,193 +140,162 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'white',
+      background: '#000',
       zIndex: 200,
       display: 'flex', flexDirection: 'column',
-      animation: 'slideUp 0.3s ease-out'
+      animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
     }}>
       
-      {/* Header Modal */}
       <header style={{ 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-        padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)'
+        padding: '16px 20px', background: '#000', borderBottom: '1px solid rgba(255,255,255,0.1)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: '4px' }}>
-            <X size={24} />
-          </button>
-          <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>Nova Publicação</h2>
+          {step === 2 ? (
+            <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'white', padding: '4px' }}>
+              <ChevronLeft size={28} />
+            </button>
+          ) : (
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', padding: '4px' }}>
+              <X size={28} />
+            </button>
+          )}
+          <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>
+            {step === 1 ? 'Novo post' : 'Compartilhar'}
+          </h2>
         </div>
-        <button 
-          onClick={handlePost}
-          disabled={loading || (mediaFiles.length === 0 && !caption.trim())}
-          style={{ 
-            background: loading ? 'rgba(0,0,0,0.05)' : 'var(--primary)', 
-            border: 'none', 
-            color: 'white',
-            padding: '8px 24px',
-            borderRadius: '20px',
-            fontSize: '14px', fontWeight: '900',
-            opacity: loading ? 0.7 : 1,
-            transition: 'all 0.2s'
-          }}
-        >
-          {loading ? 'PUBLICANDO...' : 'PUBLICAR'}
-        </button>
+        {step === 1 ? (
+          <button 
+            disabled={mediaFiles.length === 0}
+            onClick={() => setStep(2)}
+            style={{ background: 'none', border: 'none', color: '#0095F6', fontSize: '16px', fontWeight: '700', opacity: mediaFiles.length > 0 ? 1 : 0.5 }}
+          >
+            Avançar
+          </button>
+        ) : (
+          <button 
+            onClick={handlePost}
+            disabled={loading}
+            style={{ background: 'none', border: 'none', color: '#0095F6', fontSize: '16px', fontWeight: '700' }}
+          >
+            {loading ? 'PUBLICANDO...' : 'Compartilhar'}
+          </button>
+        )}
       </header>
 
-
-      <div style={{ padding: '20px', flex: 1, overflowY: 'auto', position: 'relative' }}>
-        
-        {/* Mentions Dropdown */}
-        {showMentionsList && filteredUsers.length > 0 && (
-          <div style={{ 
-            position: 'absolute', top: '120px', left: '20px', right: '20px',
-            background: 'white', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            zIndex: 300, border: '1px solid var(--border)', overflow: 'hidden'
-          }}>
-             {filteredUsers.map(u => (
-               <button 
-                 key={u.name}
-                 onClick={() => selectMention(u.name)}
-                 style={{ 
-                   display: 'block', width: '100%', padding: '12px 20px', textAlign: 'left',
-                   background: 'none', border: 'none', borderBottom: '1px solid var(--border)',
-                   fontSize: '14px', fontWeight: '700', color: 'var(--secondary)'
-                 }}
-               >
-                 {u.name}
-               </button>
-             ))}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: step === 1 ? '#000' : 'white' }}>
+        {step === 1 ? (
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ 
-              width: '44px', height: '44px', borderRadius: '50%',
-              background: 'var(--gold)', color: 'var(--primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-serif)', fontWeight: '900', fontSize: '20px',
-              overflow: 'hidden', border: '2px solid var(--gold)'
+              width: '100%', aspectRatio: '1/1', background: '#121212', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' 
             }}>
-              {userAvatar ? <img src={userAvatar} style={{width:'100%', height:'100%', objectFit:'cover'}} /> : sponsorName.charAt(0)}
-            </div>
-            <div>
-              <p style={{ fontWeight: '800', color: 'var(--secondary)', fontSize: '15px' }}>{sponsorName}</p>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Criando nova publicação...</p>
-            </div>
-        </div>
-
-        {/* Media Preview Area - IMEDIATO E INTEGRADO */}
-        {mediaFiles.length > 0 ? (
-          <div style={{ 
-            display: 'flex', gap: '12px', overflowX: 'auto', 
-            paddingBottom: '16px', marginBottom: '16px', scrollbarWidth: 'none' 
-          }}>
-            {mediaFiles.map((media, i) => (
-              <div key={i} style={{ 
-                position: 'relative', 
-                width: '240px', 
-                height: '280px', 
-                flexShrink: 0, 
-                borderRadius: '16px', 
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                border: '1px solid var(--border)'
-              }}>
-                {media.type === 'reel' ? (
-                  <video src={media.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} controls={false} autoPlay loop muted />
+              {mediaFiles.length > 0 ? (
+                mediaFiles[0].type === 'reel' ? (
+                  <video src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay loop muted />
                 ) : (
-                  <img src={media.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="preview" />
-                )}
-                <button 
-                  onClick={() => setMediaFiles(prev => prev.filter((_, idx) => idx !== i))}
-                  style={{
-                    position: 'absolute', top: '12px', right: '12px',
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.6)', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none',
-                    backdropFilter: 'blur(4px)'
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-            {uploadingMedia && (
-               <div style={{ width: '240px', height: '280px', background: '#f5f5f5', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <div className="pulse-fast" style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+                  <img src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )
+              ) : (
+                <div style={{ textAlign: 'center', color: '#8e8e8e' }}>
+                   <ImageIcon size={64} strokeWidth={1} style={{ marginBottom: '16px' }} />
+                   <p style={{ fontSize: '14px' }}>Nenhuma mídia selecionada</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ flex: 1, padding: '20px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                 <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '700' }}>Recentes</h3>
+                 <div style={{ display: 'flex', gap: '12px' }}>
+                   <button onClick={() => fetchMedia(CameraSource.Camera)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <Camera size={20} />
+                   </button>
+                   <button onClick={() => fileInputRef.current.click()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <ImageIcon size={20} />
+                   </button>
+                 </div>
                </div>
-            )}
+               
+               <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*,video/*" onChange={handleFileChange} />
+               
+               {uploadingMedia && (
+                 <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                    <div className="spin" style={{ width: '24px', height: '24px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto' }}></div>
+                 </div>
+               )}
+            </div>
           </div>
         ) : (
-          uploadingMedia && (
-            <div style={{ width: '100%', height: '200px', background: '#f5f5f5', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-               <div className="pulse-fast" style={{ width: '30px', height: '30px', background: 'var(--primary)', borderRadius: '50%' }}></div>
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden', background: '#eee', flexShrink: 0 }}>
+                 {mediaFiles[0].type === 'reel' ? (
+                   <video src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                 ) : (
+                   <img src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                 )}
+              </div>
+              <textarea 
+                ref={textareaRef}
+                autoFocus
+                placeholder="Adicione uma legenda..."
+                value={caption}
+                onChange={handleCaptionChange}
+                style={{ 
+                  flex: 1, border: 'none', outline: 'none', resize: 'none',
+                  fontSize: '16px', color: '#262626', minHeight: '100px',
+                  paddingTop: '4px'
+                 }}
+              />
             </div>
-          )
-        )}
 
-        <textarea 
-          ref={textareaRef}
-          placeholder="O que você está pensando? Marque amigos com @..."
-          value={caption}
-          onChange={handleCaptionChange}
-          style={{
-            width: '100%', minHeight: '150px',
-            border: 'none', resize: 'none', outline: 'none',
-            fontSize: '17px', color: 'var(--text-main)',
-            lineHeight: '1.5',
-            padding: '4px'
-          }}
-        />
+            {showMentionsList && filteredUsers.length > 0 && (
+              <div style={{ background: '#fafafa', borderRadius: '8px', border: '1px solid #eee', marginBottom: '16px' }}>
+                {filteredUsers.map(u => (
+                  <button key={u.name} onClick={() => selectMention(u.name)} style={{ display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #eee', fontSize: '14px', fontWeight: '600' }}>
+                    {u.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
+               <p style={{ fontSize: '15px', color: '#262626' }}>Marcar pessoas</p>
+            </div>
+            <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
+               <p style={{ fontSize: '15px', color: '#262626' }}>Adicionar localização</p>
+            </div>
+             <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
+               <p style={{ fontSize: '15px', color: '#262626' }}>Configurações avançadas</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <footer style={{ 
-        padding: '16px 20px', 
-        borderTop: '1px solid rgba(0,0,0,0.05)',
-        display: 'flex', gap: '20px'
-      }}>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          style={{ display: 'none' }} 
-          accept="image/*,video/*" 
-          multiple 
-          onChange={handleFileChange}
-        />
-        <button 
-          onClick={() => fetchMedia(CameraSource.Camera)}
-          style={{ 
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-            background: 'none', border: 'none', color: 'var(--primary)' 
-          }}
-        >
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(107, 20, 26, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Camera size={24} />
-          </div>
-          <span style={{ fontSize: '12px', fontWeight: '600' }}>Câmera</span>
-        </button>
-
-        <button 
-           onClick={() => fetchMedia(CameraSource.Photos)}
-          style={{ 
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-            background: 'none', border: 'none', color: 'var(--primary)' 
-          }}
-        >
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(107, 20, 26, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ImageIcon size={24} />
-          </div>
-          <span style={{ fontSize: '12px', fontWeight: '600' }}>Galeria</span>
-        </button>
-      </footer>
+      {step === 2 && (
+        <footer style={{ padding: '16px', background: 'white', borderTop: '1px solid #efefef' }}>
+          <button 
+             onClick={handlePost}
+             disabled={loading}
+             style={{ 
+               width: '100%', padding: '14px', borderRadius: '12px', background: '#0095F6', 
+               color: 'white', fontWeight: '800', border: 'none', opacity: loading ? 0.6 : 1
+             }}
+          >
+             {loading ? 'COMPARTILHANDO...' : 'Compartilhar'}
+          </button>
+        </footer>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
       `}} />
     </div>
   );
 };
 
 export default SocialPostCreator;
+

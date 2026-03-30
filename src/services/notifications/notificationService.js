@@ -110,3 +110,19 @@ export const initPushNotifications = async (userId) => {
     console.error("Native push error: ", err);
   }
 };
+
+/**
+ * ESCUTA REALTIME PARA NOVOS ALERTAS GLOBAIS
+ * - Faz a "mágica" de aparecer o badge ou o alerta sem refresh.
+ */
+export const subscribeToNotifications = (onNewNotification) => {
+  return supabase
+    .channel('public:system_notifications')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_notifications' }, 
+      payload => {
+        console.log('New notification received via Realtime!', payload.new);
+        onNewNotification(payload.new);
+      }
+    )
+    .subscribe();
+};

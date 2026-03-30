@@ -65,21 +65,6 @@ function App() {
   const handleLogin = async (cpf, password) => {
     setAuthStatus('loading');
 
-    // 0. Bypass Organizadores (Renato e Emanuel)
-    const ORG_MASTERS = {
-      '05875164450': { name: 'Renato Assis', type: 'admin' },
-      '71115902440': { name: 'Emanuel', type: 'admin' }
-    };
-
-    if (ORG_MASTERS[cpf] && password === 'admin') {
-      setCurrentUserCpf(cpf);
-      localStorage.setItem('current_user_cpf', cpf);
-      setUserName(ORG_MASTERS[cpf].name);
-      setSelectedType('admin'); // String pura
-      setAuthStatus('logged-in'); 
-      return;
-    }
-
     try {
       // 1. Verificar se o membro existe
       const { data: member, error: memberError } = await supabase
@@ -96,7 +81,7 @@ function App() {
 
       setUserName(member.name);
 
-      // 2. Verificar perfil e senha
+      // 2. Verificar perfil
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -105,8 +90,7 @@ function App() {
 
       let currentProfile = profile;
       if (profileError || !profile) {
-        // Criar perfil se não existir
-        const { data: newProfile, error: createError } = await supabase
+        const { data: newProfile } = await supabase
           .from('profiles')
           .insert([{ cpf, password_reset: false }])
           .select()
@@ -115,11 +99,8 @@ function App() {
       }
 
       // 3. Validar Senha
-      // Se ainda não resetou (Primeiro Acesso)
       if (!currentProfile.password_reset) {
-        const type = currentProfile.user_type || member.user_type;
-        const isAdminType = type === 'admin' || type === 'staff' || cpf === '05875164450' || cpf === '71115902440';
-        
+        const isAdminType = currentProfile.user_type === 'organizador' || currentProfile.user_type === 'staff' || currentProfile.user_type === 'admin';
         const expectedPassword = isAdminType ? 'admin' : 'congresso2026';
 
         if (password === expectedPassword) {
@@ -127,34 +108,31 @@ function App() {
           localStorage.setItem('current_user_cpf', cpf);
           setAuthStatus('reset-password');
         } else {
-          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão de ${isAdminType ? 'Organizador (admin)' : 'Inscrito (congresso2026)'}.`);
+          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão.`);
           setAuthStatus('logged-out');
         }
         return;
       }
 
-      // Se já resetou, valida a senha salva no perfil
+      // 4. Validar Senha salva no perfil (Após reset)
       if (password === currentProfile.current_password) {
         setCurrentUserCpf(cpf);
         localStorage.setItem('current_user_cpf', cpf);
-        
-          setUserName(member.name);
-          setUserAvatar(currentProfile.avatar_url);
+        setUserName(member.name);
+        setUserAvatar(currentProfile.avatar_url);
 
-          // Bypass administrativo para testes do Renato
-          if (cpf === '71115902440' || member.name?.includes('Renato')) {
-            currentProfile.user_type = 'admin';
-          }
+        const type = currentProfile.user_type;
+        const canBypassOnboarding = type === 'organizador' || type === 'admin' || type === 'staff' || type?.includes('patrocinador');
 
-          if (currentProfile.onboarding_completed || currentProfile.user_type === 'admin' || currentProfile.user_type === 'staff' || currentProfile.user_type?.includes('patrocinador')) {
-            setSelectedType(currentProfile.user_type || 'admin');
-            setAuthStatus('logged-in');
-          } else if (currentProfile.user_type) {
-            setSelectedType(currentProfile.user_type);
-            setAuthStatus('questionnaire');
-          } else {
-            setAuthStatus('select-type');
-          }
+        if (currentProfile.onboarding_completed || canBypassOnboarding) {
+          setSelectedType(type || 'congressista');
+          setAuthStatus('logged-in');
+        } else if (type) {
+          setSelectedType(type);
+          setAuthStatus('questionnaire');
+        } else {
+          setAuthStatus('select-type');
+        }
       } else {
         alert('Senha incorreta.');
         setAuthStatus('logged-out');

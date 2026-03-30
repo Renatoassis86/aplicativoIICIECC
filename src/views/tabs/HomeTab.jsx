@@ -88,8 +88,8 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
     {
       id: 4,
       name: 'FICV',
-      tierName: 'Parceiro',
-      tierColor: '#CBD5E0',
+      tierName: 'Parceiro Master',
+      tierColor: '#B9F2FF',
       logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=400&h=400&fit=crop&q=80',
       tagline: 'Educação Superior Clássica.',
       bio: 'Pós-graduação e formação contínua de professores.',
@@ -106,6 +106,28 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       bio: 'Fundação Cidade Viva apoiando o II CIECC.',
       website: 'https://cidadeviva.org',
       booth: 'VIP Lounge'
+    },
+    {
+       id: 6,
+       name: 'Schola Classics',
+       tierName: 'Patrocinador Ouro',
+       tierColor: '#FFD700',
+       logo: 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400&h=400&fit=crop&q=80',
+       tagline: 'Ensino de Excelência.',
+       bio: 'Plataforma de ensino voltada ao currículo clássico.',
+       website: 'https://schola.com.br',
+       booth: 'Auditório 2'
+    },
+    {
+       id: 7,
+       name: 'Veritas School',
+       tierName: 'Diamante',
+       tierColor: '#B9F2FF',
+       logo: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=400&fit=crop&q=80',
+       tagline: 'Verdade em Educação.',
+       bio: 'Referência internacional em pedagogia clássica.',
+       website: 'https://veritas.edu',
+       booth: 'Pavilhão Sul'
     }
   ];
 
@@ -128,38 +150,19 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
         </div>
 
         <div style={{ position: 'relative', zIndex: 10 }}>
-          {/* Logo Centralizada no topo - Clara sobre Borgonha */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', marginTop: '32px' }}>
-            <img 
-              src="/logo.png" 
-              alt="CIECC" 
-              style={{ 
-                height: '84px', 
-                objectFit: 'contain'
-              }} 
-            />
-          </div>
-
+          {/* TOP BAR: MENU MAIS & CIRECLE-AVATAR */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '2px' }}>Bem-vindo,</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--gold)' }}>{firstName}</span>
-                <span style={{ 
-                  fontSize: '9px', fontWeight: '900', background: 'var(--gold)', color: '#111', 
-                  padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}>
-                  {formatUserType(userType)}
-                </span>
+            <button 
+              onClick={() => onNavigate('more')}
+              style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ width: '20px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+                <div style={{ width: '14px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
+                <div style={{ width: '20px', height: '2px', background: 'white', borderRadius: '1px' }}></div>
               </div>
-            </div>
+            </button>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              {userType === 'staff' && (
-                <button onClick={onOpenScanner} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <ScanLine size={20} color="var(--gold)" />
-                </button>
-              )}
               <button onClick={onOpenNotifications} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
                 <Bell size={20} color="white" />
                 {unreadCount > 0 && (
@@ -174,22 +177,34 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
                 )}
               </button>
               <div 
-                onClick={onOpenTicket}
+                onClick={() => onNavigate('more')}
                 style={{ 
                   width: '44px', height: '44px', borderRadius: '50%', 
                   background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                   fontWeight: '900', color: '#111', fontSize: '18px', 
                   boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                   overflow: 'hidden',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  border: '2px solid white'
                 }}>
                 {userAvatar ? (
                   <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  initial
+                  <Camera size={20} color="var(--primary)" />
                 )}
               </div>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+            <img 
+              src="/logo_beige.png" 
+              alt="CIECC" 
+              style={{ 
+                height: '80px', 
+                objectFit: 'contain'
+              }} 
+            />
           </div>
 
           <div style={{ marginBottom: '12px' }}>
@@ -203,8 +218,8 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             marginBottom: '16px',
             color: 'white'
           }}>
-            Educação Cristã Clássica: <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>Fomentando o Diálogo da Abordagem de Ensino Clássica</span>
+            II CIECC 2026: <br/>
+            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>A Educação Cristã Clássica no Brasil: Unidade, Verdade e Beleza</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
@@ -473,7 +488,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       <footer style={{ marginTop: '40px', padding: '0 20px', textAlign: 'center', opacity: 0.5 }}>
         <div style={{ width: '40px', height: '1px', background: 'var(--border)', margin: '0 auto 20px' }}></div>
         <p style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>II Congresso Internacional CIECC</p>
-        <p style={{ fontSize: '10px', marginTop: '4px' }}>Educação Cristã Clássica para as Nações</p>
+        <p style={{ fontSize: '10px', marginTop: '4px' }}>Educação que permanece</p>
       </footer>
 
       {/* MODAL DETALHE PALESTRANTE */}
@@ -481,7 +496,27 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
         <SpeakerDetailModal 
           speaker={selectedSpeaker} 
           onClose={() => setSelectedSpeaker(null)} 
-          onSaveFavorite={(s) => console.log('Favoritou palestrante:', s)}
+          onSaveFavorite={(s) => {
+            const stored = localStorage.getItem('ciecc_favorite_speakers');
+            let favs = stored ? JSON.parse(stored) : [];
+            if (favs.includes(s.id)) favs = favs.filter(id => id !== s.id);
+            else favs.push(s.id);
+            localStorage.setItem('ciecc_favorite_speakers', JSON.stringify(favs));
+          }}
+        />
+      )}
+
+      {selectedSponsor && (
+        <SponsorDetailModal 
+          sponsor={selectedSponsor} 
+          onClose={() => setSelectedSponsor(null)} 
+          onSaveFavorite={(s) => {
+            const stored = localStorage.getItem('ciecc_favorite_sponsors');
+            let favs = stored ? JSON.parse(stored) : [];
+            if (favs.includes(s.id)) favs = favs.filter(id => id !== s.id);
+            else favs.push(s.id);
+            localStorage.setItem('ciecc_favorite_sponsors', JSON.stringify(favs));
+          }}
         />
       )}
 

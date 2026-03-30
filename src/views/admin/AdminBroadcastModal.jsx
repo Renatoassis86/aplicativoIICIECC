@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, Send, BellRing, AlertCircle } from 'lucide-react';
 
-export default function AdminBroadcastModal({ onClose, staffCpf }) {
+export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [audience, setAudience] = useState('all'); // all, staff, sponsors
@@ -18,7 +18,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf }) {
     try {
       const { error } = await supabase.from('broadcasts').insert({
         title: title.trim(),
-        sender_name: 'Renato Assis', // Fallback or dynamic
+        sender_name: userName || 'Equipe CIECC', 
         message: message.trim(),
         sender_id: staffCpf,
         target_role: audience

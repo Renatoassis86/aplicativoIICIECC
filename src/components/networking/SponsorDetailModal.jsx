@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, ExternalLink, Globe, Instagram, Mail, MapPin, Share2 } from 'lucide-react';
 
-export default function SponsorDetailModal({ sponsor, onClose }) {
+export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite }) {
   if (!sponsor) return null;
 
   return (
@@ -34,9 +34,17 @@ export default function SponsorDetailModal({ sponsor, onClose }) {
         }}>
           {sponsor.tierName}
         </span>
-        <button style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}>
-          <Share2 size={20} color="#666" />
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={() => onSaveFavorite && onSaveFavorite(sponsor)}
+            style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}
+          >
+            <Bookmark size={20} color="var(--primary)" />
+          </button>
+          <button style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}>
+            <Share2 size={20} color="#666" />
+          </button>
+        </div>
       </header>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px 80px' }}>
@@ -116,7 +124,18 @@ export default function SponsorDetailModal({ sponsor, onClose }) {
       </div>
 
       {/* Footer / CTA Principal */}
-      <div style={{ padding: '20px 24px env(safe-area-inset-bottom, 20px)', borderTop: '1px solid #f1f1f1', background: 'white' }}>
+      <div style={{ padding: '20px 24px env(safe-area-inset-bottom, 20px)', borderTop: '1px solid #f1f1f1', background: 'white', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <button 
+          onClick={() => onSaveFavorite && onSaveFavorite(sponsor)}
+          style={{ 
+            width: '100%', padding: '18px', background: 'white', 
+            color: 'var(--primary)', border: '2px solid var(--primary)', borderRadius: '16px', 
+            fontWeight: '900', fontSize: '15px', display: 'flex', 
+            alignItems: 'center', justifyContent: 'center', gap: '12px'
+          }}
+        >
+          ADICIONAR À MINHA AGENDA <Bookmark size={18} />
+        </button>
         <button 
           onClick={() => window.open(sponsor.website, '_blank')}
           style={{ 

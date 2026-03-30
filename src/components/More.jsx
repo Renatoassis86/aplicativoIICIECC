@@ -5,7 +5,7 @@ import {
   ShieldCheck, Share2, Info, BellRing, Smartphone
 } from 'lucide-react';
 
-const More = ({ onLogout }) => {
+const More = ({ onLogout, userName, userType, userAvatar }) => {
   const sections = [
     {
       title: 'Configurações do Evento',
@@ -34,6 +34,8 @@ const More = ({ onLogout }) => {
     }
   ];
 
+  const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
+
   return (
     <div className="more-container h-full bg-secondary">
       {/* Perfil do Usuário */}
@@ -41,20 +43,23 @@ const More = ({ onLogout }) => {
         <div className="laurel-decor top-0 right-0 opacity-10"></div>
         <div className="flex items-center gap-20 relative z-10">
           <div className="relative">
-            <div className="w-72 h-72 bg-white/10 rounded-3xl border-2 border-accent-light/30 flex items-center justify-center text-white backdrop-blur-md shadow-2xl">
-              <span className="serif text-2xl font-bold">RA</span>
+            <div className="w-72 h-72 bg-white/10 rounded-3xl border-2 border-accent-light/30 flex items-center justify-center text-white backdrop-blur-md shadow-2xl overflow-hidden">
+              {userAvatar ? (
+                <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span className="serif text-2xl font-bold">{initial}</span>
+              )}
             </div>
             <div className="absolute -bottom-4 -right-4 bg-accent p-6 rounded-lg text-white shadow-lg">
               <Settings size={14} />
             </div>
           </div>
           <div>
-            <h2 className="serif text-white text-xl font-bold">Renato Assis</h2>
+            <h2 className="serif text-white text-xl font-bold">{userName || 'Congressista'}</h2>
             <div className="flex items-center gap-6 mt-4">
-              <span className="text-[10px] font-extrabold text-accent-light uppercase tracking-widest bg-white/10 px-8 py-2 rounded-md border border-white/10">Congressista</span>
+              <span className="text-[10px] font-extrabold text-accent-light uppercase tracking-widest bg-white/10 px-8 py-2 rounded-md border border-white/10">{userType || 'Congressista'}</span>
               <ShieldCheck size={14} className="text-accent-light" />
             </div>
-            <p className="text-white/40 text-[10px] mt-8 font-medium">renato.assis@exemplo.com.br</p>
           </div>
         </div>
       </header>

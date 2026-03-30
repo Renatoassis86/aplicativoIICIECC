@@ -134,8 +134,8 @@ export const postComment = async (postId, text, authorName, authorId) => {
 export const seedMockPosts = async (userId) => {
   const mocks = [
     {
-      author_name: 'Renato Assis',
-      author_role: 'Diretor Geral CIECC',
+      author_name: 'Organização CIECC',
+      author_role: 'Diretoria Geral',
       author_tier: 4,
       content_type: 'video',
       media_urls: ['https://www.w3schools.com/html/mov_bbb.mp4'],

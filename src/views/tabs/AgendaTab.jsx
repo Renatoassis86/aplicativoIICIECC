@@ -10,7 +10,10 @@ import {
 
 const AgendaTab = () => {
   const [selectedDay, setSelectedDay] = useState('01/05');
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('ciecc_favorite_sessions');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const days = ['01/05', '02/05'];
   const events = [
@@ -77,9 +80,11 @@ const AgendaTab = () => {
   ];
 
   const toggleFavorite = (id) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
+    setFavorites(prev => {
+      const updated = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id];
+      localStorage.setItem('ciecc_favorite_sessions', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return (

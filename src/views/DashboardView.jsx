@@ -206,10 +206,10 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
         />
       )}
 
-      {/* Admin Broadcast System */}
-      {showBroadcast && (userType === 'staff' || userType === 'admin') && (
+      {showBroadcast && (userType === 'staff' || userType === 'admin' || userType === 'organizador') && (
         <AdminBroadcastModal 
           staffCpf={userCpf} 
+          userName={userName}
           onClose={() => setShowBroadcast(false)} 
         />
       )}

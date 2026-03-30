@@ -15,19 +15,24 @@ export const ImagePersistenceService = {
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: true,
-        resultType: CameraResultType.Uri,
+        resultType: CameraResultType.DataUrl, // Mais seguro para Webview nativa
         source: source,
-        width: 1024, // Limita largura para performance
+        width: 1024,
         saveToGallery: false
       });
 
+      // Converter dataUrl para blob para o upload
+      const response = await fetch(image.dataUrl);
+      const blob = await response.blob();
+
       return {
-        webPath: image.webPath,
-        blob: await fetch(image.webPath).then(r => r.blob()),
+        webPath: image.dataUrl,
+        blob: blob,
         format: image.format
       };
     } catch (err) {
       console.error("[ImagePersistence] Erro ao capturar:", err);
+      if (err.message?.includes('User cancelled')) return null;
       return null;
     }
   },
