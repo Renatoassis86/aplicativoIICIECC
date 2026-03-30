@@ -16,12 +16,10 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
     setStatus(null);
 
     try {
-      const { error } = await supabase.from('broadcasts').insert({
+      const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
-        sender_name: userName || 'Equipe CIECC', 
-        message: message.trim(),
-        sender_id: staffCpf,
-        target_role: audience
+        body: message.trim(),
+        sender_role: audience
       });
 
       if (error) throw error;

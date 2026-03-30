@@ -328,7 +328,7 @@ const HomeTab = ({
           <ChevronRight size={18} color="var(--border)" />
         </div>
 
-        {(userType === 'staff' || userType === 'admin') && (
+        {(userType === 'staff' || userType === 'admin' || userType === 'organizador') && (
           <button 
             onClick={onOpenBroadcast}
             style={{ 
