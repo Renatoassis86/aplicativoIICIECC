@@ -226,62 +226,96 @@ function App() {
   }
 
   return (
-    <div className="App" style={{ background: '#F7F8FA', minHeight: '100vh' }}>
-      {authStatus === 'logged-out' && (
-        <LoginView 
-          onLogin={handleLogin} 
-          onAdminAccess={() => {
-            // Se o master quiser ver o portal admin sem logar (apenas para visualização rápida)
-            // Mas no fluxo oficial o portal admin exige que authStatus === 'logged-in' && view === 'admin-portal'
-            // Vamos permitir que ele veja o ImportView (antigo) via Login
-            setAuthStatus('admin-portal');
-          }} 
-        />
-      )}
-      
-      {authStatus === 'admin-portal' && (
-        <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
-      )}
-      
-      {authStatus === 'reset-password' && (
-        <PasswordResetView onComplete={handlePasswordResetComplete} />
-      )}
+    <div className="app-shell">
+      <div className="mobile-wrapper">
+        <div className="App" style={{ background: '#F7F8FA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          {authStatus === 'logged-out' && (
+            <LoginView 
+              onLogin={handleLogin} 
+              onAdminAccess={() => {
+                setAuthStatus('admin-portal');
+              }} 
+            />
+          )}
+          
+          {authStatus === 'admin-portal' && (
+            <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
+          )}
+          
+          {authStatus === 'reset-password' && (
+            <PasswordResetView onComplete={handlePasswordResetComplete} />
+          )}
 
-      {authStatus === 'select-type' && (
-        <UserTypeSelectionView onSelect={handleTypeSelect} />
-      )}
+          {authStatus === 'select-type' && (
+            <UserTypeSelectionView onSelect={handleTypeSelect} />
+          )}
 
-      {authStatus === 'questionnaire' && (
-        <QuestionnaireController userType={selectedType} onComplete={handleQuestionnaireComplete} />
-      )}
-      
-      {authStatus === 'logged-in' && view === 'app' && (
-        <DashboardView 
-          onLogout={handleLogout} 
-          userType={selectedType || 'congressista'} 
-          userName={userName || 'Visitante'} 
-          userCpf={currentUserCpf}
-          userAvatar={userAvatar}
-          onOpenAdminPortal={() => setView('admin-portal')}
-        />
-      )}
+          {authStatus === 'questionnaire' && (
+            <QuestionnaireController userType={selectedType} onComplete={handleQuestionnaireComplete} />
+          )}
+          
+          {authStatus === 'logged-in' && view === 'app' && (
+            <DashboardView 
+              onLogout={handleLogout} 
+              userType={selectedType || 'congressista'} 
+              userName={userName || 'Visitante'} 
+              userCpf={currentUserCpf}
+              userAvatar={userAvatar}
+              onOpenAdminPortal={() => setView('admin-portal')}
+            />
+          )}
 
-      {authStatus === 'logged-in' && view === 'admin-portal' && (
-        <AdminPortalView 
-          onLogout={handleLogout}
-          onBackToApp={() => setView('app')}
-          userName={userName}
-          userCpf={currentUserCpf}
-        />
-      )}
+          {authStatus === 'logged-in' && view === 'admin-portal' && (
+            <AdminPortalView 
+              onLogout={handleLogout}
+              onBackToApp={() => setView('app')}
+              userName={userName}
+              userCpf={currentUserCpf}
+            />
+          )}
 
-      {/* Fallback de Segurança - Se cair em um estado inválido, volta pro login em vez de tela branca */}
-      {![ 'loading', 'logged-out', 'admin-portal', 'reset-password', 'select-type', 'questionnaire', 'logged-in'].includes(authStatus) && (
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-           <p>Estado de sessão inválido. Redirecionando...</p>
-           <button onClick={() => setAuthStatus('logged-out')} className="btn-primary" style={{ width: 'auto', marginTop: '20px' }}>Voltar ao Login</button>
+          {/* Fallback de Segurança */}
+          {![ 'loading', 'logged-out', 'admin-portal', 'reset-password', 'select-type', 'questionnaire', 'logged-in'].includes(authStatus) && (
+            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+               <p>Estado de sessão inválido. Redirecionando...</p>
+               <button onClick={() => setAuthStatus('logged-out')} className="btn-primary" style={{ width: 'auto', marginTop: '20px' }}>Voltar ao Login</button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .app-shell {
+          background: #f0f2f5;
+          min-height: 100vh;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+        }
+        .mobile-wrapper {
+          width: 100%;
+          max-width: 430px;
+          background: white;
+          min-height: 100vh;
+          position: relative;
+          box-shadow: 0 0 40px rgba(0,0,0,0.1);
+          overflow-x: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        @media (max-width: 430px) {
+          .mobile-wrapper {
+            max-width: 100%;
+            box-shadow: none;
+          }
+        }
+        /* Garantir que todos os modais fixos fiquem dentro do wrapper quando possível */
+        .fixed-modal-overlay {
+          max-width: 430px;
+          margin: 0 auto;
+        }
+      `}} />
     </div>
   );
 }

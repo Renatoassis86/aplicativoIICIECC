@@ -110,34 +110,21 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   };
 
   return (
-    <div className="app-shell">
-      <div className="mobile-wrapper">
-        <div className="tab-layout">
-      
-      {/* Top Navigation Global (exceto na Home e Mídia que tem header custom) */}
-      {activeTab !== 'home' && activeTab !== 'media' && (
-        <header className="top-nav-global" style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          padding: '24px 20px 16px', 
-          background: 'var(--primary)', 
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100
-        }}>
-          <img 
-            src="/logo.png" 
-            alt="CIECC" 
-            style={{ 
-              height: '35px'
-            }} 
-          />
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+    <div className="tab-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {activeTab === 'home' && (
+        <header className="dashboard-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img 
+              src="/logo.png" 
+              alt="CIECC" 
+              style={{ height: '32px', filter: 'brightness(0) invert(1)' }} 
+            />
+            <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>CIECC 2026</h2>
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
             <button 
               onClick={() => setShowNotifications(true)} 
-              style={{ background: 'none', border: 'none', padding: '4px', position: 'relative' }}
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '6px', borderRadius: '8px', position: 'relative' }}
             >
               <Bell size={22} color="white" />
               {unreadCount > 0 && (
@@ -164,7 +151,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       )}
 
       {/* Main Content Area */}
-      <main style={{ paddingBottom: '90px' }}>
+      <main style={{ flex: 1, paddingBottom: '90px' }}>
         {renderContent()}
       </main>
 
@@ -247,40 +234,6 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       {showFAQ && <FAQView onClose={() => setShowFAQ(false)} />}
       {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
       {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
-        </div>
-      </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .app-shell {
-          background: #f4f4f4;
-          min-height: 100vh;
-          width: 100%;
-          display: flex;
-          justify-content: center;
-        }
-        .mobile-wrapper {
-          width: 100%;
-          max-width: 430px;
-          background: white;
-          min-height: 100vh;
-          position: relative;
-          box-shadow: 0 0 50px rgba(0,0,0,0.1);
-          overflow-x: hidden;
-          display: flex;
-          flex-direction: column;
-        }
-        @media (max-width: 430px) {
-          .mobile-wrapper {
-            max-width: 100%;
-            box-shadow: none;
-          }
-        }
-        .tab-layout {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-      `}} />
     </div>
   );
 };
