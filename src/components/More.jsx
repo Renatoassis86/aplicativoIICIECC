@@ -110,7 +110,7 @@ const More = ({ onLogout, userName, userType, userAvatar }) => {
             </button>
             
             <div className="flex flex-col items-center mt-32 gap-8 opacity-40">
-               <div className="w-40 h-1 bg-gray-200"></div>
+               <img src="/logo.png" alt="CIECC" style={{ height: '28px', filter: 'grayscale(1) brightness(0.5)' }} />
                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">FACULDADE CIDADE VIVA</p>
             </div>
           </div>

@@ -151,6 +151,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} /></button>}
+          <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'var(--primary)' }}>
             {viewingSaved ? 'Itens Salvos' : 'Feed Social'}
           </h1>

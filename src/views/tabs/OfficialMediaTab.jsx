@@ -80,12 +80,10 @@ const OfficialMediaTab = () => {
         marginBottom: '24px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '10px' }}>
-            <Video size={20} color="white" />
-          </div>
+          <img src="/logo.png" alt="" style={{ height: '30px', filter: 'brightness(0) invert(1)' }} />
           <h2 style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>CIECC <span style={{ color: 'var(--gold)' }}>Mídia</span></h2>
         </div>
-        <p style={{ fontSize: '14px', opacity: 0.7 }}>O hub oficial de conteúdo do II Congresso Internacional de Educação Cristã Clássica.</p>
+        <p style={{ fontSize: '14px', opacity: 0.7 }}>O Hub Prime para a Discussão e Disseminação da Educação Cristã Clássica no Brasil.</p>
       </header>
 
       {/* Grid de Seções */}
@@ -216,8 +214,12 @@ const OfficialMediaTab = () => {
               <div style={{ display: 'grid', gap: '12px' }}>
                 {section.items.map(item => (
                   <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
-                    <div style={{ background: 'var(--accent)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       <Award size={24} color="var(--primary)" />
+                    <div style={{ background: item.logo ? 'transparent' : 'var(--accent)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                       {item.logo ? (
+                         <img src={item.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                       ) : (
+                         <Award size={24} color="var(--primary)" />
+                       )}
                     </div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)' }}>{item.title}</p>

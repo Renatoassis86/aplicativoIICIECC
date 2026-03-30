@@ -198,11 +198,12 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
 
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
             <img 
-              src="/logo_beige.png" 
+              src="/logo.png" 
               alt="CIECC" 
               style={{ 
                 height: '80px', 
-                objectFit: 'contain'
+                objectFit: 'contain',
+                filter: 'brightness(0) invert(1)'
               }} 
             />
           </div>
@@ -219,7 +220,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
             color: 'white'
           }}>
             II CIECC 2026: <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>A Educação Cristã Clássica no Brasil: Unidade, Verdade e Beleza</span>
+            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>O Fórum Nacional para a Discussão e Disseminação da Educação Cristã Clássica</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
@@ -488,7 +489,7 @@ const HomeTab = ({ userName, userType, userAvatar, unreadCount, onOpenNotificati
       <footer style={{ marginTop: '40px', padding: '0 20px', textAlign: 'center', opacity: 0.5 }}>
         <div style={{ width: '40px', height: '1px', background: 'var(--border)', margin: '0 auto 20px' }}></div>
         <p style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>II Congresso Internacional CIECC</p>
-        <p style={{ fontSize: '10px', marginTop: '4px' }}>Educação que permanece</p>
+        <p style={{ fontSize: '10px', marginTop: '4px' }}>Discussão e Disseminação da Tradição que Transforma</p>
       </footer>
 
       {/* MODAL DETALHE PALESTRANTE */}
