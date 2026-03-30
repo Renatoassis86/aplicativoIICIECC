@@ -6,14 +6,14 @@ import { fetchInbox, markAsRead } from '../../services/notifications/notificatio
  * Interface Deslizante da Central de Mensagens (Notificações)
  * Aqui o congressista vê todos os recados/comunicados globais disparados via Push pela Organização.
  */
-const NotificationsSheet = ({ userId, onClose }) => {
+const NotificationsSheet = ({ userId, userRole, onClose }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Inicializa a lista e as contas nativas do Supabase
   const carregarMensagens = async () => {
     setLoading(true);
-    const { items } = await fetchInbox(userId);
+    const { items } = await fetchInbox(userId, userRole);
     setNotifications(items || []);
     setLoading(false);
   };

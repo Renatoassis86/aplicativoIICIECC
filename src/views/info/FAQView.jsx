@@ -149,7 +149,7 @@ const FAQView = ({ onClose }) => {
             <h4 style={{ fontSize: '16px', fontWeight: '800' }}>Não encontrou o que procurava?</h4>
             <p style={{ fontSize: '13px', opacity: 0.7 }}>Nossa equipe está online para te ajudar agora mesmo.</p>
             <button 
-              onClick={() => window.open('https://wa.me/558393322457', '_blank')}
+              onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/', '_blank')}
               style={{
                 width: '100%',
                 padding: '14px',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Briefcase, ExternalLink, X, Info, ShieldCheck, Zap } from 'lucide-react';
+import { Award, Briefcase, ExternalLink, X, Info, ShieldCheck, Zap, Handshake } from 'lucide-react';
 
 const SponsorsView = ({ onClose }) => {
   const tiers = [
@@ -32,6 +32,17 @@ const SponsorsView = ({ onClose }) => {
       sponsors: [
         { name: 'Cidade Viva', bio: 'Educação para o Reino e Inovação.', logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=400&fit=crop&q=80' },
         { name: 'Zoe School', bio: 'Pedagogia clássica e inovação educacional.', logo: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=400&fit=crop&q=80' }
+      ]
+    },
+    {
+      name: 'Parceiros Institucionais',
+      icon: <Handshake size={20} color="var(--primary)" />,
+      color: 'var(--primary)',
+      description: 'Apoio técnico, acadêmico e tecnológico.',
+      sponsors: [
+        { name: 'ARKOS', bio: 'Soluções tecnológicas para educação clássica.', logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=400&fit=crop&q=80', website: 'https://arkos.com.br' },
+        { name: 'FICV', bio: 'Faculdade Internacional Cidade Viva.', logo: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop&q=80', website: 'https://ficv.edu.br' },
+        { name: 'PACTUM', bio: 'Consultoria e Gestão Educacional.', logo: 'https://images.unsplash.com/photo-1454165833762-02c39e083961?w=400&h=400&fit=crop&q=80', website: 'https://pactum.edu.br' }
       ]
     }
   ];
@@ -106,7 +117,10 @@ const SponsorsView = ({ onClose }) => {
                          <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</h5>
                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: '1.3' }}>{s.bio}</p>
                       </div>
-                      <button style={{ background: '#F8F9FA', padding: '8px', borderRadius: '8px' }}>
+                      <button 
+                        onClick={() => s.website && window.open(s.website, '_blank')}
+                        style={{ background: '#F8F9FA', padding: '8px', borderRadius: '8px' }}
+                      >
                          <ExternalLink size={16} color="var(--text-muted)" />
                       </button>
                     </div>

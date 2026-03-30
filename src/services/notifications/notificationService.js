@@ -12,12 +12,13 @@ import { Capacitor } from '@capacitor/core';
 // INBOX IN-APP (SUPABASE PERSISTENCE)
 // ===================================
 
-export const fetchInbox = async (userId) => {
+export const fetchInbox = async (userId, userRole) => {
   try {
-    // 1. Busca todas mensagens enviadas pela organização
+    // 1. Busca mensagens destinadas a este usuário ou a todos
     const { data: notifications, error } = await supabase
       .from('system_notifications')
       .select('*')
+      .or(`target_role.eq.all,target_role.eq.${userRole || 'congressista'}`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

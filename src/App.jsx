@@ -261,6 +261,7 @@ function App() {
               userName={userName || 'Visitante'} 
               userCpf={currentUserCpf}
               userAvatar={userAvatar}
+              onAvatarUpdate={setUserAvatar}
               onOpenAdminPortal={() => setView('admin-portal')}
             />
           )}

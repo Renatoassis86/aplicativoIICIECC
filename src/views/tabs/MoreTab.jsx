@@ -19,18 +19,17 @@ import {
   Camera,
   Star,
   Briefcase,
-  Monitor
+  Monitor,
+  Handshake
 } from 'lucide-react';
 
 import { ImagePersistenceService } from '../../services/imagePersistence';
 
 const MoreTab = ({ 
-  onLogout, userName, userType, userCpf, userAvatar: initialAvatar, 
+  onLogout, userName, userType, userCpf, userAvatar, 
   onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenTicket
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenTicket, onOpenProfile
 }) => {
-  const [userAvatar, setUserAvatar] = useState(initialAvatar);
-  const [uploading, setUploading] = useState(false);
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -38,39 +37,18 @@ const MoreTab = ({
     if (!type || typeof type !== 'string') return 'Congressista';
     if (type === 'staff') return 'Staff / Organização';
     if (type === 'admin') return 'Administrador';
-    if (type === 'patrocinador_diamante') return 'Patrocinador Diamante';
+    if (type === 'organizador') return 'Organização Oficial';
+    if (type?.includes('patrocinador')) return 'Parceiro Patrocinador';
     return type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  const handleUpdateAvatar = async () => {
-    const photo = await ImagePersistenceService.capturePhoto();
-    if (!photo) return;
-
-    // 1. Preview instantâneo
-    setUserAvatar(photo.webPath);
-    setUploading(true);
-
-    try {
-      const fileName = `avatars/${userCpf}_${Date.now()}.jpg`;
-      const publicUrlOrBase64 = await ImagePersistenceService.uploadToStorage('profiles', fileName, photo.blob);
-      const { error } = await supabase.from('profiles').update({ avatar_url: publicUrlOrBase64 }).eq('cpf', userCpf);
-      if (error) throw error;
-      console.log("[MoreTab] Foto persistida.");
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao salvar foto permanentemente.');
-    } finally {
-      setUploading(false);
-    }
   };
 
   const menuGroups = [
     {
       title: 'Configurações do Perfil',
       items: [
+        { label: 'Meu Perfil / Dados', icon: <User size={18} color="var(--primary)" />, action: onOpenProfile },
         { label: 'Meus Tickets', icon: <Ticket size={18} color="#D69E2E" />, action: onOpenTicket },
         { label: 'Minha Agenda', icon: <BookOpen size={18} color="#2B6CB0" />, action: () => onNavigate('agenda') },
-        { label: 'Configurações', icon: <Settings size={18} color="#718096" /> },
       ]
     },
     {
@@ -86,7 +64,7 @@ const MoreTab = ({
     {
       title: 'Suporte & Ação',
       items: [
-        ...(userType === 'staff' || userType === 'admin' ? [
+        ...(userType === 'staff' || userType === 'admin' || userType === 'organizador' || userType?.includes('patrocinador') ? [
           { label: 'Scanner QR Code', icon: <QrCode size={18} color="#111" />, action: onOpenScanner },
           { label: 'Nova Notificação (Push)', icon: <BellRing size={18} color="#D69E2E" />, action: onOpenBroadcast },
         ] : []),
@@ -111,45 +89,39 @@ const MoreTab = ({
         color: 'white',
         display: 'flex',
         alignItems: 'center',
-        gap: '20px'
-      }}>
-        <label onClick={handleUpdateAvatar} style={{ cursor: 'pointer', position: 'relative' }}>
+        gap: '20px',
+        cursor: 'pointer'
+      }} onClick={onOpenProfile}>
+        <div style={{ position: 'relative' }}>
           <div style={{ 
-            width: '74px', 
-            height: '74px', 
+            width: '64px', 
+            height: '64px', 
             borderRadius: '50%', 
             background: 'rgba(255,255,255,0.1)', 
             border: '2px solid var(--gold)',
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            fontSize: '24px',
+            fontSize: '20px',
             fontWeight: '700',
-            overflow: 'hidden',
-            position: 'relative'
+            overflow: 'hidden'
           }}>
             {userAvatar ? (
               <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               initial
             )}
-            <div style={{ 
-              position: 'absolute', bottom: 0, right: 0, left: 0, 
-              background: 'rgba(0,0,0,0.5)', height: '20px', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center' 
-            }}>
-              <Camera size={10} color="white" />
-            </div>
-            {uploading && (
-               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="pulse" style={{ width: '12px', height: '12px', background: 'white', borderRadius: '50%' }}></div>
-               </div>
-            )}
           </div>
-        </label>
+          <div style={{ 
+            position: 'absolute', bottom: -2, right: -2, 
+            background: 'var(--gold)', borderRadius: '50%', padding: '4px', border: '2px solid var(--secondary)'
+          }}>
+            <Settings size={10} color="var(--secondary)" />
+          </div>
+        </div>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>{userName || 'Visitante'}</h2>
-          <p style={{ fontSize: '13px', opacity: 0.6, marginTop: '4px' }}>{formatUserType(userType)}</p>
+          <h2 style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>{userName || 'Visitante'}</h2>
+          <p style={{ fontSize: '12px', opacity: 0.6, marginTop: '2px' }}>{formatUserType(userType)}</p>
         </div>
       </header>
 
@@ -220,7 +192,7 @@ const MoreTab = ({
           gap: '12px'
         }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '500', opacity: 0.5 }}>
-            Criado por
+            Criando por
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

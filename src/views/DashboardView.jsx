@@ -27,10 +27,11 @@ import MapLocationView from './info/MapLocationView';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
+import ProfileView from './ProfileView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 
-const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOpenAdminPortal }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate, onOpenAdminPortal }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -39,6 +40,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   const [showFAQ, setShowFAQ] = useState(false);
   const [showSponsors, setShowSponsors] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -47,8 +49,8 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
     
     // 2. Traz estado atual da Inbox
     const syncInbox = async () => {
-      const { unreadCount } = await fetchInbox(userCpf);
-      setUnreadCount(unreadCount);
+      const { unreadCount } = await fetchInbox(userCpf, userType);
+      setUnreadCount(unreadCount || 0);
     };
     syncInbox();
   }, [userCpf]);
@@ -69,6 +71,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           onOpenFAQ={() => setShowFAQ(true)}
           onOpenSponsors={() => setShowSponsors(true)}
           onOpenMap={() => setShowMap(true)}
+          onOpenProfile={() => setShowProfile(true)}
         />
       );
       case 'agenda': return <AgendaTab />;
@@ -83,6 +86,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
           userType={userType} 
           userCpf={userCpf} 
           userAvatar={userAvatar} 
+          onOpenProfile={() => setShowProfile(true)}
           onOpenScanner={() => setShowScanner(true)} 
           onOpenBroadcast={() => setShowBroadcast(true)} 
           onOpenAdminPortal={onOpenAdminPortal} 
@@ -168,9 +172,10 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       {showNotifications && (
         <NotificationsSheet 
           userId={userCpf}
+          userRole={userType}
           onClose={() => {
             setShowNotifications(false);
-            fetchInbox(userCpf).then(r => setUnreadCount(r.unreadCount));
+            fetchInbox(userCpf, userType).then(r => setUnreadCount(r.unreadCount || 0));
           }}
         />
       )}
@@ -183,11 +188,22 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
         />
       )}
 
-      {showBroadcast && (userType === 'staff' || userType === 'admin' || userType === 'organizador') && (
+      {showBroadcast && (userType === 'staff' || userType === 'admin' || userType === 'organizador' || userType?.includes('patrocinador')) && (
         <AdminBroadcastModal 
           staffCpf={userCpf} 
           userName={userName}
           onClose={() => setShowBroadcast(false)} 
+        />
+      )}
+
+      {showProfile && (
+        <ProfileView 
+          onClose={() => setShowProfile(false)}
+          userName={userName}
+          userCpf={userCpf}
+          userType={userType}
+          userAvatar={userAvatar}
+          onAvatarUpdate={onAvatarUpdate}
         />
       )}
 

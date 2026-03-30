@@ -19,7 +19,8 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
       const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
         body: message.trim(),
-        sender_role: audience
+        sender_role: 'organizador',
+        target_role: audience 
       });
 
       if (error) throw error;

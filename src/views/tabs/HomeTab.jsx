@@ -28,7 +28,7 @@ import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile
 }) => {
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
@@ -160,7 +160,7 @@ const HomeTab = ({
             {/* PERFIL (ESQUERDA) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div 
-                onClick={() => onNavigate('more')}
+                onClick={onOpenProfile}
                 style={{ 
                   width: '56px', height: '56px', borderRadius: '20px', 
                   background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
