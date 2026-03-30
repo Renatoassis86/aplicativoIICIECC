@@ -110,7 +110,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
   };
 
   return (
-    <div className="dashboard-container" style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
+    <div className="app-shell">
+      <div className="mobile-wrapper">
+        <div className="tab-layout">
       
       {/* Top Navigation Global (exceto na Home e Mídia que tem header custom) */}
       {activeTab !== 'home' && activeTab !== 'media' && (
@@ -245,6 +247,40 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
       {showFAQ && <FAQView onClose={() => setShowFAQ(false)} />}
       {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
       {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .app-shell {
+          background: #f4f4f4;
+          min-height: 100vh;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+        .mobile-wrapper {
+          width: 100%;
+          max-width: 430px;
+          background: white;
+          min-height: 100vh;
+          position: relative;
+          box-shadow: 0 0 50px rgba(0,0,0,0.1);
+          overflow-x: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        @media (max-width: 430px) {
+          .mobile-wrapper {
+            max-width: 100%;
+            box-shadow: none;
+          }
+        }
+        .tab-layout {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+      `}} />
     </div>
   );
 };

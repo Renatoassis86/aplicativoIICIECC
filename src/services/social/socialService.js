@@ -72,12 +72,17 @@ const processPostsResponse = async (rawPosts, userId) => {
         mediaUrls: post.media_urls || [],
         caption: post.caption,
         isSponsor: true, 
-        comments: postComments.map(c => ({
-          ...c,
-          authorName: c.user_name,
-          text: c.content,
-          isOwner: c.user_id === userId
-        })),
+        comments: postComments.map(c => {
+          const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
+          return {
+            ...c,
+            authorName: c.user_name,
+            text: c.content,
+            isOwner: c.user_id === userId,
+            likes: cLikes.length,
+            likedByMe: cLikes.some(e => e.user_id === userId)
+          };
+        }),
         likes: pLikes.length,
         likedByMe: pLikes.some(e => e.user_id === userId),
         timeAgo: agilizarTempoRelativo(post.created_at)
@@ -116,19 +121,28 @@ export const toggleLikePost = async (postId, currentState, userId) => {
 };
 
 export const postComment = async (postId, text, authorName, authorId) => {
-  const { data, error } = await supabase.from('social_comments').insert({
-    post_id: postId,
-    content: text,
-    user_name: authorName,
-    user_id: authorId
-  }).select().single();
-  
-  return {
-    ...data,
-    authorName: data.user_name,
-    text: data.content,
-    isOwner: true
-  };
+  try {
+    const { data, error } = await supabase.from('social_comments').insert({
+      post_id: postId,
+      content: text,
+      user_name: authorName,
+      user_id: authorId
+    }).select().single();
+    
+    if (error || !data) throw new Error("Falha ao postar comentário.");
+
+    return {
+      ...data,
+      authorName: data.user_name,
+      text: data.content,
+      isOwner: true,
+      likes: 0,
+      likedByMe: false
+    };
+  } catch (err) {
+    console.error("[postComment]", err);
+    return null;
+  }
 };
 
 export const toggleSavePost = async (postId, currentState, userId) => {
@@ -147,9 +161,9 @@ export const deleteCommentApi = async (commentId) => {
 
 export const toggleLikeComment = async (commentId, currentState, userId) => {
   if (currentState) {
-    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'like_comment', post_id: commentId});
+    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'like_comment', comment_id: commentId});
   } else {
-    await supabase.from('social_engagements').insert({ user_id: userId, type: 'like_comment', post_id: commentId});
+    await supabase.from('social_engagements').insert({ user_id: userId, type: 'like_comment', comment_id: commentId});
   }
   return !currentState;
 };

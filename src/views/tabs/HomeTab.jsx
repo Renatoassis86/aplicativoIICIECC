@@ -264,7 +264,7 @@ const HomeTab = ({
             }
           }} id="video-container">
             <img 
-              src="https://img.youtube.com/vi/t5CB9rnexOY/maxresdefault.jpg" 
+              src="https://img.youtube.com/vi/t5CB9rnexOY/hqdefault.jpg" 
               alt="Preview II CIECC" 
               style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
             />
@@ -304,74 +304,6 @@ const HomeTab = ({
             }}>
             EXPLORAR PROGRAMAÇÃO <ArrowRight size={18} />
           </button>
-        </div>
-      </section>
-
-      {/* OFICINAS CONFIRMADAS - BASEADO NO PRINT */}
-      <section style={{ padding: '40px 20px 24px' }}>
-        <div style={{ marginBottom: '24px' }}>
-           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', color: 'var(--secondary)', marginBottom: '8px' }}>Oficinas Confirmadas</h3>
-           <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-             As oficinas ocorrerão durante a tarde do dia 02/05. Confira os temas e palestrantes (<strong>Importante:</strong> Serão transmitidas 2 oficinas online, a serem escolhidas pela Coordenação. As demais serão exclusivamente presenciais).
-           </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {[
-            { name: 'Cauê Oliveira', title: 'O papel do pai como educador' },
-            { name: 'Rosely Garcia', title: 'Treinamento e Formação de Professores' },
-            { name: 'Elmer Pires', title: 'Liturgias na Escola Clássica' },
-            { name: 'Maurício Fonseca', title: 'Educando meninos e Educando Meninas' },
-            { name: 'Matheus Macedo', title: 'A beleza em uma escola Clássica' },
-            { name: 'Cleiton Balieiro', title: 'Quadrivium' },
-            { name: 'Thiago Dutra', title: 'Transicionando uma escola para a educação clássica' },
-            { name: 'Rodrigo Brotto', title: 'Disciplina Virtuosa' },
-            { name: 'Marília Chimara', title: 'Trivium e Literatura' },
-            { name: 'Anderson Queiroz', title: 'Educação domiciliar e as Umbrella Schools' }
-          ].map((oficina, idx) => (
-            <div key={idx} className="card" style={{ 
-              padding: '16px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              textAlign: 'center',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
-            }}>
-              <div style={{ 
-                width: '60px', height: '60px', 
-                borderRadius: '50%', 
-                background: '#F8F9FA', 
-                border: '2px solid var(--gold)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: '10px',
-                fontSize: '18px',
-                fontWeight: '800',
-                color: 'var(--gold)',
-                fontFamily: 'var(--font-serif)'
-              }}>
-                {oficina.name.charAt(0)}
-              </div>
-              <p style={{ 
-                fontSize: '10px', 
-                fontWeight: '900', 
-                color: 'var(--gold)', 
-                textTransform: 'uppercase', 
-                letterSpacing: '1px',
-                marginBottom: '4px'
-              }}>
-                {oficina.name}
-              </p>
-              <p style={{ 
-                fontSize: '12px', 
-                fontWeight: '700', 
-                color: 'var(--secondary)',
-                fontFamily: 'var(--font-serif)',
-                lineHeight: '1.2'
-              }}>
-                {oficina.title}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 

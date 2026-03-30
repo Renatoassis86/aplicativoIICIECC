@@ -112,7 +112,8 @@ const CommentsSheet = ({ postId, comments, userName, userType, ownerName, onClos
       {/* Caixa Fixa de Input de Comentário Lateral Mobile Ajustada */}
       <footer style={{ 
         padding: '12px 16px', borderTop: '1px solid rgba(0,0,0,0.05)',
-        display: 'flex', alignItems: 'center', gap: '12px', background: 'white'
+        display: 'flex', alignItems: 'center', gap: '12px', background: 'white',
+        paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'
       }}>
         <div style={{ 
           width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-app)', color: 'var(--primary)',
@@ -125,7 +126,9 @@ const CommentsSheet = ({ postId, comments, userName, userType, ownerName, onClos
             type="text" 
             placeholder="Adicione um comentário..." 
             value={text}
+            autoFocus
             onChange={(e) => setText(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             style={{ 
               width: '100%', padding: '10px 40px 10px 16px', 
               borderRadius: '24px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', fontSize: '14px' 
@@ -137,7 +140,8 @@ const CommentsSheet = ({ postId, comments, userName, userType, ownerName, onClos
             style={{ 
               position: 'absolute', right: '12px', background: 'none', border: 'none', padding: 0,
               color: text.trim() ? 'var(--primary)' : 'rgba(0,0,0,0.2)', transition: 'color 0.2s',
-              display: 'flex', alignItems: 'center'
+              display: 'flex', alignItems: 'center',
+              cursor: text.trim() ? 'pointer' : 'default'
             }}
           >
             <Send size={18} />
