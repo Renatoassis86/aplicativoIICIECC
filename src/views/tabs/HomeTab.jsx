@@ -140,7 +140,7 @@ const HomeTab = ({
       
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
-        padding: 'env(safe-area-inset-top, 100px) 20px 48px', 
+        padding: 'calc(env(safe-area-inset-top, 20px) + 40px) 20px 48px', 
         background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',

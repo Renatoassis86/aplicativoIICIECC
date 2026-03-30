@@ -111,45 +111,6 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onOp
 
   return (
     <div className="tab-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      {activeTab === 'home' && (
-        <header className="dashboard-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img 
-              src="/logo.png" 
-              alt="CIECC" 
-              style={{ height: '32px', filter: 'brightness(0) invert(1)' }} 
-            />
-            <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>CIECC 2026</h2>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              onClick={() => setShowNotifications(true)} 
-              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '6px', borderRadius: '8px', position: 'relative' }}
-            >
-              <Bell size={22} color="white" />
-              {unreadCount > 0 && (
-                <div style={{
-                  position: 'absolute', top: '0px', right: '0px',
-                  width: '16px', height: '16px', borderRadius: '50%',
-                  background: '#E53E3E', color: 'white',
-                  fontSize: '10px', fontWeight: '800',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '2px solid var(--primary)'
-                }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </div>
-              )}
-            </button>
-            <button 
-              onClick={() => setActiveTab('more')} 
-              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '6px', borderRadius: '8px' }}
-            >
-              <Menu size={22} color="white" />
-            </button>
-          </div>
-        </header>
-      )}
-
       {/* Main Content Area */}
       <main style={{ flex: 1, paddingBottom: '90px' }}>
         {renderContent()}
