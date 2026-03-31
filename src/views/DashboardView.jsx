@@ -25,6 +25,7 @@ import FAQView from './info/FAQView';
 import SponsorsView from './info/SponsorsView';
 import MapLocationView from './info/MapLocationView';
 import NotificationsSheet from '../components/notifications/NotificationsSheet';
+import GTsView from './info/GTsView';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import ProfileView from './ProfileView';
@@ -40,6 +41,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
   const [showFAQ, setShowFAQ] = useState(false);
   const [showSponsors, setShowSponsors] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showGTs, setShowGTs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -94,6 +96,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenFAQ={() => setShowFAQ(true)}
           onOpenSponsors={() => setShowSponsors(true)}
           onOpenMap={() => setShowMap(true)}
+          onOpenGTs={() => setShowGTs(true)}
           onOpenTicket={() => setShowTicketModal(true)}
         />
       );
@@ -211,6 +214,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
       {showFAQ && <FAQView onClose={() => setShowFAQ(false)} />}
       {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
       {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
+      {showGTs && <GTsView onClose={() => setShowGTs(false)} />}
     </div>
   );
 };

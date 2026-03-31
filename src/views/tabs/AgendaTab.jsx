@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { 
   Heart, 
   MapPin, 
@@ -34,7 +35,8 @@ const AgendaTab = () => {
 
     // 02 de Maio - Manhã
     { id: 201, date: '02/05', time: '09:00', title: 'Abertura FICV / Coffee Break', speaker: 'Líderes FICV', room: 'Hall / Auditório', category: 'Geral', color: '#FDF2F2' },
-    { id: 202, date: '02/05', time: '09:15', title: 'Exposição de Artigos Científicos', speaker: 'Pesquisadores', room: 'Auditório Secundário', category: 'Acadêmico', color: '#F0FFF4' },
+    { id: 202, date: '02/05', time: '09:15', title: 'Apresentação de Trabalhos: GT 1 e GT 2', speaker: 'Pesquisadores Selecionados', room: 'Sala Ágora', category: 'GTs', color: '#F0FFF4' },
+    { id: 302, date: '02/05', time: '09:15', title: 'Apresentação de Trabalhos: GT 3 e GT 4', speaker: 'Pesquisadores Selecionados', room: 'Sala Logos', category: 'GTs', color: '#F0FFF4' },
     { id: 203, date: '02/05', time: '09:30', title: 'Palestra Líderes 1 - A vida de um diretor de escola clássica', speaker: 'Keith Nix', room: 'Auditório Principal', category: 'Liderança', color: '#EBF8FF' },
     { id: 204, date: '02/05', time: '10:15', title: 'Palestra Líderes 2 - Liderando uma escola Clássica', speaker: 'Chris Schlect', room: 'Auditório Principal', category: 'Liderança', color: '#FAF5FF' },
     { id: 205, date: '02/05', time: '11:00', title: 'Mesa Redonda / Apresentação Paideia', speaker: 'Equipe FICV', room: 'Auditório Principal', category: 'Painel', color: '#FDF2F2' },

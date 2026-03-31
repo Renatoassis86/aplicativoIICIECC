@@ -21,7 +21,7 @@ import {
 const MoreTab = ({ 
   onLogout, userName, userType, userAvatar, 
   onOpenScanner, onOpenBroadcast, onOpenAdminPortal, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenTicket, onOpenProfile
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenTicket, onOpenProfile, onOpenGTs
 }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
@@ -50,8 +50,21 @@ const MoreTab = ({
         { label: 'Network de Participantes', icon: <Users size={18} color="#48BB78" />, action: () => onNavigate('network') },
         { label: 'FAQ (Perguntas Frequentes)', icon: <HelpCircle size={18} color="#38A169" />, action: onOpenFAQ },
         { label: 'Palestrantes', icon: <Star size={18} color="#805AD5" />, action: () => onNavigate('speakers') },
+        { label: 'Grupos de Trabalho (GTs)', icon: <BookOpen size={18} color="var(--primary)" />, action: onOpenGTs },
         { label: 'Patrocinadores & Parceiros', icon: <Briefcase size={18} color="var(--primary)" />, action: onOpenSponsors },
         { label: 'Mapa / Localização', icon: <MapPin size={18} color="#E53E3E" />, action: onOpenMap },
+        { 
+          label: 'Revista do Congresso Anterior', 
+          icon: <Monitor size={18} color="#D69E2E" />, 
+          action: () => {
+            const link = document.createElement('a');
+            link.href = '/docs/REVISTA COMPLETA_compressed.pdf';
+            link.download = 'REVISTA_CIECC_2025.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        },
       ]
     },
     {
