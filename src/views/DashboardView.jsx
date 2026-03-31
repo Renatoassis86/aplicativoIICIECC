@@ -88,6 +88,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           userType={userType} 
           userCpf={userCpf} 
           userAvatar={userAvatar} 
+          onAvatarUpdate={onAvatarUpdate}
           onOpenProfile={() => setShowProfile(true)}
           onOpenScanner={() => setShowScanner(true)} 
           onOpenBroadcast={() => setShowBroadcast(true)} 
