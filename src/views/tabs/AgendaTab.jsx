@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
 import { 
   Heart, 
   MapPin, 
   Clock, 
-  Search, 
-  ChevronRight,
-  Filter
+  ChevronRight
 } from 'lucide-react';
 
 const AgendaTab = () => {

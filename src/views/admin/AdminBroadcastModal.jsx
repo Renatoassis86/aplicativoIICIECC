@@ -18,8 +18,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
     try {
       const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
-        body: message.trim(),
-        sender_role: 'organizador',
+        message: message.trim(),
         target_role: audience 
       });
 
@@ -44,10 +43,19 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
       display: 'flex', alignItems: 'flex-end'
     }}>
       <div style={{
-        background: 'white', width: '100%',
-        borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
-        padding: '24px', paddingBottom: '40px',
-        animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+        background: 'white', 
+        width: '100%',
+        maxWidth: '430px',
+        margin: '0 auto',
+        borderTopLeftRadius: '32px', 
+        borderTopRightRadius: '32px',
+        padding: '24px', 
+        paddingTop: 'calc(env(safe-area-inset-top, 40px) + 24px)',
+        paddingBottom: '40px',
+        animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        maxHeight: '92vh',
+        overflowY: 'auto',
+        boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

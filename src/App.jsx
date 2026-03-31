@@ -54,7 +54,7 @@ function App() {
         } else {
           setAuthStatus('reset-password');
         }
-      } catch (e) {
+      } catch (_) {
         setAuthStatus('logged-out');
       }
     };
@@ -137,7 +137,7 @@ function App() {
         alert('Senha incorreta.');
         setAuthStatus('logged-out');
       }
-    } catch (e) {
+    } catch (_) {
       alert('Erro ao conectar com o servidor.');
       setAuthStatus('logged-out');
     }
@@ -167,7 +167,7 @@ function App() {
       } else {
         setAuthStatus('select-type');
       }
-    } catch (e) {
+    } catch (_) {
       alert('Erro ao salvar nova senha.');
     }
   };
@@ -181,7 +181,7 @@ function App() {
       
       setSelectedType(type.id || type);
       setAuthStatus('questionnaire');
-    } catch (e) {
+    } catch (_) {
       alert('Erro ao salvar tipo de inscrição.');
     }
   };
@@ -204,7 +204,7 @@ function App() {
         .eq('cpf', currentUserCpf);
 
       setAuthStatus('logged-in');
-    } catch (e) {
+    } catch (_) {
       alert('Erro ao salvar respostas do questionário.');
     }
   };
@@ -304,6 +304,8 @@ function App() {
           overflow-x: hidden;
           display: flex;
           flex-direction: column;
+          touch-action: pan-y;
+          -webkit-overflow-scrolling: touch;
         }
         @media (max-width: 430px) {
           .mobile-wrapper {
@@ -315,6 +317,9 @@ function App() {
         .fixed-modal-overlay {
           max-width: 430px;
           margin: 0 auto;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
         }
       `}} />
     </div>

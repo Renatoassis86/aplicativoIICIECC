@@ -18,6 +18,11 @@ async function check() {
   if (engErr) console.log("social_engagements error:", engErr.message);
   else console.log("social_engagements OK.");
 
+  // Test system_notifications
+  const { data: notifs, error: notifErr } = await supabase.from('system_notifications').select('*').limit(1);
+  if (notifErr) console.log("system_notifications error:", notifErr.message);
+  else console.log("system_notifications OK. Columns:", Object.keys(notifs[0] || {}));
+
   // Test user_favorites (guessing)
   const { data: favs, error: favErr } = await supabase.from('user_favorites').select('*').limit(1);
   if (favErr) console.log("user_favorites error:", favErr.message);

@@ -16,18 +16,47 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   const [allUsers, setAllUsers] = useState([]);
   const [showMentionsList, setShowMentionsList] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
-  const [cursorPos, setCursorPos] = useState(0);
+  const [location, setLocation] = useState('');
+  const [detectingLocation, setDetectingLocation] = useState(false);
 
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data } = await supabase.from('profiles').select('name').limit(200);
+      const { data } = await supabase.from('members').select('name').limit(400);
       setAllUsers(data || []);
     };
     fetchUsers();
   }, []);
+
+  const detectLocation = () => {
+    setDetectingLocation(true);
+    if (!navigator.geolocation) {
+      alert("Geolocalização não suportada.");
+      setDetectingLocation(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        // Reversa geocoding simples via Nominatim (Free)
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await res.json();
+        const city = data.address.city || data.address.town || data.address.village || 'São Paulo';
+        const state = data.address.state || 'SP';
+        setLocation(`${city}, ${state}`);
+      } catch (err) {
+        setLocation("São Paulo, SP"); // Fallback
+      } finally {
+        setDetectingLocation(false);
+      }
+    }, () => {
+      alert("Localização negada ou indisponível.");
+      setDetectingLocation(false);
+    });
+  };
 
   const fetchMedia = async (source) => {
     setUploadingMedia(true);
@@ -122,7 +151,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         4, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
-        caption, 
+        location ? `${caption}\n\n📍 ${location}` : caption, 
         userId || 'CIECC_SYSTEM'
       );
       onSuccess();
@@ -227,9 +256,9 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
             </div>
           </div>
         ) : (
-          <div style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden', background: '#eee', flexShrink: 0 }}>
+          <div style={{ padding: '0 20px' }}>
+            <div style={{ display: 'flex', gap: '16px', padding: '20px 0' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#eee', flexShrink: 0 }}>
                  {mediaFiles[0].type === 'reel' ? (
                    <video src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
                  ) : (
@@ -239,39 +268,61 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
               <textarea 
                 ref={textareaRef}
                 autoFocus
-                placeholder="Adicione uma legenda..."
+                placeholder="Escreva uma legenda..."
                 value={caption}
                 onChange={handleCaptionChange}
                 style={{ 
                   flex: 1, border: 'none', outline: 'none', resize: 'none',
-                  fontSize: '16px', color: '#262626', minHeight: '100px',
-                  paddingTop: '4px'
+                  fontSize: '15px', color: '#262626', minHeight: '80px',
+                  paddingTop: '8px'
                  }}
               />
             </div>
 
             {showMentionsList && filteredUsers.length > 0 && (
-              <div style={{ background: '#fafafa', borderRadius: '8px', border: '1px solid #eee', marginBottom: '16px' }}>
+              <div style={{ background: '#fafafa', borderRadius: '8px', border: '1px solid #eee', marginBottom: '16px', overflow: 'hidden' }}>
+                <div style={{ padding: '8px 16px', background: '#f0f0f0', fontSize: '11px', fontWeight: '800', color: '#999', textTransform: 'uppercase' }}>Sugestões</div>
                 {filteredUsers.map(u => (
-                  <button key={u.name} onClick={() => selectMention(u.name)} style={{ display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #eee', fontSize: '14px', fontWeight: '600' }}>
+                  <button key={u.name} onClick={() => selectMention(u.name)} style={{ display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #eee', fontSize: '14px', fontWeight: '600', color: 'var(--primary)' }}>
                     {u.name}
                   </button>
                 ))}
               </div>
             )}
 
-            <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
-               <p style={{ fontSize: '15px', color: '#262626' }}>Marcar pessoas</p>
-            </div>
-            <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
-               <p style={{ fontSize: '15px', color: '#262626' }}>Adicionar localização</p>
-            </div>
-             <div style={{ borderTop: '1px solid #efefef', padding: '12px 0' }}>
-               <p style={{ fontSize: '15px', color: '#262626' }}>Configurações avançadas</p>
-            </div>
+            <button 
+              onClick={() => {
+                setCaption(prev => prev + ' @');
+                textareaRef.current?.focus();
+              }}
+              style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+               <span>Marcar pessoas</span>
+               <Search size={18} color="#999" />
+            </button>
+            <button 
+              onClick={detectLocation}
+              style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+               <span>{detectingLocation ? 'Detectando...' : (location || 'Adicionar localização')}</span>
+               <RefreshCw size={18} color={location ? '#38A169' : '#999'} className={detectingLocation ? "spin" : ""} />
+            </button>
+             <button 
+               onClick={() => alert("Exclusividade: Posts Diamond possuem prioridade no feed.")}
+               style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+             >
+               <span>Visualização prioritária</span>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--gold)' }}></div>
+            </button>
           </div>
         )}
       </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      `}} />
 
       {step === 2 && (
         <footer style={{ padding: '16px', background: 'white', borderTop: '1px solid #efefef' }}>
@@ -287,15 +338,10 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           </button>
         </footer>
       )}
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-      `}} />
     </div>
   );
 };
+
 
 export default SocialPostCreator;
 

@@ -46,6 +46,12 @@ body {
   line-height: 1.6;
   overscroll-behavior-y: contain;
   overflow-x: hidden;
+  touch-action: pan-y;
+}
+
+html {
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 button {

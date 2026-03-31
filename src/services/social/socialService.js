@@ -54,12 +54,16 @@ export const fetchFeedPosts = async (userId) => {
 };
 
 const processPostsResponse = async (rawPosts, userId) => {
-    const { data: comments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
+    const { data: allComments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
     const { data: engagements } = await supabase.from('social_engagements').select('*');
 
     const hydratedPosts = rawPosts.map(post => {
-      const postComments = (comments || []).filter(c => c.post_id === post.id);
+      const flatComments = (allComments || []).filter(c => c.post_id === post.id);
       
+      // Separate top-level comments and replies
+      const topLevelComments = flatComments.filter(c => !c.parent_id);
+      const replies = flatComments.filter(c => c.parent_id);
+
       const pLikes = (engagements || []).filter(e => e.type === 'like' && e.post_id === post.id);
 
       return {
@@ -72,15 +76,23 @@ const processPostsResponse = async (rawPosts, userId) => {
         mediaUrls: post.media_urls || [],
         caption: post.caption,
         isSponsor: true, 
-        comments: postComments.map(c => {
+        comments: topLevelComments.map(c => {
           const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
+          const cReplies = replies.filter(r => r.parent_id === c.id).map(r => ({
+              ...r,
+              authorName: r.user_name,
+              text: r.content,
+              isOwner: r.user_id === userId
+          }));
+
           return {
             ...c,
             authorName: c.user_name,
             text: c.content,
             isOwner: c.user_id === userId,
             likes: cLikes.length,
-            likedByMe: cLikes.some(e => e.user_id === userId)
+            likedByMe: cLikes.some(e => e.user_id === userId),
+            replies: cReplies
           };
         }),
         likes: pLikes.length,
@@ -120,13 +132,14 @@ export const toggleLikePost = async (postId, currentState, userId) => {
   return !currentState;
 };
 
-export const postComment = async (postId, text, authorName, authorId) => {
+export const postComment = async (postId, text, authorName, authorId, parentId = null) => {
   try {
     const { data, error } = await supabase.from('social_comments').insert({
       post_id: postId,
       content: text,
       user_name: authorName,
-      user_id: authorId
+      user_id: authorId,
+      parent_id: parentId
     }).select().single();
     
     if (error || !data) throw new Error("Falha ao postar comentário.");
@@ -137,7 +150,8 @@ export const postComment = async (postId, text, authorName, authorId) => {
       text: data.content,
       isOwner: true,
       likes: 0,
-      likedByMe: false
+      likedByMe: false,
+      replies: []
     };
   } catch (err) {
     console.error("[postComment]", err);

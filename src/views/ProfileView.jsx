@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, Camera, User, BadgeCheck, Shield, Award, Building2 } from 'lucide-react';
 import { ImagePersistenceService } from '../services/imagePersistence';
@@ -6,6 +6,39 @@ import { ImagePersistenceService } from '../services/imagePersistence';
 const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initialAvatar, onAvatarUpdate }) => {
   const [avatar, setAvatar] = useState(initialAvatar);
   const [uploading, setUploading] = useState(false);
+  const [bio, setBio] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data, error } = await supabase.from('profiles').select('*').eq('cpf', userCpf).single();
+      if (!error && data) {
+        setBio(data.bio || '');
+        setJobTitle(data.job_title || '');
+        setLinkedinUrl(data.linkedin_url || '');
+      }
+    };
+    fetchProfile();
+  }, [userCpf]);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ bio, job_title: jobTitle, linkedin_url: linkedinUrl })
+        .eq('cpf', userCpf);
+      if (error) throw error;
+      alert('Perfil atualizado com sucesso!');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao atualizar perfil.');
+    } finally {
+      setSaving(false);
+    }
+  };
   
   const handleUpdateAvatar = async () => {
     const photo = await ImagePersistenceService.capturePhoto();
@@ -136,6 +169,51 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
                <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>CPF de Acesso</label>
                <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)', marginTop: '6px' }}>{userCpf}</p>
             </div>
+
+            <div className="card" style={{ padding: '20px', border: '1px solid var(--border)' }}>
+                <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '10px' }}>Sobre Você</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                   <div>
+                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>CARGO / OCUPAÇÃO</p>
+                      <input 
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Ex: Diretor Escolar"
+                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '600' }}
+                      />
+                   </div>
+                   <div>
+                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>BIOGRAFIA RESUMIDA</p>
+                      <textarea 
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Conte um pouco sobre sua jornada na educação..."
+                        rows={3}
+                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '500', resize: 'none' }}
+                      />
+                   </div>
+                   <div>
+                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>LINKEDIN (URL)</p>
+                      <input 
+                        value={linkedinUrl}
+                        onChange={(e) => setLinkedinUrl(e.target.value)}
+                        placeholder="https://linkedin.com/in/seuuser"
+                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '500' }}
+                      />
+                   </div>
+                   <button 
+                     onClick={handleSaveProfile}
+                     disabled={saving}
+                     style={{ 
+                       width: '100%', padding: '14px', borderRadius: '12px', background: 'var(--primary)', 
+                       color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer',
+                       opacity: saving ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
+                     }}
+                   >
+                     {saving ? 'Sincronizando...' : 'Salvar Alterações'}
+                   </button>
+                </div>
+             </div>
 
             <div className="card" style={{ padding: '20px', border: '1px solid var(--border)' }}>
                <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Credencial Digital</label>

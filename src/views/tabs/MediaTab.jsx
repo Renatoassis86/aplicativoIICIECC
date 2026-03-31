@@ -49,10 +49,21 @@ export default function MediaTab({ userType, userName, userCpf }) {
     await toggleSavePost(postId, currentState, userCpf);
   };
 
-  const handleAddComment = async (postId, text) => {
-    const newComment = await postComment(postId, text, userName || 'Congressista', userCpf);
-    if (!newComment) return; // Se falhou a query do Supabase
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), newComment] } : p));
+  const handleAddComment = async (postId, text, parentId = null) => {
+    const newComment = await postComment(postId, text, userName || 'Congressista', userCpf, parentId);
+    if (!newComment) return;
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        if (parentId) {
+          return {
+            ...p,
+            comments: p.comments.map(c => c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c)
+          };
+        }
+        return { ...p, comments: [...(p.comments || []), newComment] };
+      }
+      return p;
+    }));
   };
 
   const handleDeleteComment = async (postId, commentId) => {
@@ -91,16 +102,28 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const visiblePosts = viewingSaved ? posts.filter(p => p.savedByMe) : posts;
 
   // Renderiza a mídia baseada no tipo (Image, Carousel, Reel)
+  const [muted, setMuted] = useState(true);
+
   const renderMedia = (post) => {
-    if (post.mediaType === 'reel') {
+    if (post.mediaType === 'reel' || (post.mediaUrls[0]?.endsWith('.mp4'))) {
       return (
-        <div style={{ width: '100%', aspectRatio: '4/5', background: '#000', position: 'relative' }}>
+        <div 
+          onClick={() => setMuted(!muted)}
+          style={{ width: '100%', aspectRatio: '4/5', background: '#000', position: 'relative', cursor: 'pointer' }}
+        >
           <video 
             src={post.mediaUrls[0]} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-            controls={false} autoPlay loop muted playsInline 
+            autoPlay loop muted={muted} playsInline 
           />
-          <div style={{ position: 'absolute', top: '16px', right: '16px', color: 'white' }}><Play size={20} fill="white" /></div>
+          <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '8px', color: 'white' }}>
+            {muted ? <RefreshCw size={16} /> : <Play size={16} />}
+          </div>
+          {muted && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '50%' }}>
+              <Play size={32} color="white" fill="white" />
+            </div>
+          )}
         </div>
       );
     }
@@ -243,9 +266,27 @@ export default function MediaTab({ userType, userName, userCpf }) {
                   <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{post.sponsorName}</span>
                   {post.caption}
                 </p>
-                {(post.comments && post.comments.length > 0) && (
-                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '14px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                
+                {/* Primeiros 3 Comentários */}
+                {post.comments && post.comments.length > 0 && (
+                  <div style={{ marginBottom: '8px' }}>
+                    {post.comments.slice(0, 3).map(c => (
+                      <p key={c.id} style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '700', marginRight: '6px' }}>{c.authorName}</span>
+                        {c.text}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {(post.comments && post.comments.length > 3) && (
+                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
                     Ver todos os {post.comments.length} comentários
+                  </button>
+                )}
+                {(!post.comments || post.comments.length <= 3) && post.comments?.length > 0 && (
+                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                    Responder...
                   </button>
                 )}
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: '600' }}>

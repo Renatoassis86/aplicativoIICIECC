@@ -236,7 +236,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                         const { error } = await supabase.from('system_notifications').insert({
                           title: 'ALERTA DASHBOARD',
                           message: emergencyText,
-                          type: 'alert'
+                          type: 'alert',
+                          target_role: 'all'
                         });
                         if (error) alert('Erro ao disparar: ' + error.message);
                         else {
