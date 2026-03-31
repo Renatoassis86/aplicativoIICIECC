@@ -9,19 +9,20 @@ export const ImagePersistenceService = {
   
   /**
    * Captura foto via Câmera ou Galeria usando o Plugin Nativo do Capacitor
+   * com fallback robusto para Web (Input HTML5)
    */
   async capturePhoto(source = CameraSource.Prompt) {
     try {
+      // 1. Tentar Modo Nativo (Capacitor)
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: true,
-        resultType: CameraResultType.DataUrl, // Mais seguro para Webview nativa
+        resultType: CameraResultType.DataUrl, 
         source: source,
         width: 1024,
         saveToGallery: false
       });
 
-      // Converter dataUrl para blob para o upload
       const response = await fetch(image.dataUrl);
       const blob = await response.blob();
 
@@ -31,9 +32,39 @@ export const ImagePersistenceService = {
         format: image.format
       };
     } catch (err) {
-      console.error("[ImagePersistence] Erro ao capturar:", err);
+      console.warn("[ImagePersistence] Nativo falhou ou cancelado, tentando Web Fallback...", err);
+      
+      // Se for apenas cancelado pelo usuário, parar aqui
       if (err.message?.includes('User cancelled')) return null;
-      return null;
+
+      // 2. Fallback para Web (input invisível)
+      return new Promise((resolve) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return resolve(null);
+
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const dataUrl = reader.result;
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            
+            resolve({
+              webPath: dataUrl,
+              blob: blob,
+              format: file.type.split('/')[1]
+            });
+          };
+          reader.readAsDataURL(file);
+        };
+
+        // Simula clique
+        input.click();
+      });
     }
   },
 
