@@ -132,48 +132,46 @@ const CommentsSheet = ({ postId, comments, userName, userType, ownerName, onClos
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: '500' }}>Nenhum comentário por enquanto.</p>
           </div>
         )}
+        {/* Barra de contexto de resposta inserida no fluxo */}
+        {replyingTo && (
+          <div style={{ background: '#F8F9FA', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #efefef', borderRadius: '8px', marginBottom: '12px' }}>
+             <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Respondendo a <strong>{replyingTo.name}</strong></p>
+             <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none' }}><X size={14} /></button>
+          </div>
+        )}
+
+        {/* Caixa de Input Inserida no fluxo (Logo abaixo da última mensagem) */}
+        <div style={{ 
+          padding: '12px 0 24px', 
+          display: 'flex', alignItems: 'center', gap: '12px', background: 'white'
+        }}>
+          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              placeholder={replyingTo ? `Responda a ${replyingTo.name}...` : "Adicione um comentário..."} 
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              style={{ 
+                width: '100%', padding: '12px 48px 12px 16px', 
+                borderRadius: '24px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', fontSize: '14px',
+                background: '#F8F9FA'
+              }} 
+            />
+            <button 
+              disabled={!text.trim()} 
+              onClick={handleSend}
+              style={{ 
+                position: 'absolute', right: '12px', background: 'none', border: 'none', padding: 0,
+                color: text.trim() ? '#0095F6' : 'rgba(0,0,0,0.2)', transition: 'color 0.2s',
+                fontWeight: '700', fontSize: '14px'
+              }}
+            >
+              Publicar
+            </button>
+          </div>
+        </div>
       </div>
-
-      {/* Replying context bar */}
-      {replyingTo && (
-        <div style={{ background: '#F8F9FA', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #efefef' }}>
-           <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Respondendo a <strong>{replyingTo.name}</strong></p>
-           <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none' }}><X size={14} /></button>
-        </div>
-      )}
-
-      {/* Caixa de Input (Otimizada para eliminar o fosso) */}
-      <footer style={{ 
-        padding: '12px 16px', borderTop: '1px solid rgba(0,0,0,0.05)',
-        display: 'flex', alignItems: 'center', gap: '12px', background: 'white',
-        paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'
-      }}>
-        <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <input 
-            type="text" 
-            placeholder={replyingTo ? `Responda a ${replyingTo.name}...` : "Adicione um comentário..."} 
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            style={{ 
-              width: '100%', padding: '10px 48px 10px 16px', 
-              borderRadius: '24px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', fontSize: '14px',
-              background: '#F8F9FA'
-            }} 
-          />
-          <button 
-            disabled={!text.trim()} 
-            onClick={handleSend}
-            style={{ 
-              position: 'absolute', right: '12px', background: 'none', border: 'none', padding: 0,
-              color: text.trim() ? '#0095F6' : 'rgba(0,0,0,0.2)', transition: 'color 0.2s',
-              fontWeight: '700', fontSize: '14px'
-            }}
-          >
-            Publicar
-          </button>
-        </div>
-      </footer>
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
