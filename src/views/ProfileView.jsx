@@ -1,40 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { X, Camera, User, BadgeCheck, Shield, Award, Building2 } from 'lucide-react';
+import { X, Camera, User, BadgeCheck, Shield, Award, Building2, Phone, Mail, MapPin } from 'lucide-react';
 import { ImagePersistenceService } from '../services/imagePersistence';
 
 const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initialAvatar, onAvatarUpdate }) => {
   const [avatar, setAvatar] = useState(initialAvatar);
   const [uploading, setUploading] = useState(false);
+  
+  // Profile settings
   const [bio, setBio] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
+  
+  // Member settings
+  const [phone, setPhone] = useState('');
+  const [institution, setInstitution] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [email, setEmail] = useState('');
+  
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data, error } = await supabase.from('profiles').select('*').eq('cpf', userCpf).single();
-      if (!error && data) {
-        setBio(data.bio || '');
-        setJobTitle(data.job_title || '');
-        setLinkedinUrl(data.linkedin_url || '');
+    const fetchProfileData = async () => {
+      // 1. Fetch profiles table
+      const { data: profile } = await supabase.from('profiles').select('*').eq('cpf', userCpf).single();
+      if (profile) {
+        setBio(profile.bio || '');
+        setJobTitle(profile.job_title || '');
+        setLinkedinUrl(profile.linkedin_url || '');
+      }
+      
+      // 2. Fetch members table
+      const { data: member } = await supabase.from('members').select('*').eq('cpf', userCpf).single();
+      if (member) {
+        setPhone(member.phone || '');
+        setInstitution(member.institution || '');
+        setCity(member.city || '');
+        setState(member.state || '');
+        setEmail(member.email || '');
       }
     };
-    fetchProfile();
+    fetchProfileData();
   }, [userCpf]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      // 1. Update profiles
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({ bio, job_title: jobTitle, linkedin_url: linkedinUrl })
         .eq('cpf', userCpf);
-      if (error) throw error;
-      alert('Perfil atualizado com sucesso!');
+      if (profileError) throw profileError;
+      
+      // 2. Update members
+      const { error: memberError } = await supabase
+        .from('members')
+        .update({ phone, institution, city, state, email })
+        .eq('cpf', userCpf);
+      if (memberError) throw memberError;
+      
+      alert('Seu perfil foi atualizado no banco de dados!');
     } catch (err) {
       console.error(err);
-      alert('Erro ao atualizar perfil.');
+      alert('Erro ao sincronizar dados com o banco.');
     } finally {
       setSaving(false);
     }
@@ -44,7 +74,6 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
     const photo = await ImagePersistenceService.capturePhoto();
     if (!photo) return;
 
-    // Preview instantâneo para UX
     setAvatar(photo.webPath);
     setUploading(true);
 
@@ -60,7 +89,6 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
       if (error) throw error;
       
       if (onAvatarUpdate) onAvatarUpdate(publicUrlOrBase64);
-      console.log("[ProfileView] Foto persistida com sucesso.");
     } catch (err) {
       console.error(err);
       alert('Erro ao salvar foto permanentemente.');
@@ -69,183 +97,103 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
     }
   };
 
-  const formatUserType = (type) => {
-    if (!type || typeof type !== 'string') return 'Congressista';
-    if (type === 'admin') return 'Organizador';
-    if (type === 'staff') return 'Staff';
-    if (type.includes('patrocinador')) return 'Patrocinador';
-    if (type === 'palestrante') return 'Palestrante';
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  const getRoleIcon = () => {
-    if (userType === 'admin' || userType === 'staff') return <Shield size={18} color="var(--primary)" />;
-    if (userType?.includes('patrocinador')) return <Award size={18} color="var(--gold)" />;
-    return <BadgeCheck size={18} color="#3182CE" />;
-  };
-
   return (
-    <div className="fixed-modal-overlay" style={{ 
-      zIndex: 10000, 
-      background: 'white', 
-      display: 'flex', 
-      flexDirection: 'column',
-      height: '100dvh'
-    }}>
-      {/* Header */}
+    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
       <header style={{ 
         padding: 'env(safe-area-inset-top, 24px) 20px 20px', 
         borderBottom: '1px solid var(--border)', 
         display: 'flex', 
         alignItems: 'center', 
-        gap: '16px' 
+        gap: '16px',
+        background: 'white'
       }}>
-         <button 
-           onClick={onClose}
-           style={{ background: '#F7FAFC', border: 'none', padding: '10px', borderRadius: '50%', display: 'flex' }}
-         >
+         <button onClick={onClose} style={{ background: '#F7FAFC', border: 'none', padding: '10px', borderRadius: '50%', display: 'flex' }}>
            <X size={24} color="var(--secondary)" />
          </button>
-         <h2 style={{ 
-           fontFamily: 'var(--font-serif)', 
-           fontSize: '20px', 
-           fontWeight: '800', 
-           color: 'var(--secondary)' 
-         }}>
-           Meu Perfil
-         </h2>
+         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>Meu Perfil CIECC</h2>
       </header>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px 20px' }}>
-         {/* Avatar Section */}
-         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <div 
-              onClick={handleUpdateAvatar}
-              style={{ 
-               width: '128px', height: '128px', borderRadius: '40px', 
-               background: '#F5F7FA', margin: '0 auto', position: 'relative',
-               border: '4px solid var(--gold)', overflow: 'hidden', cursor: 'pointer',
-               boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 60px' }}>
+         {/* Avatar Header */}
+         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div onClick={handleUpdateAvatar} style={{ 
+                width: '110px', height: '110px', borderRadius: '32px', 
+                background: '#F5F7FA', margin: '0 auto', position: 'relative',
+                border: '4px solid var(--gold)', overflow: 'hidden', cursor: 'pointer',
+                boxShadow: '0 12px 24px rgba(0,0,0,0.1)'
             }}>
-               {avatar ? (
-                  <img src={avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
-               ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                     <User size={60} color="#CBD5E0" />
-                  </div>
-               )}
-               
-               <div style={{ 
-                 position: 'absolute', bottom: 0, left: 0, right: 0, 
-                 background: 'rgba(0,0,0,0.6)', padding: '8px',
-                 backdropFilter: 'blur(4px)'
-               }}>
-                  <Camera size={20} color="white" style={{ margin: '0 auto' }} />
+               {avatar ? <img src={avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><User size={50} color="#CBD5E0" /></div>}
+               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', padding: '6px', backdropFilter: 'blur(4px)' }}>
+                  <Camera size={16} color="white" style={{ margin: '0 auto' }} />
                </div>
-
-               {uploading && (
-                  <div style={{ 
-                    position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                  }}>
-                    <div className="pulse" style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '50%' }}></div>
-                  </div>
-               )}
             </div>
-            <h3 style={{ marginTop: '20px', fontSize: '22px', fontWeight: '900', color: 'var(--secondary)', fontFamily: 'var(--font-serif)' }}>
-              {userName}
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
-               {getRoleIcon()}
-               <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                 {formatUserType(userType)}
-               </span>
-            </div>
+            <h3 style={{ marginTop: '16px', fontSize: '20px', fontWeight: '900', color: 'var(--secondary)', fontFamily: 'var(--font-serif)' }}>{userName}</h3>
+            <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Congressista Confirmado</p>
          </div>
 
-         {/* Info Cards */}
-         <div style={{ display: 'grid', gap: '16px' }}>
-            <div className="card" style={{ padding: '20px', border: '1px solid var(--border)' }}>
-               <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>CPF de Acesso</label>
-               <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)', marginTop: '6px' }}>{userCpf}</p>
-            </div>
+         {/* Form Section */}
+         <div style={{ display: 'grid', gap: '24px' }}>
+            {/* Essential Info */}
+            <section>
+              <h4 style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '16px' }}>Dados Pessoais & Contato</h4>
+              <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+                 <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Contato Whatsapp</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <Phone size={16} color="var(--primary)" />
+                       <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="(00) 00000-0000" style={{ width: '100%', fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                    </div>
+                 </div>
+                 <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Email Institucional</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <Mail size={16} color="var(--primary)" />
+                       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="seuemail@exemplo.com" style={{ width: '100%', fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                    </div>
+                 </div>
+                 <div style={{ padding: '16px' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Localização (Cidade/Estado)</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <MapPin size={16} color="var(--primary)" />
+                       <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
+                          <input value={city} onChange={e => setCity(e.target.value)} placeholder="Cidade" style={{ flex: 1, fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                          <input value={state} onChange={e => setState(e.target.value)} placeholder="UF" style={{ width: '40px', fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </section>
 
-            <div className="card" style={{ padding: '20px', border: '1px solid var(--border)' }}>
-                <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '10px' }}>Sobre Você</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                   <div>
-                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>CARGO / OCUPAÇÃO</p>
-                      <input 
-                        value={jobTitle}
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        placeholder="Ex: Diretor Escolar"
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '600' }}
-                      />
-                   </div>
-                   <div>
-                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>BIOGRAFIA RESUMIDA</p>
-                      <textarea 
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        placeholder="Conte um pouco sobre sua jornada na educação..."
-                        rows={3}
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '500', resize: 'none' }}
-                      />
-                   </div>
-                   <div>
-                      <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '700', marginBottom: '4px' }}>LINKEDIN (URL)</p>
-                      <input 
-                        value={linkedinUrl}
-                        onChange={(e) => setLinkedinUrl(e.target.value)}
-                        placeholder="https://linkedin.com/in/seuuser"
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#F7FAFC', border: '1px solid #EDF2F7', fontSize: '14px', fontWeight: '500' }}
-                      />
-                   </div>
-                   <button 
-                     onClick={handleSaveProfile}
-                     disabled={saving}
-                     style={{ 
-                       width: '100%', padding: '14px', borderRadius: '12px', background: 'var(--primary)', 
-                       color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer',
-                       opacity: saving ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
-                     }}
-                   >
-                     {saving ? 'Sincronizando...' : 'Salvar Alterações'}
-                   </button>
-                </div>
-             </div>
+            {/* Professional Info */}
+            <section>
+              <h4 style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '16px' }}>Informações Profissionais</h4>
+              <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+                 <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Instituição de Ensino / Empresa</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <Building2 size={16} color="var(--primary)" />
+                       <input value={institution} onChange={e => setInstitution(e.target.value)} placeholder="Ex: Universidade Arkanos" style={{ width: '100%', fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                    </div>
+                 </div>
+                 <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Cargo ou Ocupação</p>
+                    <input value={jobTitle} onChange={e => setJobTitle(e.target.value)} placeholder="Ex: Professor de Matemática" style={{ width: '100%', fontSize: '15px', fontWeight: '600', color: 'var(--secondary)', border: 'none' }} />
+                 </div>
+                 <div style={{ padding: '16px' }}>
+                    <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>Sobre você (Bio)</p>
+                    <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Fale um pouco sobre você..." style={{ width: '100%', fontSize: '14px', fontWeight: '500', color: 'var(--secondary)', border: 'none', resize: 'none', minHeight: '80px' }} />
+                 </div>
+              </div>
+            </section>
 
-            <div className="card" style={{ padding: '20px', border: '1px solid var(--border)' }}>
-               <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Credencial Digital</label>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '10px' }}>
-                  <div style={{ background: '#F0FFF4', padding: '8px', borderRadius: '8px' }}>
-                    <BadgeCheck size={20} color="#38A169" />
-                  </div>
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: '700', color: '#2F855A' }}>Inscrição Ativa</p>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Válida para os dias 01 e 02 de maio.</p>
-                  </div>
-               </div>
-            </div>
-
-            <div className="card" style={{ padding: '20px', border: '1px solid var(--border)', background: 'var(--accent)' }}>
-               <div style={{ display: 'flex', gap: '12px' }}>
-                  <Building2 size={20} color="var(--primary)" />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--primary)' }}>Sua Jornada Clássica</p>
-                    <p style={{ fontSize: '12px', color: 'var(--primary)', opacity: 0.8, marginTop: '4px', lineHeight: '1.4' }}>
-                      Suas preferências e favoritos estão sendo sincronizados com seu CPF para uma experiência personalizada no II CIECC.
-                    </p>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div style={{ marginTop: '40px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', opacity: 0.6 }}>
-              Versão do App: 2.0.26-ALPHA <br/>
-              ID de Instalação: {userCpf?.slice(0,4)}-XXXX
-            </p>
+            <button onClick={handleSaveProfile} disabled={saving} style={{ 
+               width: '100%', padding: '18px', borderRadius: '16px', background: 'var(--primary)', 
+               color: 'white', fontWeight: '800', fontSize: '16px', border: 'none',
+               boxShadow: '0 8px 24px rgba(107, 20, 26, 0.3)',
+               opacity: saving ? 0.7 : 1
+            }}>
+               {saving ? 'Sincronizando com o Banco...' : 'Finalizar & Atualizar Cadastro'}
+            </button>
          </div>
       </div>
     </div>

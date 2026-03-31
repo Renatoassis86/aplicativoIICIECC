@@ -120,7 +120,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
   return (
     <div className="tab-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Main Content Area */}
-      <main style={{ flex: 1, paddingBottom: '90px' }}>
+      <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '90px' }}>
         {renderContent()}
       </main>
 
