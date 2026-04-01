@@ -1,3 +1,4 @@
+import React from 'react';
 import { Award, Briefcase, ExternalLink, ArrowLeft, Info, ShieldCheck, Zap, Handshake } from 'lucide-react';
 
 const SponsorsView = ({ onClose }) => {

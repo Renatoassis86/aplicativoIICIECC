@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
 
 const FAQView = ({ onClose }) => {
