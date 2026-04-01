@@ -157,29 +157,17 @@ const HomeTab = ({
           {/* TOP BAR: MENU MAIS & CIRECLE-AVATAR */}
           {/* TOP BAR: PERFIL (ESQUERDA) & AÇÕES (DIREITA) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
-            {/* PERFIL (ESQUERDA) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div 
-                onClick={onOpenProfile}
+            {/* LOGO (ESQUERDA) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <img 
+                src="/logo.png" 
+                alt="CIECC" 
                 style={{ 
-                  width: '56px', height: '56px', borderRadius: '20px', 
-                  background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontWeight: '900', color: '#111', fontSize: '20px', 
-                  boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: '2px solid white'
-                }}>
-                {userAvatar ? (
-                  <img src={userAvatar} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontFamily: 'var(--font-serif)' }}>{initial}</span>
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', letterSpacing: '0.5px' }}>{firstName}</span>
-                <span style={{ fontSize: '10px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px' }}>{formatUserType(userType)}</span>
-              </div>
+                  height: '42px', 
+                  objectFit: 'contain',
+                  filter: 'brightness(0) invert(1)'
+                }} 
+              />
             </div>
 
             {/* AÇÕES (DIREITA) */}
@@ -210,17 +198,7 @@ const HomeTab = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-            <img 
-              src="/logo.png" 
-              alt="CIECC" 
-              style={{ 
-                height: '80px', 
-                objectFit: 'contain',
-                filter: 'brightness(0) invert(1)'
-              }} 
-            />
-          </div>
+          {/* Removido o logo centralizado para dar espaço ao vídeo */}
 
           <div style={{ marginBottom: '12px' }}>
             <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>II EDIÇÃO • 2026</span>
@@ -234,7 +212,7 @@ const HomeTab = ({
             color: 'white'
           }}>
             II CIECC 2026: <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '18px' }}>O Fórum de Excelência para a Discussão e Disseminação da Educação Cristã Clássica</span>
+            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>Educação que permanece</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
@@ -423,36 +401,7 @@ const HomeTab = ({
         </div>
       </section>
 
-      {/* 5. Resumo do Evento */}
-      <section style={{ padding: '0 20px 24px' }}>
-        <div className="section-title">
-          <span>Acontecendo Agora</span>
-          <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '700' }}>Ver Tudo</span>
-        </div>
-        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-          <div style={{ padding: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '18px', fontWeight: '800', color: 'var(--primary)', lineHeight: '1' }}>09:00</p>
-              <p style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>Início</p>
-            </div>
-            <div style={{ width: '1px', height: '40px', background: 'var(--border)' }}></div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: '800', fontSize: '15px' }}>Check-in & Welcome Coffee</p>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Hall de Entrada • Cidade Viva</p>
-            </div>
-          </div>
-          <div 
-            style={{ background: '#F8F9FA', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-            onClick={onOpenTicket}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Search size={14} color="var(--text-muted)" />
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>Prepare seu QR Code no App</span>
-            </div>
-            <ArrowRight size={14} color="var(--text-muted)" />
-          </div>
-        </div>
-      </section>
+      {/* Seção Acontecendo Agora removida por solicitação */}
 
       {/* 6. Carrossel de Patrocinadores Master - FULL WIDTH & FAST */}
       <section style={{ padding: '0 20px' }}>

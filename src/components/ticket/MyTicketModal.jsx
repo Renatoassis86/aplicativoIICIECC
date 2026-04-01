@@ -96,13 +96,20 @@ const MyTicketModal = ({ onClose, userName, userCpf }) => {
           marginBottom: '32px',
           border: '4px solid #F1F1F1'
         }}>
-          <QRCode 
-            value={ticketData.ticket_id} 
-            size={180}
-            level="H"
-            fgColor="var(--primary)"
-            bgColor="#FFFFFF"
-          />
+          {ticketData?.ticket_id ? (
+            <QRCode 
+              value={ticketData.ticket_id} 
+              size={180}
+              level="H"
+              fgColor="var(--primary)"
+              bgColor="#FFFFFF"
+            />
+          ) : (
+            <div style={{ padding: '40px 0', textAlign: 'center' }}>
+              <AlertTriangle size={40} color="var(--gold)" style={{ margin: '0 auto 12px' }} />
+              <p style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: '800' }}>ID NÃO LOCALIZADO</p>
+            </div>
+          )}
           {/* Animated verify line */}
           <div style={{ 
             position: 'absolute', top: '24px', left: '24px', right: '24px', height: '2px', 
