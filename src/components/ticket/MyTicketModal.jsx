@@ -157,7 +157,7 @@ const MyTicketModal = ({ onClose, userName, userCpf }) => {
         
         {/* Minimal Header */}
         <header style={{ 
-          padding: 'env(safe-area-inset-top, 40px) 20px 10px', 
+          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 10px', 
           display: 'flex', 
           alignItems: 'center', 
           zIndex: 10

@@ -73,7 +73,7 @@ const AgendaTab = () => {
   return (
     <div className="tab-content fade-in" style={{ padding: '0 0 40px' }}>
       <header style={{ 
-        padding: 'env(safe-area-inset-top, 40px) 20px 24px', 
+        padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
         background: 'var(--primary)', 
         position: 'sticky', 
         top: 0, 

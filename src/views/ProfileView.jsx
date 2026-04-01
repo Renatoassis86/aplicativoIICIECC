@@ -87,7 +87,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
       <input type="file" ref={fileInputRef} onChange={onFileChange} accept="image/*" capture="user" style={{ display: 'none' }} />
       <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
         <header style={{ 
-          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
+          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 
           color: 'white',
           display: 'flex', 

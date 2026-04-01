@@ -99,7 +99,7 @@ const MoreTab = ({
       
       {/* Profile Header */}
       <header style={{ 
-        padding: 'env(safe-area-inset-top, 40px) 20px 32px', 
+        padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
         background: 'var(--primary)', 
         color: 'white',
         display: 'flex',

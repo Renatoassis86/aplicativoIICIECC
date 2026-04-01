@@ -9,7 +9,7 @@ const MapLocationView = ({ onClose }) => {
     <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
       <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
         <header style={{ 
-          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
+          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 
           color: 'white',
           borderBottom: '1px solid var(--border)',

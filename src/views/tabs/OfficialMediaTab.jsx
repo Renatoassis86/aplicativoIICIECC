@@ -83,7 +83,7 @@ const OfficialMediaTab = () => {
     <div className="tab-content fade-in" style={{ paddingBottom: '40px' }}>
       {/* Header Customizado Mídia */}
       <header style={{ 
-        padding: 'env(safe-area-inset-top, 40px) 20px 24px', 
+        padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
         background: 'var(--primary)', 
         color: 'white',
         borderBottomLeftRadius: '24px',

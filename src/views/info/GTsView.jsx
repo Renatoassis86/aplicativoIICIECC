@@ -8,7 +8,7 @@ const GTsView = ({ onClose }) => {
         
         {/* Header - Burgundy */}
         <header style={{ 
-          padding: 'env(safe-area-inset-top, 40px) 20px 24px', 
+          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 
           color: 'white',
           display: 'flex', 
@@ -30,7 +30,15 @@ const GTsView = ({ onClose }) => {
           
           {/* Logo CIECC */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <img src="/logo.png" alt="CIECC" style={{ height: '50px', marginBottom: '16px' }} />
+            <img 
+              src="/logo.png" 
+              alt="CIECC" 
+              style={{ 
+                height: '60px', 
+                marginBottom: '16px',
+                filter: 'brightness(0) saturate(100%) invert(14%) sepia(85%) saturate(3015%) hue-rotate(334deg) brightness(84%) contrast(92%)' 
+              }} 
+            />
             <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
               Chamada para o <br/> II CIECC 2026
             </h3>
@@ -48,14 +56,6 @@ const GTsView = ({ onClose }) => {
             <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', marginBottom: '20px' }}>
               A equipe editorial da Revista <strong>Summae Sapientiae</strong> tem o prazer de anunciar a chamada para o dossiê temático: <strong>Educação Cristã Clássica</strong>. Este número especial busca investigar as bases filosóficas, históricas e práticas desse modelo educacional.
             </p>
-
-            {/* Quote */}
-            <div style={{ padding: '16px', background: 'var(--bg-app)', borderRadius: '12px', marginBottom: '20px', borderLeft: '3px solid var(--border)' }}>
-               <p style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text-muted)', textAlign: 'center' }}>
-                 "O homem nobre dedica seus esforços às raízes." <br/>
-                 <span style={{ fontSize: '11px', fontStyle: 'normal', fontWeight: '800' }}>— Confúcio, Analectos, i. 2</span>
-               </p>
-            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button 

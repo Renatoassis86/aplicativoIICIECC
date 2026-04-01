@@ -169,7 +169,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
       
       {/* HEADER FIXO INSTAGRAM-STYLE */}
       <section style={{ 
-        padding: '16px 20px', background: 'var(--primary)', borderBottom: '1px solid rgba(255,255,255,0.1)',
+        padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 20px', 
+        background: 'var(--primary)', borderBottom: '1px solid rgba(255,255,255,0.1)',
         position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         color: 'white'
       }}>
