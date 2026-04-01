@@ -65,6 +65,17 @@ const OfficialMediaTab = () => {
           action: 'Acesse'
         },
       ]
+    },
+    {
+      title: 'Fotos do CIECC 2025 (Edição Anterior)',
+      subtitle: 'Memórias do I Congresso em João Pessoa',
+      type: 'photos',
+      items: [
+        { id: 101, url: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=300&h=200&fit=crop', label: 'Início do Movimento' },
+        { id: 102, url: 'https://images.unsplash.com/photo-1523240715639-9945037be740?w=300&h=200&fit=crop', label: 'Workshops 2025' },
+        { id: 103, url: 'https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?w=300&h=200&fit=crop', label: 'João Pessoa - PB' },
+        { id: 104, url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=300&h=200&fit=crop', label: 'Equipe Organizadora' },
+      ]
     }
   ];
 
@@ -73,7 +84,7 @@ const OfficialMediaTab = () => {
       {/* Header Customizado Mídia */}
       <header style={{ 
         padding: 'env(safe-area-inset-top, 40px) 20px 24px', 
-        background: 'var(--secondary)', 
+        background: 'var(--primary)', 
         color: 'white',
         borderBottomLeftRadius: '24px',
         borderBottomRightRadius: '24px',

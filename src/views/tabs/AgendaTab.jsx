@@ -73,33 +73,36 @@ const AgendaTab = () => {
   return (
     <div className="tab-content fade-in" style={{ padding: '0 0 40px' }}>
       <header style={{ 
-        padding: '24px 20px 16px', 
-        background: 'white', 
+        padding: 'env(safe-area-inset-top, 40px) 20px 24px', 
+        background: 'var(--primary)', 
         position: 'sticky', 
         top: 0, 
         zIndex: 10,
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+        color: 'white',
+        borderBottomLeftRadius: '24px',
+        borderBottomRightRadius: '24px'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>Agenda</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-serif)', color: 'white' }}>Agenda</h2>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button 
               onClick={() => setOnlyFavorites(!onlyFavorites)}
               style={{
-                background: onlyFavorites ? 'var(--gold)' : 'transparent',
-                border: '1px solid ' + (onlyFavorites ? 'var(--gold)' : 'var(--border)'),
+                background: onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+                border: '1px solid ' + (onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.2)'),
                 padding: '6px 12px',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                color: onlyFavorites ? 'var(--secondary)' : 'var(--text-muted)',
+                color: onlyFavorites ? 'var(--secondary)' : 'white',
                 fontSize: '11px',
                 fontWeight: '800',
                 transition: 'var(--transition)'
               }}
             >
-              <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'currentColor'} />
+              <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'white'} />
               MINHA AGENDA
             </button>
           </div>
@@ -116,10 +119,10 @@ const AgendaTab = () => {
                 borderRadius: '50px',
                 fontSize: '13px',
                 fontWeight: '600',
-                background: selectedDay === day ? 'var(--primary)' : 'var(--bg-app)',
-                color: selectedDay === day ? 'white' : 'var(--text-muted)',
+                background: selectedDay === day ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+                color: selectedDay === day ? 'var(--secondary)' : 'white',
                 transition: 'var(--transition)',
-                boxShadow: selectedDay === day ? '0 4px 12px rgba(216,30,30,0.3)' : 'none'
+                boxShadow: selectedDay === day ? '0 4px 12px rgba(0,0,0,0.2)' : 'none'
               }}
             >
               Dia {day}

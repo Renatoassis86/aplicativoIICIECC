@@ -169,25 +169,26 @@ export default function MediaTab({ userType, userName, userCpf }) {
       
       {/* HEADER FIXO INSTAGRAM-STYLE */}
       <section style={{ 
-        padding: '16px 20px', background: 'white', borderBottom: '1px solid rgba(0,0,0,0.05)',
-        position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+        padding: '16px 20px', background: 'var(--primary)', borderBottom: '1px solid rgba(255,255,255,0.1)',
+        position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        color: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} /></button>}
-          <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px' }} />
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'var(--primary)' }}>
+          {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
+          <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
             {viewingSaved ? 'Itens Salvos' : 'Feed Social'}
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '20px', color: 'var(--text-main)' }}>
+        <div style={{ display: 'flex', gap: '20px', color: 'white' }}>
           {canPost && !viewingSaved && (
             <button onClick={() => setShowCreator(true)} style={{ background: 'none', border: 'none', padding: 0, position: 'relative' }}>
-              <PlusSquare size={24} color="var(--primary)" />
+              <PlusSquare size={24} color="white" />
             </button>
           )}
           <button onClick={() => setViewingSaved(!viewingSaved)} style={{ background: 'none', border: 'none', padding: 0 }}>
-            {viewingSaved ? <BookmarkCheck size={24} color="var(--primary)" /> : <Bookmark size={24} />}
+            {viewingSaved ? <BookmarkCheck size={24} color="white" /> : <Bookmark size={24} color="white" />}
           </button>
         </div>
       </section>
