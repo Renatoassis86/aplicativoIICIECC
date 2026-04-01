@@ -59,7 +59,7 @@ const FAQView = ({ onClose }) => {
         {/* Header */}
         <div style={{ 
           padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
-          background: 'var(--secondary)', 
+          background: 'var(--primary)', 
           color: 'white',
           borderBottom: '1px solid var(--border)',
           display: 'flex',

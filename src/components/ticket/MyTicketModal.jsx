@@ -138,7 +138,7 @@ const MyTicketModal = ({ onClose, userName, userCpf }) => {
         {/* Page Header */}
         <header style={{ 
           padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
-          background: 'rgba(0,0,0,0.2)', 
+          background: 'var(--primary)', 
           color: 'white',
           display: 'flex', 
           alignItems: 'center', 

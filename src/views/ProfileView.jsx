@@ -88,7 +88,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
       <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
         <header style={{ 
           padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
-          background: 'var(--secondary)', 
+          background: 'var(--primary)', 
           color: 'white',
           display: 'flex', 
           alignItems: 'center', 

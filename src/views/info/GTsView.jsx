@@ -38,7 +38,7 @@ const GTsView = ({ onClose }) => {
           alignItems: 'center',
           gap: '16px',
           borderBottom: '1px solid var(--border)',
-          background: 'var(--secondary)',
+          background: 'var(--primary)',
           color: 'white',
           boxShadow: 'var(--shadow-md)',
           zIndex: 10
