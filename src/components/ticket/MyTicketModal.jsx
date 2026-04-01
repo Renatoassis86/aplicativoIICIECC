@@ -1,177 +1,222 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
-import { ArrowLeft, AlertTriangle, CheckCircle, ShieldAlert, WifiOff } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle, ShieldAlert, WifiOff, MapPin, Calendar, Building2, User } from 'lucide-react';
 import { fetchUserTicket } from '../../services/tickets/ticketService';
+import { supabase } from '../../lib/supabase';
 
 const MyTicketModal = ({ onClose, userName, userCpf }) => {
   const [ticketData, setTicketData] = useState(null);
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    // Busca inicial do ticket simulando rede
-    const loadTicket = async () => {
+    const loadData = async () => {
       setLoading(true);
-      const data = await fetchUserTicket(userCpf || '12345678900'); // mock cpf if missing
-      setTicketData(data);
-      setLoading(false);
-    };
-    loadTicket();
+      try {
+        // Fetch Ticket
+        const tData = await fetchUserTicket(userCpf || '12345678900');
+        setTicketData(tData);
 
-    // Relógio Live-Time Anti-Print Screen (Segurança)
+        // Fetch Profile for Badge Info
+        const { data: profile } = await supabase.from('profiles').select('job_title, avatar_url').eq('cpf', userCpf).single();
+        const { data: member } = await supabase.from('members').select('institution').eq('cpf', userCpf).single();
+        
+        setProfileData({
+          jobTitle: profile?.job_title || 'Congressista',
+          institution: member?.institution || 'II CIECC 2026',
+          avatar: profile?.avatar_url
+        });
+      } catch (err) {
+        console.error("Error loading ticket/profile data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [userCpf]);
 
-  const renderStatusUI = () => {
+  const renderBadgeContent = () => {
     if (loading) {
       return (
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-           <p style={{ color: 'var(--gold)', fontFamily: 'var(--font-serif)', fontSize: '14px', letterSpacing: '2px', animation: 'pulse 1.5s infinite' }}>CARREGANDO ACESSO...</p>
+        <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+           <div style={{ width: '40px', height: '40px', border: '3px solid var(--gold)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 20px', animation: 'spin 1s linear infinite' }}></div>
+           <p style={{ color: 'var(--gold)', fontFamily: 'var(--font-serif)', fontSize: '13px', letterSpacing: '2px' }}>PREPARANDO CREDENCIAL...</p>
         </div>
       );
     }
 
     if (!ticketData || ticketData.status === 'error') {
       return (
-        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <WifiOff size={48} color="#E53E3E" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ color: 'white', fontSize: '20px', marginBottom: '8px' }}>Falha na Conexão</h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Não foi possível buscar seu ingresso agora.</p>
+          <h3 style={{ color: 'white', fontSize: '20px', marginBottom: '8px' }}>Erro de Sincronização</h3>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Verifique sua conexão para carregar o QR Code oficial.</p>
         </div>
       );
     }
 
-    if (ticketData.status === 'not_generated') {
-      return (
-        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <AlertTriangle size={48} color="var(--gold)" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ color: 'white', fontSize: '20px', marginBottom: '8px' }}>Ingresso Pendente</h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Seu acesso ainda não foi liberado pela organização.</p>
-        </div>
-      );
-    }
-
-    if (ticketData.status === 'blocked') {
-      return (
-        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <ShieldAlert size={48} color="#E53E3E" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ color: 'white', fontSize: '20px', marginBottom: '8px' }}>Acesso Revogado</h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Entre em contato com a secretaria no credenciamento.</p>
-        </div>
-      );
-    }
-
-    if (ticketData.status === 'scanned') {
-      return (
-        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <CheckCircle size={48} color="#10B981" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ color: 'white', fontSize: '20px', marginBottom: '8px' }}>Check-in Realizado</h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Sua entrada já foi validada no sistema hoje.</p>
-          <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10B981', fontWeight: 'bold' }}>
-            Acesso Liberado
-          </div>
-        </div>
-      );
-    }
-
-    // Default: 'active' state
+    // Badge Aesthetic
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
+        {/* Lanyard Hole Visual */}
+        <div style={{ 
+          width: '50px', height: '14px', background: '#222', borderRadius: '20px', 
+          marginBottom: '24px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' 
+        }}></div>
+
+        {/* User Badge Section */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+           <h2 style={{ 
+             fontSize: '26px', fontWeight: '900', color: 'white', 
+             fontFamily: 'var(--font-serif)', lineHeight: '1.2', marginBottom: '6px',
+             textTransform: 'uppercase'
+           }}>
+             {userName}
+           </h2>
+           <p style={{ fontSize: '14px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px' }}>
+             {profileData?.jobTitle}
+           </p>
+           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', fontStyle: 'italic' }}>
+             {profileData?.institution}
+           </p>
+        </div>
+
+        {/* QR Code Container with physical card look */}
         <div style={{ 
           background: 'white', 
-          padding: '16px', 
-          borderRadius: '16px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-          marginBottom: '24px',
-          position: 'relative'
+          padding: '24px', 
+          borderRadius: '24px',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+          position: 'relative',
+          marginBottom: '32px',
+          border: '4px solid #F1F1F1'
         }}>
-          {/* O QR Code usa o ID real gerado pelo sistema */}
           <QRCode 
             value={ticketData.ticket_id} 
-            size={220}
-            level="H" // High error correction
-            fgColor="#111111"
+            size={180}
+            level="H"
+            fgColor="var(--primary)"
             bgColor="#FFFFFF"
           />
-          {/* Marcador animado na borda para provar interface viva */}
-          <div className="scanner-line"></div>
+          {/* Animated verify line */}
+          <div style={{ 
+            position: 'absolute', top: '24px', left: '24px', right: '24px', height: '2px', 
+            background: 'var(--gold)', opacity: 0.5, boxShadow: '0 0 10px var(--gold)',
+            animation: 'scanLine 3s infinite ease-in-out'
+          }}></div>
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <span style={{ 
-            background: 'var(--gold)', 
-            color: 'var(--primary)', 
-            padding: '4px 12px', 
-            borderRadius: '50px', 
-            fontSize: '11px', 
-            fontWeight: '800',
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
-            {ticketData.ticket_type}
-          </span>
+        {/* Access Category Badge */}
+        <div style={{ 
+          background: ticketData.ticket_type?.toLowerCase().includes('vip') ? 'var(--gold)' : 'rgba(255,255,255,0.1)', 
+          color: ticketData.ticket_type?.toLowerCase().includes('vip') ? 'var(--primary)' : 'white',
+          padding: '10px 24px', borderRadius: '50px', fontWeight: '900', fontSize: '14px',
+          textTransform: 'uppercase', letterSpacing: '2px', border: '1px solid rgba(212,193,156,0.3)',
+          marginBottom: '20px'
+        }}>
+          {ticketData.ticket_type}
         </div>
 
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px' }}>
-          ID: {ticketData.ticket_id.split('-').pop()}
-        </p>
-
-        {/* Live UI Proof Component */}
-        <div style={{ marginTop: '32px', textAlign: 'center' }}>
-          <p style={{ fontSize: '24px', fontWeight: '300', color: 'white', fontFamily: 'monospace' }}>
-            {time.toLocaleTimeString('pt-BR')}
-          </p>
-          <p style={{ fontSize: '10px', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            QR Code Dinâmico Seguro
-          </p>
+        {/* ID Branding */}
+        <div style={{ textAlign: 'center', opacity: 0.6 }}>
+           <p style={{ fontSize: '11px', color: 'white', fontFamily: 'monospace', letterSpacing: '2px' }}>
+             ID: {ticketData.ticket_id.split('-').pop()}
+           </p>
         </div>
 
+        {/* Live Counter for Security */}
+        <div style={{ marginTop: '40px', textAlign: 'center', padding: '12px 20px', background: 'rgba(0,0,0,0.3)', borderRadius: '16px' }}>
+           <p style={{ fontSize: '20px', fontWeight: '400', color: 'white', fontFamily: 'monospace' }}>
+             {time.toLocaleTimeString('pt-BR')}
+           </p>
+           <p style={{ fontSize: '9px', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px' }}>
+             Validação em tempo real garantida
+           </p>
+        </div>
+
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          @keyframes scanLine { 
+            0% { transform: translateY(0); }
+            50% { transform: translateY(180px); }
+            100% { transform: translateY(0); }
+          }
+        `}} />
       </div>
     );
   };
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: 'var(--primary)' }}>
-      <div className="modal-wrapper" style={{ background: 'var(--primary)' }}>
-        {/* Page Header */}
+    <div className="fixed-modal-overlay" style={{ background: 'var(--primary)', overflowY: 'auto' }}>
+      <div className="modal-wrapper" style={{ minHeight: '100%', background: 'var(--primary)', paddingBottom: '40px' }}>
+        
+        {/* Minimal Header */}
         <header style={{ 
-          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
-          background: 'var(--primary)', 
-          color: 'white',
+          padding: 'env(safe-area-inset-top, 40px) 20px 10px', 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '16px',
-          marginBottom: '20px'
+          zIndex: 10
         }}>
-           <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+           <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '12px' }}>
              <ArrowLeft size={24} color="white" />
            </button>
-           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', flex: 1 }}>Meu Ingresso</h2>
+           <div style={{ flex: 1, textAlign: 'center', marginRight: '44px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '2px', fontWeight: '800' }}>CREDENCIAL DIGITAL</p>
+           </div>
         </header>
 
-        {/* Ticket Card Principal Centralizado verticalmente */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* Badge Card Wrapper */}
+        <div style={{ padding: '30px 20px' }}>
           <div style={{
-            width: '100%',
-            maxWidth: '380px',
             background: 'var(--primary)',
-            borderRadius: '24px',
-            overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            borderRadius: '40px',
+            padding: '40px 30px',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
             border: '2px solid rgba(212, 193, 156, 0.4)',
-            position: 'relative'
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}>
-            {/* ... Resto do ticket layout ... */}
-            <div style={{ padding: '24px 24px 32px', textAlign: 'center', borderBottom: '2px dashed rgba(255,255,255,0.1)' }}>
-              <img src="/logo.png" alt="CIECC" style={{ height: '35px', marginBottom: '24px' }} />
-              <h2 style={{ color: 'white', fontSize: '22px', fontFamily: 'var(--font-serif)', margin: '0 0 4px' }}>{userName}</h2>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textTransform: 'uppercase' }}>Passe Oficial II CIECC</p>
+            {/* CIECC Hologram Logo */}
+            <div style={{ position: 'absolute', top: '30px', left: '30px', opacity: 0.1, pointerEvents: 'none' }}>
+              <img src="/logo.png" style={{ height: '80px', filter: 'grayscale(1) invert(1)' }} />
             </div>
-            <div style={{ padding: '32px 24px 40px' }}>
-               {renderStatusUI()}
+
+            {/* Event Logo Top */}
+            <img src="/logo.png" alt="CIECC" style={{ height: '32px', marginBottom: '10px' }} />
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '30px', letterSpacing: '1px' }}>
+              II CIECC • CONGRESSO INTERNACIONAL
+            </p>
+
+            {renderBadgeContent()}
+
+            {/* Bottom Logistics Info */}
+            <div style={{ 
+              marginTop: '40px', pt: '24px', borderTop: '1px dashed rgba(255,255,255,0.1)', 
+              width: '100%', display: 'flex', justifyContent: 'center', gap: '20px' 
+            }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Calendar size={14} color="var(--gold)" />
+                  <span style={{ fontSize: '11px', color: 'white', fontWeight: '600' }}>01-02 MAIO</span>
+               </div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={14} color="var(--gold)" />
+                  <span style={{ fontSize: '11px', color: 'white', fontWeight: '600' }}>SÃO PAULO</span>
+               </div>
             </div>
+          </div>
+          
+          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+             <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.6' }}>
+               Apresente esta credencial digital nos pontos de acesso para leitura via QR Code. <br/>
+               <strong>Uso pessoal e intransferível.</strong>
+             </p>
           </div>
         </div>
       </div>
