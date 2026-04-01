@@ -1,5 +1,4 @@
-import React from 'react';
-import { Award, Briefcase, ExternalLink, X, Info, ShieldCheck, Zap, Handshake } from 'lucide-react';
+import { Award, Briefcase, ExternalLink, ArrowLeft, Info, ShieldCheck, Zap, Handshake } from 'lucide-react';
 
 const SponsorsView = ({ onClose }) => {
   const tiers = [
@@ -23,68 +22,37 @@ const SponsorsView = ({ onClose }) => {
         { name: 'Editora Trinitas', bio: 'Referência em livros e formação clássica.', logo: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80' },
         { name: 'Schola Classics', bio: 'Plataforma de ensino e currículo clássico.', logo: 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400&h=400&fit=crop&q=80' }
       ]
-    },
-    {
-      name: 'Cota Prata',
-      icon: <ShieldCheck size={20} color="#C0C0C0" />,
-      color: '#C0C0C0',
-      description: 'Presença Forte. Foco em visibilidade direta no kit do congressista.',
-      sponsors: [
-        { name: 'Cidade Viva', bio: 'Educação para o Reino e Inovação.', logo: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=400&fit=crop&q=80' },
-        { name: 'Zoe School', bio: 'Pedagogia clássica e inovação educacional.', logo: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=400&fit=crop&q=80' }
-      ]
-    },
-    {
-      name: 'Parceiros Institucionais',
-      icon: <Handshake size={20} color="var(--primary)" />,
-      color: 'var(--primary)',
-      description: 'Apoio técnico, acadêmico e tecnológico.',
-      sponsors: [
-        { name: 'ARKOS', bio: 'Soluções tecnológicas para educação clássica.', logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=400&fit=crop&q=80', website: 'https://arkos.com.br' },
-        { name: 'FICV', bio: 'Faculdade Internacional Cidade Viva.', logo: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop&q=80', website: 'https://ficv.edu.br' },
-        { name: 'PACTUM', bio: 'Consultoria e Gestão Educacional.', logo: 'https://images.unsplash.com/photo-1454165833762-02c39e083961?w=400&h=400&fit=crop&q=80', website: 'https://pactum.edu.br' }
-      ]
     }
   ];
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
-      <div className="modal-content slide-up" style={{ 
-        height: '92vh', 
-        borderRadius: '24px 24px 0 0', 
-        padding: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        {/* Header */}
-        <div style={{ 
-          padding: '24px 20px', 
-          background: 'white', 
+    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
+      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+        <header style={{ 
+          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
+          background: 'var(--secondary)', 
+          color: 'white',
           borderBottom: '1px solid var(--border)',
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10
+          gap: '16px',
+          boxShadow: 'var(--shadow-md)'
         }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>Patrocinadores</h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Instituições que tornam o CIECC possível</p>
-          </div>
-          <button onClick={onClose} style={{ padding: '8px', background: '#F7FAFC', borderRadius: '50%' }}>
-            <X size={24} color="var(--secondary)" />
+          <button onClick={onClose} className="clickable" style={{ padding: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex' }}>
+            <ArrowLeft size={24} color="white" />
           </button>
-        </div>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)' }}>Patrocinadores</h2>
+            <p style={{ fontSize: '11px', opacity: 0.7, fontWeight: '600' }}>Instituições do CIECC 2026</p>
+          </div>
+        </header>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {/* Seção Informativa */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 100px' }}>
           <div className="card" style={{ padding: '16px', marginBottom: '32px', background: 'var(--accent)', border: 'none' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               <Info size={20} color="var(--primary)" />
               <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: '600', lineHeight: '1.4' }}>
-                Os patrocinadores do II CIECC são rigorosamente selecionados por sua contribuição ao ecossistema da educação clássica cristã.
+                Os patrocinadores do II CIECC são fundamentais para a realização deste ecossistema educacional.
               </p>
             </div>
           </div>
@@ -93,36 +61,19 @@ const SponsorsView = ({ onClose }) => {
             {tiers.map((tier, idx) => (
               <section key={idx}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  {tier.icon}
-                  <h4 style={{ fontSize: '14px', fontWeight: '900', color: tier.color, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {tier.name}
-                  </h4>
+                   {tier.icon}
+                   <h4 style={{ fontSize: '13px', fontWeight: '900', color: tier.color, textTransform: 'uppercase' }}>{tier.name}</h4>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>{tier.description}</p>
-                
-                <div style={{ display: 'grid', gap: '12px' }}>
+                <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
                   {tier.sponsors.map((s, si) => (
                     <div key={si} className="card" style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                      <div style={{ 
-                        width: '64px', height: '64px', 
-                        borderRadius: '12px', 
-                        background: 'white', 
-                        padding: '8px', 
-                        border: '1px solid var(--border)',
-                        boxShadow: 'var(--shadow-sm)'
-                      }}>
-                        <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                         <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</h5>
-                         <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: '1.3' }}>{s.bio}</p>
-                      </div>
-                      <button 
-                        onClick={() => s.website && window.open(s.website, '_blank')}
-                        style={{ background: '#F8F9FA', padding: '8px', borderRadius: '8px' }}
-                      >
-                         <ExternalLink size={16} color="var(--text-muted)" />
-                      </button>
+                       <div style={{ width: '56px', height: '56px', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                          <img src={s.logo} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                       </div>
+                       <div style={{ flex: 1 }}>
+                          <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</h5>
+                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.3' }}>{s.bio}</p>
+                       </div>
                     </div>
                   ))}
                 </div>
@@ -130,36 +81,9 @@ const SponsorsView = ({ onClose }) => {
             ))}
           </div>
 
-          {/* Call to Action */}
-          <div style={{ 
-            marginTop: '60px', 
-            padding: '32px 20px', 
-            textAlign: 'center',
-            background: 'url("https://www.transparenttextures.com/patterns/cubes.png") rgba(74, 16, 29, 0.03)',
-            borderRadius: '24px',
-            border: '1px dashed var(--border)'
-          }}>
-            <Briefcase size={32} color="var(--primary)" style={{ margin: '0 auto 16px' }} />
-            <h4 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>Quer expor sua marca no CIECC?</h4>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', marginBottom: '24px' }}>
-              Ainda temos cotas disponíveis para parceiros em 2026.
-            </p>
-            <button 
-              onClick={() => window.open('https://wa.me/558393322457', '_blank')}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '900',
-                fontSize: '14px'
-              }}
-            >
-              SOLICITAR APRESENTAÇÃO COMERCIAL
-            </button>
-          </div>
+          <button onClick={() => window.open('https://wa.me/558393322457', '_blank')} className="btn-primary" style={{ marginTop: '40px' }}>
+             SER UM PATROCINADOR
+          </button>
         </div>
       </div>
     </div>

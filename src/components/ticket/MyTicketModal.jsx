@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
-import { X, AlertTriangle, CheckCircle, ShieldAlert, WifiOff } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle, ShieldAlert, WifiOff } from 'lucide-react';
 import { fetchUserTicket } from '../../services/tickets/ticketService';
 
 const MyTicketModal = ({ onClose, userName, userCpf }) => {
@@ -133,99 +133,48 @@ const MyTicketModal = ({ onClose, userName, userCpf }) => {
   };
 
   return (
-    <div className="modal-overlay fade-in" style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(17,17,17,0.85)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px'
-    }}>
-      
-      {/* Botão Fechar Fora do Card */}
-      <button 
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: '24px',
-          right: '24px',
-          background: 'rgba(255,255,255,0.1)',
-          border: 'none',
-          padding: '12px',
-          borderRadius: '50%',
-          display: 'flex',
+    <div className="fixed-modal-overlay" style={{ background: 'var(--primary)' }}>
+      <div className="modal-wrapper" style={{ background: 'var(--primary)' }}>
+        {/* Page Header */}
+        <header style={{ 
+          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
+          background: 'rgba(0,0,0,0.2)', 
           color: 'white',
-          zIndex: 10
-        }}
-      >
-        <X size={24} />
-      </button>
-
-      {/* Ticket Card Principal */}
-      <div style={{
-        width: '100%',
-        maxWidth: '380px',
-        background: 'var(--primary)', // Borgonha
-        borderRadius: '24px',
-        overflow: 'hidden',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-        border: '1px solid rgba(212, 193, 156, 0.2)', // Borda dourada sutil
-        position: 'relative'
-      }}>
-        
-        {/* Passaporte Header */}
-        <div style={{ 
-          padding: '24px 24px 32px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
-          textAlign: 'center',
-          borderBottom: '2px dashed rgba(255,255,255,0.1)'
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '16px',
+          marginBottom: '20px'
         }}>
-          <img src="/logo.png" alt="CIECC" style={{ height: '35px', marginBottom: '24px' }} />
-          <h2 style={{ color: 'white', fontSize: '22px', fontFamily: 'var(--font-serif)', margin: '0 0 4px', lineHeight: 1.2 }}>
-            {userName || 'Congressista'}
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Passe Oficial II CIECC
-          </p>
+           <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <ArrowLeft size={24} color="white" />
+           </button>
+           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', flex: 1 }}>Meu Ingresso</h2>
+        </header>
+
+        {/* Ticket Card Principal Centralizado verticalmente */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '380px',
+            background: 'var(--primary)',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            border: '2px solid rgba(212, 193, 156, 0.4)',
+            position: 'relative'
+          }}>
+            {/* ... Resto do ticket layout ... */}
+            <div style={{ padding: '24px 24px 32px', textAlign: 'center', borderBottom: '2px dashed rgba(255,255,255,0.1)' }}>
+              <img src="/logo.png" alt="CIECC" style={{ height: '35px', marginBottom: '24px' }} />
+              <h2 style={{ color: 'white', fontSize: '22px', fontFamily: 'var(--font-serif)', margin: '0 0 4px' }}>{userName}</h2>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', textTransform: 'uppercase' }}>Passe Oficial II CIECC</p>
+            </div>
+            <div style={{ padding: '32px 24px 40px' }}>
+               {renderStatusUI()}
+            </div>
+          </div>
         </div>
-
-        {/* Círculos laterais formando o "picote" do ingresso */}
-        <div style={{ position: 'absolute', width: '32px', height: '32px', background: '#191919', borderRadius: '50%', left: '-16px', top: '150px' }}></div>
-        <div style={{ position: 'absolute', width: '32px', height: '32px', background: '#191919', borderRadius: '50%', right: '-16px', top: '150px' }}></div>
-
-        {/* Área do QR Code / Status */}
-        <div style={{ padding: '32px 24px 40px', background: 'var(--primary)' }}>
-          {renderStatusUI()}
-        </div>
-
       </div>
-
-      {/* Animações nativas para a Prova de IU Viva */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        .scanner-line {
-          position: absolute;
-          top: 10%;
-          left: 10%;
-          width: 80%;
-          height: 2px;
-          background: var(--primary);
-          box-shadow: 0 0 10px var(--primary);
-          animation: scan 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-          opacity: 0.8;
-          z-index: 10;
-        }
-        @keyframes scan {
-          0% { top: 10%; }
-          50% { top: 90%; }
-          100% { top: 10%; }
-        }
-      `}} />
-
     </div>
   );
 };

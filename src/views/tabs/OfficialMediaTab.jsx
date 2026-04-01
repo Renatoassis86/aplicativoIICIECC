@@ -167,7 +167,7 @@ const OfficialMediaTab = () => {
         `}} />
 
 
-        {sections.map((section, sIndex) => (
+        {sections.map((section) => (
           <div key={section.title} style={{ marginBottom: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
               <div>

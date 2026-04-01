@@ -11,23 +11,17 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
 
   const handleSend = async () => {
     if (!title.trim() || !message.trim()) return;
-
     setIsSending(true);
     setStatus(null);
-
     try {
       const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
         message: message.trim(),
         target_role: audience 
       });
-
       if (error) throw error;
-
       setStatus('success');
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      setTimeout(() => { onClose(); }, 2000);
     } catch (e) {
       console.error(e);
       setStatus('error');
@@ -37,27 +31,12 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 99999,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'flex-end'
-    }}>
-      <div style={{
-        background: 'white', 
-        width: '100%',
-        maxWidth: '430px',
-        margin: '0 auto',
-        borderTopLeftRadius: '32px', 
-        borderTopRightRadius: '32px',
-        padding: '24px', 
-        paddingTop: 'calc(env(safe-area-inset-top, 40px) + 24px)',
-        paddingBottom: '40px',
-        animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-        maxHeight: '92vh',
-        overflowY: 'auto',
-        boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className="fixed-modal-overlay">
+      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+        <header style={{ 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+          padding: 'env(safe-area-inset-top, 24px) 20px 20px', background: 'white', borderBottom: '1px solid var(--border)' 
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ background: '#FDF2F2', padding: '8px', borderRadius: '50%' }}>
               <BellRing size={20} color="var(--primary)" />
@@ -66,111 +45,53 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
               Disparo Oficial
             </h3>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none' }}>
-            <X size={24} color="var(--text-muted)" />
+          <button onClick={onClose} className="clickable" style={{ background: '#F8F9FA', padding: '10px', borderRadius: '50%', border: 'none' }}>
+            <X size={24} color="var(--primary)" />
           </button>
-        </div>
+        </header>
 
-        {status === 'success' ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-             <div style={{ width: '60px', height: '60px', background: '#F0FFF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-               <Send size={30} color="#38A169" />
-             </div>
-             <h4 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>Enviado!</h4>
-             <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px' }}>A notificação chegará apitando no celular de todos os congressistas.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            
-            <div style={{ background: '#FFF5F5', border: '1px solid #FEB2B2', padding: '12px', borderRadius: '8px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-               <AlertCircle size={18} color="#C53030" style={{ flexShrink: 0, marginTop: '2px' }} />
-               <p style={{ fontSize: '11px', color: '#9B2C2C', lineHeight: '1.4', fontWeight: '500' }}>
-                 Aviso: Essa mensagem irá gerar um PUSH NATIVO no celular de todos os participantes cadastrados e badalará o ícone de sino deles com o contador vermelho.
-               </p>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+          {status === 'success' ? (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+               <div style={{ width: '60px', height: '60px', background: '#F0FFF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                 <Send size={30} color="#38A169" />
+               </div>
+               <h4 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>Enviado!</h4>
+               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px' }}>Notificação enviada com sucesso para os congressistas.</p>
             </div>
-
-            <div>
-              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '6px', display: 'block' }}>Quem deve receber?</label>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                {[
-                  { id: 'all', label: 'Todos' },
-                  { id: 'sponsors', label: 'Patrocinadores' },
-                  { id: 'staff', label: 'Equipe Interna' }
-                ].map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setAudience(opt.id)}
-                    style={{
-                      flex: 1, padding: '10px 4px', borderRadius: '8px', fontSize: '11px', fontWeight: '700',
-                      background: audience === opt.id ? '#6B141A' : '#f0f0f0',
-                      color: audience === opt.id ? 'white' : 'var(--text-muted)',
-                      border: 'none', transition: 'all 0.2s'
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ background: '#FFF5F5', border: '1px solid #FEB2B2', padding: '12px', borderRadius: '8px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                 <AlertCircle size={18} color="#C53030" style={{ flexShrink: 0, marginTop: '2px' }} />
+                 <p style={{ fontSize: '11px', color: '#9B2C2C', lineHeight: '1.4', fontWeight: '600' }}>
+                    Esta mensagem gera um alerta nativo no celular de todos os participantes do grupo selecionado.
+                 </p>
               </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '6px', display: 'block' }}>Título Breve</label>
-              <input 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Sala Plenária Alterada"
-                maxLength={40}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: '12px',
-                  border: '1px solid var(--border)', fontSize: '14px',
-                  background: '#F8F9FA'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '6px', display: 'block' }}>Mensagem Completa (Detalhes)</label>
-              <textarea 
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Escreva as diretrizes claras aos congressistas..."
-                rows={4}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: '12px',
-                  border: '1px solid var(--border)', fontSize: '14px',
-                  background: '#F8F9FA', resize: 'none'
-                }}
-              />
-            </div>
-
-              {status === 'error' && (
-                <div style={{ background: '#FFF5F5', padding: '10px', borderRadius: '8px', border: '1px solid #FEB2B2' }}>
-                  <p style={{ color: '#C53030', fontSize: '12px', fontWeight: '700', textAlign: 'center' }}>
-                    Sincronização mal-sucedida. Verifique sua conexão ou as permissões administrativas no Supabase.
-                  </p>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px', display: 'block' }}>Audiente</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['all', 'sponsors', 'staff'].map(opt => (
+                    <button key={opt} onClick={() => setAudience(opt)} style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', border: 'none', background: audience === opt ? 'var(--primary)' : '#EDF2F7', color: audience === opt ? 'white' : 'var(--text-muted)' }}>
+                      {opt === 'all' ? 'Todos' : opt === 'sponsors' ? 'Patroc.' : 'Equipe'}
+                    </button>
+                  ))}
                 </div>
-              )}
-
-            <button 
-              onClick={handleSend}
-              disabled={isSending || !title.trim() || !message.trim()}
-              className="btn-primary"
-              style={{
-                width: '100%', padding: '16px', borderRadius: '12px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                marginTop: '8px', opacity: (isSending || !title.trim() || !message.trim()) ? 0.5 : 1
-              }}
-            >
-              <BellRing size={20} />
-              {isSending ? 'Sincronizando...' : 'Disparar Alarme Global'}
-            </button>
-          </div>
-        )}
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px', display: 'block' }}>Título</label>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título da notificação" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'white' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px', display: 'block' }}>Conteúdo</label>
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Detalhes do aviso..." rows={4} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'white', resize: 'none' }} />
+              </div>
+              <button onClick={handleSend} disabled={isSending || !title.trim() || !message.trim()} className="btn-primary">
+                 {isSending ? 'Enviando...' : 'Confirmar Disparo Global'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-      `}} />
     </div>
   );
 }

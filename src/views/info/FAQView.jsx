@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { HelpCircle, X, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
 
 const FAQView = ({ onClose }) => {
   const [activeId, setActiveId] = useState(null);
@@ -54,37 +53,31 @@ const FAQView = ({ onClose }) => {
   );
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
-      <div className="modal-content slide-up" style={{ 
-        height: '92vh', 
-        borderRadius: '24px 24px 0 0', 
-        padding: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
+    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
+      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
         {/* Header */}
         <div style={{ 
-          padding: '24px 20px', 
-          background: 'white', 
+          padding: 'env(safe-area-inset-top, 40px) 20px 20px', 
+          background: 'var(--secondary)', 
+          color: 'white',
           borderBottom: '1px solid var(--border)',
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10
+          gap: '16px',
+          zIndex: 10,
+          boxShadow: 'var(--shadow-md)'
         }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>FAQ & Suporte</h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Tire suas dúvidas sobre o evento</p>
-          </div>
-          <button onClick={onClose} style={{ padding: '8px', background: '#F7FAFC', borderRadius: '50%' }}>
-            <X size={24} color="var(--secondary)" />
+          <button onClick={onClose} className="clickable" style={{ padding: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex' }}>
+            <ArrowLeft size={24} color="white" />
           </button>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)' }}>FAQ & Suporte</h2>
+            <p style={{ fontSize: '11px', opacity: 0.7, fontWeight: '600' }}>Tire suas dúvidas sobre o evento</p>
+          </div>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+          {/* ... resto do conteúdo ... */}
           {/* Search Bar */}
           <div style={{ position: 'relative', marginBottom: '24px' }}>
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />

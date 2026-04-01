@@ -32,7 +32,7 @@ import ProfileView from './ProfileView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 
-const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate, onOpenAdminPortal }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -92,7 +92,6 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenProfile={() => setShowProfile(true)}
           onOpenScanner={() => setShowScanner(true)} 
           onOpenBroadcast={() => setShowBroadcast(true)} 
-          onOpenAdminPortal={onOpenAdminPortal} 
           onNavigate={(tab) => setActiveTab(tab)}
           onOpenFAQ={() => setShowFAQ(true)}
           onOpenSponsors={() => setShowSponsors(true)}
@@ -202,7 +201,10 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
 
       {showProfile && (
         <ProfileView 
-          onClose={() => setShowProfile(false)}
+          onClose={() => {
+            setShowProfile(false);
+            setActiveTab('more');
+          }}
           userName={userName}
           userCpf={userCpf}
           userType={userType}

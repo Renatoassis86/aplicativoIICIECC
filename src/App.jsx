@@ -313,14 +313,6 @@ function App() {
             box-shadow: none;
           }
         }
-        /* Garantir que todos os modais fixos fiquem dentro do wrapper quando possível */
-        .fixed-modal-overlay {
-          max-width: 430px;
-          margin: 0 auto;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 100%;
-        }
       `}} />
     </div>
   );
