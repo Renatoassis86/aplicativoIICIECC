@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Play, 
   Camera, 
@@ -8,10 +8,38 @@ import {
   FileText,
   Video,
   ExternalLink,
-  Award
+  Award,
+  Heart,
+  MessageCircle,
+  X,
+  Share2,
+  MoreVertical
 } from 'lucide-react';
 
-const OfficialMediaTab = () => {
+const OfficialMediaTab = ({ userCpf, userName }) => {
+  const [selectedStory, setSelectedStory] = useState(null);
+  const [likedStories, setLikedStories] = useState(new Set());
+  const [comments, setComments] = useState({}); // id: [{author, text}]
+  const [newComment, setNewComment] = useState('');
+  const [showComments, setShowComments] = useState(false);
+
+  const toggleLike = (id) => {
+    const next = new Set(likedStories);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setLikedStories(next);
+  };
+
+  const addComment = (id) => {
+    if (!newComment.trim()) return;
+    const storyComments = comments[id] || [];
+    setComments({
+      ...comments,
+      [id]: [...storyComments, { author: userName || 'Participante', text: newComment }]
+    });
+    setNewComment('');
+  };
+
   const sections = [
     {
       title: 'Entrevistas Exclusivas',
@@ -201,7 +229,12 @@ const OfficialMediaTab = () => {
               <div className="stories-marquee" style={{ marginBottom: '12px' }}>
                 <div className="stories-content">
                   {[...section.items, ...section.items].map((story, idx) => (
-                    <div key={`${story.id}-${idx}`} style={{ textAlign: 'center', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div 
+                      key={`${story.id}-${idx}`} 
+                      onClick={() => setSelectedStory(story)}
+                      className="clickable"
+                      style={{ textAlign: 'center', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                    >
                       <div style={{ 
                         width: '70px', height: '70px', 
                         borderRadius: '50%', 
@@ -303,6 +336,136 @@ const OfficialMediaTab = () => {
         </div>
 
       </div>
+
+      {/* Story Detail Modal (Full Screen) */}
+      {selectedStory && (
+        <div 
+          className="fixed-modal-overlay" 
+          style={{ 
+            background: 'black',
+            zIndex: 10000,
+            animation: 'modalFadeIn 0.3s ease-out'
+          }}
+        >
+          <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            {/* Header / Timer Bar */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: 'env(safe-area-inset-top, 20px) 16px 0', zIndex: 10 }}>
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                <div style={{ flex: 1, height: '2px', background: 'rgba(255,255,255,0.8)', borderRadius: '1px' }}></div>
+                <div style={{ flex: 1, height: '2px', background: 'rgba(255,255,255,0.3)', borderRadius: '1px' }}></div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={selectedStory.url} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid white' }} />
+                  <span style={{ color: 'white', fontWeight: '800', fontSize: '14px' }}>{selectedStory.title}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>• Agora</span>
+                </div>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <MoreVertical size={20} color="white" />
+                  <X 
+                    size={24} 
+                    color="white" 
+                    className="clickable"
+                    onClick={() => { setSelectedStory(null); setShowComments(false); }} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Story Image */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <img 
+                src={selectedStory.url} 
+                alt="" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+              
+              {/* Bottom Actions Overlay */}
+              {!showComments && (
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px env(safe-area-inset-bottom, 24px)', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '24px', padding: '12px 20px', display: 'flex', alignItems: 'center' }}>
+                      <input 
+                        placeholder="Enviar mensagem..." 
+                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }} 
+                        value={newComment}
+                        onChange={e => setNewComment(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && addComment(selectedStory.id)}
+                      />
+                    </div>
+                    <Heart 
+                      size={28} 
+                      color={likedStories.has(selectedStory.id) ? "#E53E3E" : "white"} 
+                      fill={likedStories.has(selectedStory.id) ? "#E53E3E" : "none"}
+                      onClick={() => toggleLike(selectedStory.id)}
+                      className="clickable"
+                    />
+                    <MessageCircle 
+                      size={28} 
+                      color="white" 
+                      onClick={() => setShowComments(!showComments)}
+                      className="clickable"
+                    />
+                    <Share2 size={28} color="white" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Comments Overlay (Slide-up style like IG) */}
+            {showComments && (
+              <div style={{ 
+                height: '400px', 
+                background: 'white', 
+                borderTopLeftRadius: '24px', 
+                borderTopRightRadius: '24px', 
+                padding: '20px 0',
+                display: 'flex', flexDirection: 'column'
+              }} className="fade-in">
+                <div style={{ width: '40px', height: '4px', background: '#ddd', borderRadius: '2px', margin: '0 auto 20px' }}></div>
+                <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <h4 style={{ fontWeight: '800' }}>Comentários</h4>
+                   <X size={20} color="#666" onClick={() => setShowComments(false)} className="clickable" />
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                   {comments[selectedStory.id]?.length > 0 ? (
+                      comments[selectedStory.id].map((c, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>
+                             {c.author.charAt(0)}
+                          </div>
+                          <div>
+                            <p style={{ fontSize: '13px', fontWeight: '800' }}>{c.author}</p>
+                            <p style={{ fontSize: '13px', color: '#444' }}>{c.text}</p>
+                          </div>
+                        </div>
+                      ))
+                   ) : (
+                     <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
+                        <p style={{ fontSize: '13px' }}>Nenhum comentário ainda.</p>
+                        <p style={{ fontSize: '11px' }}>Seja o primeiro a comentar o story!</p>
+                     </div>
+                   )}
+                </div>
+                <div style={{ padding: '16px 20px', borderTop: '1px solid #f0f0f0', display: 'flex', gap: '12px' }}>
+                   <input 
+                      placeholder="Adicione um comentário..." 
+                      style={{ flex: 1, background: '#f5f5f5', border: 'none', borderRadius: '12px', padding: '12px 16px', outline: 'none' }}
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
+                   />
+                   <button 
+                     onClick={() => addComment(selectedStory.id)}
+                     style={{ color: 'var(--primary)', fontWeight: '800', fontSize: '14px' }}
+                   >
+                     Publicar
+                   </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
