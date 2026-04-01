@@ -14,6 +14,19 @@ import {
 const OfficialMediaTab = () => {
   const sections = [
     {
+      title: 'Entrevistas Exclusivas',
+      subtitle: 'Histórias e insights do congresso',
+      type: 'stories',
+      items: [
+        { id: 5, url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop', title: 'Dr. Schlect', active: true },
+        { id: 6, url: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=300&h=300&fit=crop', title: 'Bastidores', active: true },
+        { id: 10, url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop', title: 'Thiago Dutra', active: true },
+        { id: 11, url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop', title: 'M. Fonseca', active: false },
+        { id: 12, url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop', title: 'Ana Paula', active: true },
+        { id: 13, url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop', title: 'Prof. Lucas', active: false },
+      ]
+    },
+    {
       title: 'Fotos em Tempo Real',
       subtitle: 'Acompanhe a cobertura oficial do II CIECC',
       type: 'photos',
@@ -22,27 +35,6 @@ const OfficialMediaTab = () => {
         { id: 2, url: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=300&h=200&fit=crop', label: 'Auditório Principal' },
         { id: 3, url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=300&h=200&fit=crop', label: 'Networking Coffee' },
         { id: 4, url: 'https://images.unsplash.com/photo-1523580494863-6f30312248d5?w=300&h=200&fit=crop', label: 'Workshops Acadêmicos' },
-      ]
-    },
-    {
-      title: 'Entrevistas Exclusivas',
-      subtitle: 'Conversas com palestrantes e organizadores',
-      type: 'videos',
-      items: [
-        { 
-          id: 5, 
-          url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=400&fit=crop', 
-          title: 'Dr. Christopher Schlect',
-          tag: 'Entrevista',
-          duration: '12:45'
-        },
-        { 
-          id: 6, 
-          url: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=300&h=400&fit=crop', 
-          title: 'Bastidores Organizadores',
-          tag: 'Talk',
-          duration: '08:20'
-        },
       ]
     },
     {
@@ -175,6 +167,23 @@ const OfficialMediaTab = () => {
           @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
           .pulse { animation: pulseAnim 2s infinite; }
           @keyframes pulseAnim { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+          
+          .stories-marquee {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+            padding: 8px 0;
+          }
+          .stories-content {
+            display: flex;
+            width: max-content;
+            animation: marquee-stories 40s linear infinite;
+            gap: 20px;
+          }
+          @keyframes marquee-stories {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
         `}} />
 
 
@@ -187,6 +196,30 @@ const OfficialMediaTab = () => {
               </div>
               <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '700' }}>Ver Ver</span>
             </div>
+
+            {section.type === 'stories' && (
+              <div className="stories-marquee" style={{ marginBottom: '12px' }}>
+                <div className="stories-content">
+                  {[...section.items, ...section.items].map((story, idx) => (
+                    <div key={`${story.id}-${idx}`} style={{ textAlign: 'center', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ 
+                        width: '70px', height: '70px', 
+                        borderRadius: '50%', 
+                        padding: '3px',
+                        background: story.active ? 'linear-gradient(45deg, #F09433 0%, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888 100%)' : '#E2E8F0',
+                        marginBottom: '8px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
+                          <img src={story.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)' }}>{story.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {section.type === 'photos' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
