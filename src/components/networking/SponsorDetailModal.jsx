@@ -147,6 +147,15 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
         >
           ACESSAR SOLUÇÕES <ExternalLink size={18} />
         </button>
+        <button 
+          onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')}
+          style={{ 
+            marginTop: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', 
+            fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px'
+          }}
+        >
+          Quer ser um patrocinador? Saiba mais
+        </button>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `

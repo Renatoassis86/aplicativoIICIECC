@@ -503,8 +503,18 @@ const HomeTab = ({
              </div>
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '16px' }}>
-             <span style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '900', letterSpacing: '0.5px' }}>TOQUE PARA VER DETALHES</span>
+          <div style={{ textAlign: 'center', marginTop: '16px', padding: '0 20px' }}>
+             <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '16px' }}>TOQUE PARA VER DETALHES</p>
+             <button 
+               onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')}
+               style={{ 
+                 width: '100%', padding: '14px', borderRadius: '12px', 
+                 background: 'var(--primary)', color: 'white', border: '1px solid var(--gold)',
+                 fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+               }}
+             >
+               QUERO SER UM PATROCINADOR <ExternalLink size={16} />
+             </button>
           </div>
         </div>
       </section>

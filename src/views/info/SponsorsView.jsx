@@ -148,8 +148,12 @@ const SponsorsView = ({ onClose }) => {
             ))}
           </div>
 
-          <button onClick={() => window.open('https://wa.me/558393322457', '_blank')} className="btn-primary" style={{ marginTop: '40px' }}>
-             SER UM PATROCINADOR
+          <button 
+            onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')} 
+            className="btn-primary" 
+            style={{ marginTop: '40px', background: 'var(--gold)', color: 'var(--primary)', fontWeight: '900' }}
+          >
+             QUERO SER UM PATROCINADOR
           </button>
         </div>
 
