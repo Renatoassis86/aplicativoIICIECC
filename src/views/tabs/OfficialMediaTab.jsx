@@ -18,6 +18,7 @@ import {
 
 const OfficialMediaTab = ({ userCpf, userName }) => {
   const [selectedStory, setSelectedStory] = useState(null);
+  const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [likedStories, setLikedStories] = useState(new Set());
   const [comments, setComments] = useState({}); // id: [{author, text}]
   const [newComment, setNewComment] = useState('');
@@ -84,6 +85,18 @@ const OfficialMediaTab = ({ userCpf, userName }) => {
           logo: '/logo.png', 
           action: 'Acesse'
         },
+      ]
+    },
+    {
+      title: 'CIECC Podcasts',
+      subtitle: 'Ouça os principais insights educacionais',
+      type: 'podcasts',
+      items: [
+        { id: 201, title: 'Artes Liberais', url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=200&h=200&fit=crop', audio: '#' },
+        { id: 202, title: 'Educação Clássica', url: 'https://images.unsplash.com/photo-1491843331657-f050bc7013d2?w=200&h=200&fit=crop', audio: '#' },
+        { id: 203, title: 'OIKOS Tech', url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=200&fit=crop', audio: '#' },
+        { id: 204, title: 'Futuro Escolas', url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=200&h=200&fit=crop', audio: '#' },
+        { id: 205, title: 'Latim & Grego', url: 'https://images.unsplash.com/photo-1513001900722-370f803f498d?w=200&h=200&fit=crop', audio: '#' },
       ]
     },
     {
@@ -254,6 +267,38 @@ const OfficialMediaTab = ({ userCpf, userName }) => {
               </div>
             )}
 
+            {section.type === 'podcasts' && (
+              <div className="stories-marquee" style={{ marginBottom: '12px' }}>
+                <div className="stories-content" style={{ animationDirection: 'reverse', animationDuration: '30s' }}>
+                  {[...section.items, ...section.items].map((pod, idx) => (
+                    <div 
+                      key={`${pod.id}-${idx}`} 
+                      onClick={() => setSelectedPodcast(pod)}
+                      className="clickable"
+                      style={{ textAlign: 'center', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                    >
+                      <div style={{ 
+                        width: '74px', height: '74px', 
+                        borderRadius: '20px', 
+                        padding: '3px',
+                        background: 'var(--secondary)',
+                        marginBottom: '8px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <div style={{ width: '100%', height: '100%', borderRadius: '18px', background: 'white', padding: '2px', position: 'relative' }}>
+                          <img src={pod.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '16px', objectFit: 'cover' }} />
+                          <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'var(--primary)', borderRadius: '4px', padding: '2px' }}>
+                             <Mic size={10} color="white" />
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)' }}>{pod.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {section.type === 'photos' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {section.items.map(img => (
@@ -312,30 +357,43 @@ const OfficialMediaTab = ({ userCpf, userName }) => {
           </div>
         ))}
 
-        {/* Podcast / Audio Section */}
-        <div style={{ background: '#F8F9FA', borderRadius: '24px', padding: '24px', border: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '20px' }}>
-            <div style={{ background: 'var(--secondary)', padding: '12px', borderRadius: '12px' }}>
-              <Mic size={24} color="var(--gold)" />
+      {/* 8. Podcast Section Legada Removida (Agora no Carrossel) */}
+      </div>
+
+      {/* Podcast Player Modal */}
+      {selectedPodcast && (
+        <div className="fixed-modal-overlay" style={{ background: 'rgba(0,0,0,0.95)', zIndex: 10001 }}>
+          <div style={{ padding: '60px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+            <button onClick={() => setSelectedPodcast(null)} style={{ position: 'absolute', top: 'env(safe-area-inset-top, 20px)', right: '20px' }}>
+              <X size={32} color="white" />
+            </button>
+            <div style={{ width: '240px', height: '240px', borderRadius: '32px', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', overflow: 'hidden', marginBottom: '40px' }}>
+               <img src={selectedPodcast.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: '800' }}>CIECC Podcasts</h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ouça os insights onde estiver</p>
+            <h2 style={{ color: 'white', fontSize: '24px', fontWeight: '900', textAlign: 'center', marginBottom: '8px' }}>{selectedPodcast.title}</h2>
+            <p style={{ color: 'var(--gold)', fontSize: '14px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '48px' }}>CIECC PODCASTS</p>
+            
+            <div style={{ width: '100%', maxWidth: '300px' }}>
+               <div style={{ height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', position: 'relative', marginBottom: '12px' }}>
+                  <div style={{ width: '45%', height: '100%', background: 'var(--gold)', borderRadius: '2px' }}></div>
+                  <div style={{ position: 'absolute', left: '42%', top: '-6px', width: '16px', height: '16px', background: 'white', border: '3px solid var(--gold)', borderRadius: '50%' }}></div>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: '700' }}>
+                  <span>05:32</span>
+                  <span>14:00</span>
+               </div>
             </div>
-          </div>
-          <div style={{ background: 'white', borderRadius: '16px', padding: '12px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <Play size={14} fill="var(--primary)" color="var(--primary)" />
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: '12px', fontWeight: '700' }}>O Futuro das Artes Liberais</p>
-              <div style={{ height: '4px', background: '#eee', borderRadius: '2px', marginTop: '6px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ width: '35%', height: '100%', background: 'var(--primary)' }}></div>
-              </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '40px', marginTop: '40px' }}>
+               <ChevronRight size={32} color="white" style={{ transform: 'rotate(180deg)', opacity: 0.5 }} />
+               <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Play size={32} fill="var(--primary)" color="var(--primary)" style={{ marginLeft: '4px' }} />
+               </div>
+               <ChevronRight size={32} color="white" style={{ opacity: 0.5 }} />
             </div>
-            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>12:00</span>
           </div>
         </div>
-
-      </div>
+      )}
 
       {/* Story Detail Modal (Full Screen) */}
       {selectedStory && (
