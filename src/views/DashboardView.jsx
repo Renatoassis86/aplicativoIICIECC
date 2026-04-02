@@ -165,7 +165,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onClick={() => setActiveTab('feed')}
         >
           <Image size={22} />
-          <span>Feed</span>
+          <span>CONEXÕES</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`} 

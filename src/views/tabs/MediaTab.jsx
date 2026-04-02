@@ -120,11 +120,11 @@ export default function MediaTab({ userType, userName, userCpf }) {
       return (
         <div 
           onClick={() => setMuted(!muted)}
-          style={{ width: '100%', aspectRatio: '4/5', background: '#000', position: 'relative', cursor: 'pointer' }}
+          style={{ width: '100%', maxHeight: '600px', background: '#000', position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
         >
           <video 
             src={post.mediaUrls[0]} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} 
             autoPlay loop muted={muted} playsInline 
           />
           <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '8px', color: 'white' }}>
@@ -189,7 +189,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
           <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
-            {viewingSaved ? 'Itens Salvos' : 'Feed Social'}
+            {viewingSaved ? 'Itens Salvos' : 'CONEXÕES'}
           </h1>
         </div>
 
@@ -210,13 +210,13 @@ export default function MediaTab({ userType, userName, userCpf }) {
         {loading ? (
           <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
             <RefreshCw size={32} color="var(--primary)" className="spin" style={{ marginBottom: '16px' }} />
-            <p style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '13px' }}>Carregando a rede...</p>
+            <p style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '13px' }}>Carregando conexões...</p>
           </div>
         ) : visiblePosts.length === 0 ? (
            <div style={{ padding: '80px 20px', textAlign: 'center' }}>
              <Bookmark size={48} color="rgba(0,0,0,0.1)" style={{ margin: '0 auto 16px' }} />
-             <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>{viewingSaved ? 'Nenhum item salvo' : 'Nenhuma publicação'}</h3>
-             <p style={{ color: 'var(--text-muted)' }}>{viewingSaved ? 'Suas publicações favoritas aparecerão aqui.' : 'O feed está vazio no momento.'}</p>
+             <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>{viewingSaved ? 'Nenhum item salvo' : 'Sem Publicações'}</h3>
+             <p style={{ color: 'var(--text-muted)' }}>{viewingSaved ? 'Suas publicações favoritas aparecerão aqui.' : 'Nenhuma conexão feita ainda. Seja o primeiro!'}</p>
            </div>
         ) : (
           visiblePosts.map(post => (
