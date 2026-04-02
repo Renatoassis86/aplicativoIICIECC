@@ -85,7 +85,6 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         <div style={{ marginBottom: '50px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
              <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>Flashes do Momento</h3>
-             <span style={{ fontSize: '11px', fontWeight: '900', color: 'white', background: '#FF0000', padding: '4px 10px', borderRadius: '20px' }}>AO VIVO</span>
            </div>
            
            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
@@ -95,27 +94,20 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
                   onClick={() => openGallery(index, 'live')} 
                   className="clickable" 
                   style={{ 
-                    minWidth: '95px', 
-                    height: '95px', 
-                    borderRadius: '10px', 
+                    height: '100px', 
+                    borderRadius: '8px', 
                     overflow: 'hidden', 
                     flexShrink: 0,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                    background: '#fff',
-                    border: '1px solid #eee',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
                   }}
                 >
                   <img 
                     src={img.url} 
                     alt="" 
                     style={{ 
-                      width: '100%', 
                       height: '100%', 
-                      objectFit: 'contain',
-                      padding: '4px' 
+                      width: 'auto', 
+                      display: 'block' 
                     }} 
                   />
                 </div>

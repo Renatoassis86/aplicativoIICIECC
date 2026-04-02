@@ -39,29 +39,21 @@ const MemoriesMarquee = ({ photos, onOpenMedia }) => {
               key={`${photo.id}-${idx}`}
               onClick={() => onOpenMedia(photo, idx % photos.length)}
               style={{ 
-                minWidth: '95px', 
-                height: '95px', 
-                borderRadius: '10px', 
+                height: '100px', 
+                borderRadius: '8px', 
                 overflow: 'hidden',
-                background: '#fff',
                 cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                border: '1px solid #eee',
-                position: 'relative',
                 flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
               }}
             >
               <img 
                 src={photo.url} 
                 alt={photo.label} 
                 style={{ 
-                  width: '100%', 
                   height: '100%', 
-                  objectFit: 'contain', 
-                  padding: '4px' 
+                  width: 'auto', 
+                  display: 'block'
                 }} 
                 loading="lazy"
               />
