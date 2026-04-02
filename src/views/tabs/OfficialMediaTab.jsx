@@ -88,20 +88,20 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
              <span style={{ fontSize: '11px', fontWeight: '900', color: 'white', background: '#FF0000', padding: '4px 10px', borderRadius: '20px' }}>AO VIVO</span>
            </div>
            
-           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px', margin: '0 -20px', padding: '0 20px' }}>
+           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
               {livePhotos.map((img, index) => (
                 <div 
                   key={img.id} 
                   onClick={() => openGallery(index, 'live')} 
                   className="clickable" 
                   style={{ 
-                    minWidth: '140px', 
-                    height: '140px', 
+                    minWidth: '110px', 
+                    height: '110px', 
                     borderRadius: '12px', 
                     overflow: 'hidden', 
                     flexShrink: 0,
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-                    background: '#eee'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    background: '#f5f5f5'
                   }}
                 >
                   <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
