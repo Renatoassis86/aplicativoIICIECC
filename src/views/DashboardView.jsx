@@ -29,6 +29,7 @@ import GTsView from './info/GTsView';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import ProfileView from './ProfileView';
+import MediaDetailView from './media/MediaDetailView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 
@@ -43,6 +44,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
   const [showMap, setShowMap] = useState(false);
   const [showGTs, setShowGTs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [mediaDetail, setMediaDetail] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -56,6 +58,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
     };
     syncInbox();
   }, [userCpf]);
+
+  // Auditoria de Navegação (Para diagnosticar pulos inesperados no Feed)
+  useEffect(() => {
+    console.log(`[Navigation Audit] Tab changed to: ${activeTab.toUpperCase()} at ${new Date().toLocaleTimeString()}`);
+  }, [activeTab]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -74,11 +81,18 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenSponsors={() => setShowSponsors(true)}
           onOpenMap={() => setShowMap(true)}
           onOpenProfile={() => setShowProfile(true)}
+          onOpenMedia={(media) => setMediaDetail(media)}
         />
       );
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
-      case 'media': return <OfficialMediaTab />;
+      case 'media': return (
+        <OfficialMediaTab 
+          onOpenMedia={(media) => setMediaDetail(media)}
+          userCpf={userCpf}
+          userName={userName}
+        />
+      );
       case 'feed': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
       case 'speakers': return <SpeakersTab onNavigate={(tab) => setActiveTab(tab)} />;
       case 'more': return (
@@ -144,7 +158,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onClick={() => setActiveTab('media')}
         >
           <Video size={22} />
-          <span>Mídia</span>
+          <span>HUB VIP</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`} 
@@ -218,6 +232,15 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
       {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
       {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
       {showGTs && <GTsView onClose={() => setShowGTs(false)} />}
+
+      {mediaDetail && (
+        <MediaDetailView 
+          media={mediaDetail} 
+          onClose={() => setMediaDetail(null)} 
+          userCpf={userCpf} 
+          userName={userName} 
+        />
+      )}
     </div>
   );
 };

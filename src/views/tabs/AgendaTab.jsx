@@ -5,62 +5,24 @@ import {
   Clock, 
   ChevronRight
 } from 'lucide-react';
+import { events, workshops } from '../../data/agendaData';
+import SessionDetailModal from '../../components/agenda/SessionDetailModal';
 
 const AgendaTab = () => {
   const [selectedDay, setSelectedDay] = useState('01/05');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('ciecc_favorite_sessions');
     return saved ? JSON.parse(saved) : [];
   });
 
-  const days = ['01/05', '02/05'];
-  const events = [
-    // 01 de Maio - Tarde (Passado)
-    { id: 101, date: '01/05', time: '14:00', title: 'Check-in', speaker: 'Equipe CIECC', room: 'Recepção', category: 'Geral', color: '#F8F9FA' },
-    { id: 102, date: '01/05', time: '14:30', title: 'Abertura Passado', speaker: 'Diretoria CIECC', room: 'Auditório Principal', category: 'Geral', color: '#FDF2F2' },
-    { id: 103, date: '01/05', time: '15:00', title: 'História da Educação Cristã Clássica (Paideia Grega)', speaker: 'Thiago Dutra', room: 'Auditório Principal', category: 'Palestra', color: '#F0FFF4' },
-    { id: 104, date: '01/05', time: '15:45', title: 'História da Educação Cristã Clássica (Roma e o Cristianismo Primitivo)', speaker: 'Chris Schlect', room: 'Auditório Principal', category: 'Palestra', color: '#EBF8FF' },
-    { id: 105, date: '01/05', time: '16:30', title: 'História da Educação Cristã Clássica (Cristianismo Medieval)', speaker: 'Chris Schlect', room: 'Auditório Principal', category: 'Palestra', color: '#FAF5FF' },
-    { id: 106, date: '01/05', time: '17:15', title: 'Mesa Redonda 1', speaker: 'Convidados', room: 'Auditório Principal', category: 'Painel', color: '#FDF2F2' },
-    { id: 107, date: '01/05', time: '17:45', title: 'Encerramento Tarde', speaker: 'Equipe CIECC', room: 'Auditório Principal', category: 'Geral', color: '#F8F9FA' },
-
-    // 01 de Maio - Noite (Presente)
-    { id: 108, date: '01/05', time: '18:45', title: 'Abertura Presente', speaker: 'Equipe CIECC', room: 'Auditório Principal', category: 'Geral', color: '#FDF2F2' },
-    { id: 109, date: '01/05', time: '19:00', title: 'Educação Clássica x Educação Moderna', speaker: 'Keith Nix', room: 'Auditório Principal', category: 'Palestra', color: '#F0FFF4' },
-    { id: 110, date: '01/05', time: '19:45', title: 'Professor Clássico x Professor Moderno', speaker: 'Rosely Garcia', room: 'Auditório Principal', category: 'Palestra', color: '#EBF8FF' },
-    { id: 111, date: '01/05', time: '20:30', title: 'Escola Clássica x Escola Moderna', speaker: 'Keith Nix', room: 'Auditório Principal', category: 'Palestra', color: '#FAF5FF' },
-    { id: 112, date: '01/05', time: '21:15', title: 'Mesa Redonda 2', speaker: 'Convidados', room: 'Auditório Principal', category: 'Painel', color: '#FDF2F2' },
-    { id: 113, date: '01/05', time: '21:45', title: 'Encerramento Noite', speaker: 'Equipe CIECC', room: 'Auditório Principal', category: 'Geral', color: '#F8F9FA' },
-
-    // 02 de Maio - Manhã
-    { id: 201, date: '02/05', time: '09:00', title: 'Abertura FICV / Coffee Break', speaker: 'Líderes FICV', room: 'Hall / Auditório', category: 'Geral', color: '#FDF2F2' },
-    { id: 202, date: '02/05', time: '09:15', title: 'Apresentação de Trabalhos: GT 1 e GT 2', speaker: 'Pesquisadores Selecionados', room: 'Sala Ágora', category: 'GTs', color: '#F0FFF4' },
-    { id: 302, date: '02/05', time: '09:15', title: 'Apresentação de Trabalhos: GT 3 e GT 4', speaker: 'Pesquisadores Selecionados', room: 'Sala Logos', category: 'GTs', color: '#F0FFF4' },
-    { id: 203, date: '02/05', time: '09:30', title: 'Palestra Líderes 1 - A vida de um diretor de escola clássica', speaker: 'Keith Nix', room: 'Auditório Principal', category: 'Liderança', color: '#EBF8FF' },
-    { id: 204, date: '02/05', time: '10:15', title: 'Palestra Líderes 2 - Liderando uma escola Clássica', speaker: 'Chris Schlect', room: 'Auditório Principal', category: 'Liderança', color: '#FAF5FF' },
-    { id: 205, date: '02/05', time: '11:00', title: 'Mesa Redonda / Apresentação Paideia', speaker: 'Equipe FICV', room: 'Auditório Principal', category: 'Painel', color: '#FDF2F2' },
-    { id: 206, date: '02/05', time: '12:00', title: 'Intervalo Almoço', speaker: 'Livre', room: 'Externo', category: 'Geral', color: '#F8F9FA' },
-
-    // 02 de Maio - Tarde (Oficinas)
-    { id: 207, date: '02/05', time: '14:00', title: 'Abertura Oficinas', speaker: 'Equipe CIECC', room: 'Auditório Principal', category: 'Geral', color: '#FDF2F2' },
-    { id: 208, date: '02/05', time: '14:15', title: 'Sessão de Oficinas 1 (Múltiplas Salas)', speaker: 'Confira a Lista de Oficinas', room: 'Salas Acadêmicas', category: 'Workshop', color: '#F0FFF4' },
-    { id: 209, date: '02/05', time: '15:30', title: 'Sessão de Oficinas 2 (Múltiplas Salas)', speaker: 'Confira a Lista de Oficinas', room: 'Salas Acadêmicas', category: 'Workshop', color: '#EBF8FF' },
-    { id: 210, date: '02/05', time: '17:00', title: 'Stands e Networking Especial', speaker: 'Expositores', room: 'Foyer', category: 'Networking', color: '#FAF5FF' },
-
-    // 02 de Maio - Noite (Futuro)
-    { id: 211, date: '02/05', time: '18:45', title: 'Abertura Noite: Futuro', speaker: 'Equipe CIECC', room: 'Auditório Principal', category: 'Geral', color: '#FDF2F2' },
-    { id: 212, date: '02/05', time: '19:00', title: 'O professor Clássico do Futuro', speaker: 'Matheus Macedo', room: 'Auditório Principal', category: 'Palestra', color: '#F0FFF4' },
-    { id: 213, date: '02/05', time: '19:45', title: 'A formação clássica generalista em um mundo de especialistas', speaker: 'Maurício Fonseca', room: 'Auditório Principal', category: 'Palestra', color: '#EBF8FF' },
-    { id: 214, date: '02/05', time: '20:30', title: 'Educação Cristã Clássica e a IA', speaker: 'Elmer Pires', room: 'Auditório Principal', category: 'Palestra', color: '#FAF5FF' },
-    { id: 215, date: '02/05', time: '21:15', title: 'Mesa Redonda 3 / Encerramento', speaker: 'Todos os Palestrantes', room: 'Auditório Principal', category: 'Geral', color: '#FDF2F2' }
+  // Garantindo as 3 abas principais solicitadas
+  const tabs = [
+    { id: '01/05', label: 'Dia 01/05' },
+    { id: '02/05', label: 'Dia 02/05' },
+    { id: 'Oficinas', label: 'Oficinas' }
   ];
-
-  const filteredEvents = events.filter(e => {
-    const matchesDay = e.date === selectedDay;
-    const matchesFavorites = onlyFavorites ? favorites.includes(e.id) : true;
-    return matchesDay && matchesFavorites;
-  });
 
   const toggleFavorite = (id) => {
     setFavorites(prev => {
@@ -70,6 +32,23 @@ const AgendaTab = () => {
     });
   };
 
+  // Filtragem dos eventos de palestra (Dia 1 e 2)
+  const filteredEvents = events.filter(e => {
+    if (e.date !== selectedDay) return false;
+    
+    // Se estiver no Dia 2, remover qualquer coisa que cheire a oficina para manter separado
+    if (selectedDay === '02/05') {
+       const isWorkshopRelated = 
+         e.category?.toLowerCase().includes('workshop') || 
+         e.category?.toLowerCase().includes('oficina') ||
+         e.title?.toLowerCase().includes('oficina');
+       if (isWorkshopRelated) return false;
+    }
+
+    if (onlyFavorites) return favorites.includes(e.id);
+    return true;
+  });
+
   return (
     <div className="tab-content fade-in" style={{ padding: '0 0 40px' }}>
       <header style={{ 
@@ -78,54 +57,59 @@ const AgendaTab = () => {
         position: 'sticky', 
         top: 0, 
         zIndex: 10,
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
         color: 'white',
         borderBottomLeftRadius: '24px',
         borderBottomRightRadius: '24px'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-serif)', color: 'white' }}>Agenda</h2>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button 
-              onClick={() => setOnlyFavorites(!onlyFavorites)}
-              style={{
-                background: onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-                border: '1px solid ' + (onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.2)'),
-                padding: '6px 12px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: onlyFavorites ? 'var(--secondary)' : 'white',
-                fontSize: '11px',
-                fontWeight: '800',
-                transition: 'var(--transition)'
-              }}
-            >
-              <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'white'} />
-              MINHA AGENDA
-            </button>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>Agenda Oficial</h2>
+          <button 
+            onClick={() => setOnlyFavorites(!onlyFavorites)}
+            style={{
+              background: onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: onlyFavorites ? 'var(--secondary)' : 'white',
+              fontSize: '11px',
+              fontWeight: '900',
+              border: 'none'
+            }}
+          >
+            <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'white'} />
+            MINHA AGENDA
+          </button>
         </div>
         
-        {/* Day Selector */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          {days.map(day => (
+        {/* Tab Selector - Garantindo Exibição dos 3 Botões */}
+        <div style={{ 
+          display: 'flex', 
+          background: 'rgba(0,0,0,0.25)', 
+          padding: '4px', 
+          borderRadius: '14px',
+          gap: '4px'
+        }}>
+          {tabs.map(tab => (
             <button 
-              key={day} 
-              onClick={() => setSelectedDay(day)}
+              key={tab.id} 
+              onClick={() => setSelectedDay(tab.id)}
               style={{
-                padding: '10px 20px',
-                borderRadius: '50px',
+                flex: 1,
+                padding: '12px 0',
+                borderRadius: '10px',
                 fontSize: '13px',
-                fontWeight: '600',
-                background: selectedDay === day ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-                color: selectedDay === day ? 'var(--secondary)' : 'white',
-                transition: 'var(--transition)',
-                boxShadow: selectedDay === day ? '0 4px 12px rgba(0,0,0,0.2)' : 'none'
+                fontWeight: '800',
+                background: selectedDay === tab.id ? 'var(--gold)' : 'transparent',
+                color: selectedDay === tab.id ? 'var(--secondary)' : 'rgba(255,255,255,0.8)',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                border: 'none',
+                whiteSpace: 'nowrap'
               }}
             >
-              Dia {day}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -133,108 +117,23 @@ const AgendaTab = () => {
 
       <section style={{ padding: '20px' }}>
         <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', marginBottom: '20px' }}>
-          {selectedDay === '01/05' ? '1º Dia (Sexta-feira)' : '2º Dia (Sábado)'}
-          {onlyFavorites && ' • Filtrado por Favoritos'}
+          {selectedDay === '01/05' ? '1º Dia (Sexta-feira)' : selectedDay === '02/05' ? '2º Dia (Sábado)' : 'Grade Completa de Oficinas'}
         </p>
 
-        {filteredEvents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-             <Heart size={48} color="var(--border)" style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-             <p style={{ fontWeight: '700' }}>{onlyFavorites ? 'Nenhum item salvo para este dia.' : 'Nada programado.'}</p>
-             {onlyFavorites && <button onClick={() => setOnlyFavorites(false)} style={{ marginTop: '16px', color: 'var(--primary)', fontWeight: '800', fontSize: '12px' }}>VER AGENDA COMPLETA</button>}
-          </div>
-        ) : filteredEvents.map(event => (
-          <div key={event.id} className="card" style={{ padding: '20px', marginBottom: '16px', display: 'flex', gap: '16px' }}>
-            <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
-              <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
-              <Clock size={12} color="var(--text-muted)" style={{ marginTop: '4px' }} />
-            </div>
-            
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
-                  {event.category}
-                </span>
-                <button onClick={() => toggleFavorite(event.id)}>
-                  <Heart size={20} fill={favorites.includes(event.id) ? "var(--primary)" : "none"} color={favorites.includes(event.id) ? "var(--primary)" : "#CBD5E0"} />
-                </button>
-              </div>
-              <p style={{ fontWeight: '700', fontSize: '16px', lineHeight: '1.2', color: 'var(--secondary)' }}>
-                {event.title}
-              </p>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                {event.speaker}
-              </p>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
-                <MapPin size={12} />
-                <span style={{ fontSize: '11px' }}>{event.room}</span>
-              </div>
-
-              <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
-                <button 
-                  style={{ 
-                    flex: 1, 
-                    padding: '8px 12px', 
-                    background: 'var(--bg-app)', 
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: 'var(--secondary)',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.background = 'var(--accent)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'var(--bg-app)'}
-                >
-                  Tenho Interesse
-                </button>
-                <button style={{ 
-                  background: 'var(--bg-app)', 
-                  padding: '8px', 
-                  borderRadius: 'var(--radius-sm)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
-      
-      {/* SEÇÃO DE OFICINAS - SOMENTE DIA 02/05 */}
-      {selectedDay === '02/05' && !onlyFavorites && (
-        <section style={{ padding: '0 20px 40px' }}>
-          <div style={{ marginBottom: '24px', padding: '20px', background: 'var(--bg-app)', borderRadius: '20px', border: '1px solid var(--border)' }}>
-             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: 'var(--secondary)', marginBottom: '8px' }}>Grade Completa de Oficinas</h3>
-             <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-               As oficinas ocorrerão simultaneamente. Serão transmitidas 2 oficinas online (Coordenação). As demais são exclusivamente presenciais.
-             </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {[
-              { name: 'Cauê Oliveira', title: 'O papel do pai como educador' },
-              { name: 'Rosely Garcia', title: 'Treinamento e Formação de Professores' },
-              { name: 'Elmer Pires', title: 'Liturgias na Escola Clássica' },
-              { name: 'Maurício Fonseca', title: 'Educando meninos e Educando Meninas' },
-              { name: 'Matheus Macedo', title: 'A beleza em uma escola Clássica' },
-              { name: 'Cleiton Balieiro', title: 'Quadrivium' },
-              { name: 'Thiago Dutra', title: 'Transicionando uma escola para a educação clássica' },
-              { name: 'Rodrigo Brotto', title: 'Disciplina Virtuosa' },
-              { name: 'Marília Chimara', title: 'Trivium e Literatura' },
-              { name: 'Anderson Queiroz', title: 'Educação domiciliar e as Umbrella Schools' }
-            ].map((oficina, idx) => (
-              <div key={idx} className="card" style={{ 
+        {selectedDay === 'Oficinas' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingBottom: '40px' }}>
+            {workshops.map((oficina) => (
+              <div key={oficina.id} className="card" style={{ 
                 padding: '16px', 
                 display: 'flex', 
                 flexDirection: 'column', 
                 alignItems: 'center', 
                 textAlign: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
-              }}>
+                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                cursor: 'pointer',
+                border: '1px solid rgba(212, 193, 156, 0.1)'
+              }} 
+              onClick={() => setSelectedSession({...oficina, date: '02/05', time: '14:15', room: 'Salas Acadêmicas', category: 'Oficina'})}>
                 <div style={{ 
                   width: '50px', height: '50px', 
                   borderRadius: '50%', 
@@ -249,30 +148,53 @@ const AgendaTab = () => {
                 }}>
                   {oficina.name.charAt(0)}
                 </div>
-                <p style={{ 
-                  fontSize: '9px', 
-                  fontWeight: '900', 
-                  color: 'var(--gold)', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '1px',
-                  marginBottom: '4px'
-                }}>
+                <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
                   {oficina.name}
                 </p>
-                <p style={{ 
-                  fontSize: '11px', 
-                  fontWeight: '700', 
-                  color: 'var(--secondary)',
-                  fontFamily: 'var(--font-serif)',
-                  lineHeight: '1.2'
-                }}>
+                <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--secondary)', fontFamily: 'var(--font-serif)', lineHeight: '1.2' }}>
                   {oficina.title}
                 </p>
               </div>
             ))}
           </div>
-        </section>
-      )}
+        ) : filteredEvents.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+             <Heart size={48} color="var(--border)" style={{ margin: '0 auto 16px', opacity: 0.3 }} />
+             <p style={{ fontWeight: '700' }}>Nada programado para sua agenda favorita neste dia.</p>
+          </div>
+        ) : filteredEvents.map(event => (
+          <div key={event.id} className="card" style={{ padding: '20px', marginBottom: '16px', display: 'flex', gap: '16px', cursor: 'pointer' }} onClick={() => setSelectedSession(event)}>
+            <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
+              <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
+              <Clock size={12} color="var(--text-muted)" style={{ marginTop: '4px' }} />
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
+                  {event.category}
+                </span>
+                <button onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }} style={{ background: 'none', border: 'none' }}>
+                  <Heart size={20} fill={favorites.includes(event.id) ? "var(--primary)" : "none"} color={favorites.includes(event.id) ? "var(--primary)" : "#CBD5E0"} />
+                </button>
+              </div>
+              <p style={{ fontWeight: '700', fontSize: '16px', lineHeight: '1.2', color: 'var(--secondary)' }}>{event.title}</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{event.speaker}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
+                <MapPin size={12} /><span style={{ fontSize: '11px' }}>{event.room}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <SessionDetailModal 
+        isOpen={!!selectedSession} 
+        onClose={() => setSelectedSession(null)} 
+        session={selectedSession} 
+        isFavorite={selectedSession ? favorites.includes(selectedSession.id) : false}
+        onToggleFavorite={toggleFavorite}
+      />
     </div>
   );
 };

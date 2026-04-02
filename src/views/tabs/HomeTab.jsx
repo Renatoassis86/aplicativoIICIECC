@@ -28,7 +28,7 @@ import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia
 }) => {
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
@@ -493,10 +493,19 @@ const HomeTab = ({
       </section>
 
       {/* Rodapé da Home (Placeholder Institucional) */}
-      <footer style={{ marginTop: '40px', padding: '0 20px', textAlign: 'center', opacity: 0.5 }}>
-        <div style={{ width: '40px', height: '1px', background: 'var(--border)', margin: '0 auto 20px' }}></div>
-        <p style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>II Congresso Internacional CIECC</p>
-        <p style={{ fontSize: '10px', marginTop: '4px' }}>Discussão e Disseminação da Tradição que Transforma</p>
+      <footer style={{ marginTop: '60px', padding: '32px 20px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.05)', background: 'white' }}>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>II CIECC 2026</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Criado por</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
+              <path d="M8 32L20 8L32 32" stroke="var(--primary)" strokeWidth="3" />
+              <path d="M4 21H36" stroke="var(--primary)" strokeWidth="3" />
+              <circle cx="20" cy="6" r="3" fill="var(--primary)" />
+            </svg>
+            <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '2px' }}>ARKOS</span>
+          </div>
+        </div>
       </footer>
 
       {/* MODAL DETALHE PALESTRANTE */}

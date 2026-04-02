@@ -26,6 +26,7 @@ export const fetchFeedPosts = async (userId) => {
     const { data: rawPosts, error: postErr } = await supabase
       .from('social_posts')
       .select('*')
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false });
     
     if (postErr) {
@@ -60,11 +61,26 @@ const processPostsResponse = async (rawPosts, userId) => {
     const hydratedPosts = rawPosts.map(post => {
       const flatComments = (allComments || []).filter(c => c.post_id === post.id);
       
-      // Separate top-level comments and replies
-      const topLevelComments = flatComments.filter(c => !c.parent_id);
-      const replies = flatComments.filter(c => c.parent_id);
+      // Build recursive comment tree
+      const buildTree = (parentId = null) => {
+        return flatComments
+          .filter(c => c.parent_id === parentId)
+          .map(c => {
+            const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
+            return {
+              ...c,
+              authorName: c.user_name,
+              text: c.content,
+              isOwner: c.user_id === userId,
+              likes: cLikes.length,
+              likedByMe: cLikes.some(e => e.user_id === userId),
+              replies: buildTree(c.id)
+            };
+          });
+      };
 
       const pLikes = (engagements || []).filter(e => e.type === 'like' && e.post_id === post.id);
+      const pSaves = (engagements || []).filter(e => e.type === 'save' && e.post_id === post.id);
 
       return {
         id: post.id,
@@ -75,33 +91,22 @@ const processPostsResponse = async (rawPosts, userId) => {
         mediaType: post.content_type || 'image',
         mediaUrls: post.media_urls || [],
         caption: post.caption,
+        isPinned: post.is_pinned || false,
         isSponsor: true, 
-        comments: topLevelComments.map(c => {
-          const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
-          const cReplies = replies.filter(r => r.parent_id === c.id).map(r => ({
-              ...r,
-              authorName: r.user_name,
-              text: r.content,
-              isOwner: r.user_id === userId
-          }));
-
-          return {
-            ...c,
-            authorName: c.user_name,
-            text: c.content,
-            isOwner: c.user_id === userId,
-            likes: cLikes.length,
-            likedByMe: cLikes.some(e => e.user_id === userId),
-            replies: cReplies
-          };
-        }),
+        comments: buildTree(null),
         likes: pLikes.length,
         likedByMe: pLikes.some(e => e.user_id === userId),
+        savedByMe: pSaves.some(e => e.user_id === userId),
         timeAgo: agilizarTempoRelativo(post.created_at)
       };
     });
 
     return hydratedPosts;
+};
+
+export const togglePinPost = async (postId, currentState) => {
+  await supabase.from('social_posts').update({ is_pinned: !currentState }).eq('id', postId);
+  return !currentState;
 };
 
 export const createPost = async (authorName, authorRole, authorTier, contentType, mediaUrls, caption, userId) => {
@@ -227,7 +232,10 @@ function agilizarTempoRelativo(isoDate) {
   if (!isoDate) return 'agora';
   const d = new Date(isoDate);
   const dif = Date.now() - d.getTime();
+  if (dif < 1000) return 'agora'; // Menos de 1 segundo
+  
   const mins = Math.floor(dif / 60000);
+  if (mins < 1) return 'agora';
   if (mins < 60) return `${mins}m atrás`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h atrás`;

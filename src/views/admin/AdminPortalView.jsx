@@ -20,10 +20,14 @@ import {
   Download,
   Filter,
   Activity,
-  UserPlus
+  UserPlus,
+  FileText,
+  Save
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';
+import { events, workshops } from '../../data/agendaData';
+import { addSessionMaterial, fetchSessionMaterials, deleteSessionMaterial } from '../../services/agenda/agendaService';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -31,6 +35,12 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [stats, setStats] = useState({ attendees: 0, posts: 0, notifications: 0 });
   const [loading, setLoading] = useState(true);
   const [emergencyText, setEmergencyText] = useState('');
+  
+  // Materials state
+  const [selectedSessionForMaterials, setSelectedSessionForMaterials] = useState(null);
+  const [sessionMaterials, setSessionMaterials] = useState([]);
+  const [newMaterialTitle, setNewMaterialTitle] = useState('');
+  const [newMaterialUrl, setNewMaterialUrl] = useState('');
 
   useEffect(() => {
     loadData();
@@ -51,6 +61,31 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     setLoading(false);
   };
 
+  const loadSessionMaterials = async (sessionId) => {
+    const data = await fetchSessionMaterials(sessionId);
+    setSessionMaterials(data);
+  };
+
+  const handleAddMaterial = async () => {
+    if (!newMaterialTitle || !newMaterialUrl || !selectedSessionForMaterials) return;
+    try {
+      await addSessionMaterial(selectedSessionForMaterials.id, newMaterialTitle, newMaterialUrl);
+      setNewMaterialTitle('');
+      setNewMaterialUrl('');
+      loadSessionMaterials(selectedSessionForMaterials.id);
+      alert('Material adicionado com sucesso!');
+    } catch (e) {
+      alert('Erro ao adicionar: ' + e.message);
+    }
+  };
+
+  const handleDeleteMaterial = async (id) => {
+    if (window.confirm('Excluir este material?')) {
+      await deleteSessionMaterial(id);
+      loadSessionMaterials(selectedSessionForMaterials.id);
+    }
+  };
+
   const handleDeletePost = async (id) => {
     if (window.confirm('Excluir permanentemente esta postagem?')) {
       await deletePostApi(id);
@@ -61,11 +96,14 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard Geral', icon: <LayoutDashboard size={20} /> },
     { id: 'agenda', label: 'Gestão de Agenda', icon: <Calendar size={20} /> },
+    { id: 'materials', label: 'Repositório Didático', icon: <FileText size={20} /> },
     { id: 'moderation', label: 'Moderação de Feed', icon: <ImageIcon size={20} /> },
     { id: 'sponsors', label: 'Painel de Patrocinadores', icon: <Briefcase size={20} /> },
     { id: 'notifications', label: 'Central de Push', icon: <Send size={20} /> },
     { id: 'attendees', label: 'Lista de Congressistas', icon: <Users size={20} /> },
   ];
+
+  const allAgendaItems = [...events, ...workshops.map(w => ({...w, category: 'Oficina', room: 'Salas Acadêmicas'}))];
 
   return (
     <div style={{ 
@@ -98,7 +136,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           </div>
         </div>
 
-        <nav style={{ flex: 1, padding: '0 16px' }}>
+        <nav style={{ flex: 1, padding: '0 16px', overflowY: 'auto' }}>
           {menuItems.map(item => (
             <button 
               key={item.id}
@@ -110,7 +148,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                 color: activeMenu === item.id ? 'white' : '#64748B',
                 fontWeight: activeMenu === item.id ? '700' : '500',
                 cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', marginBottom: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                textAlign: 'left'
               }}
             >
               <div style={{ 
@@ -253,6 +292,97 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                   <Activity style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', opacity: 0.05 }} />
                </div>
             </div>
+          </div>
+        )}
+
+        {/* REPOSITORIO DIDATICO TAB */}
+        {activeMenu === 'materials' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+             {/* List of Sessions */}
+             <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px' }}>Selecione a Sessão</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto', paddingRight: '8px' }}>
+                  {allAgendaItems.map(session => (
+                    <button 
+                      key={session.id}
+                      onClick={() => {
+                        setSelectedSessionForMaterials(session);
+                        loadSessionMaterials(session.id);
+                      }}
+                      style={{ 
+                        padding: '16px', borderRadius: '16px', border: '1px solid #E2E8F0',
+                        background: selectedSessionForMaterials?.id === session.id ? 'var(--primary)05' : 'white',
+                        borderColor: selectedSessionForMaterials?.id === session.id ? 'var(--primary)' : '#E2E8F0',
+                        textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s'
+                      }}
+                    >
+                      <p style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>{session.category} • {session.date} {session.time}</p>
+                      <p style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B' }}>{session.title}</p>
+                      <p style={{ fontSize: '12px', color: '#64748B' }}>{session.speaker || session.name}</p>
+                    </button>
+                  ))}
+                </div>
+             </div>
+
+             {/* Material Management */}
+             <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                {!selectedSessionForMaterials ? (
+                  <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#94A3B8' }}>
+                    <FileText size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                    <p style={{ fontWeight: '600' }}>Selecione uma sessão ao lado</p>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px' }}>Gerenciar Materiais</h4>
+                    <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>Sessão: {selectedSessionForMaterials.title}</p>
+
+                    <div style={{ marginBottom: '32px', padding: '20px', background: '#F8FAFC', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+                       <h5 style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '16px', color: '#475569' }}>Adicionar Novo Material</h5>
+                       <input 
+                         placeholder="Título do Material (ex: Slides da Aula)"
+                         value={newMaterialTitle}
+                         onChange={(e) => setNewMaterialTitle(e.target.value)}
+                         style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '12px', fontSize: '14px' }}
+                       />
+                       <input 
+                         placeholder="URL do Arquivo (PDF, Link, etc.)"
+                         value={newMaterialUrl}
+                         onChange={(e) => setNewMaterialUrl(e.target.value)}
+                         style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px', fontSize: '14px' }}
+                       />
+                       <button 
+                        onClick={handleAddMaterial}
+                        style={{ width: '100%', background: 'var(--primary)', color: 'white', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                         <Save size={18} /> SALVAR MATERIAL
+                       </button>
+                    </div>
+
+                    <div>
+                      <h5 style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '12px', color: '#475569' }}>Materiais Cadastrados</h5>
+                      {sessionMaterials.length === 0 ? (
+                        <p style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center', padding: '20px' }}>Nenhum material para esta sessão.</p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {sessionMaterials.map(mat => (
+                            <div key={mat.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                              <FileText size={18} color="#64748B" />
+                              <div style={{ flex: 1 }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700' }}>{mat.title}</p>
+                                <p style={{ fontSize: '11px', color: '#94A3B8', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mat.file_url}</p>
+                              </div>
+                              <button 
+                                onClick={() => handleDeleteMaterial(mat.id)}
+                                style={{ background: '#FEE2E2', color: '#991B1B', border: 'none', padding: '6px', borderRadius: '6px' }}>
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+             </div>
           </div>
         )}
 

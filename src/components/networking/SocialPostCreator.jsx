@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Image as ImageIcon, X, Send, Video, Search, ChevronLeft } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Send, Video, Search, ChevronLeft, ChevronRight, RefreshCw, MapPin } from 'lucide-react';
 import { createPost } from '../../services/social/socialService';
 import { supabase } from '../../lib/supabase';
 import { ImagePersistenceService } from '../../services/imagePersistence';
@@ -11,6 +11,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   const [loading, setLoading] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [step, setStep] = useState(1); // 1: Seletor, 2: Detalhes (Legenda)
+  const [cursorPos, setCursorPos] = useState(0); 
 
   // Mentions Logic
   const [allUsers, setAllUsers] = useState([]);
@@ -135,7 +136,9 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         try {
           const fileExt = m.file.name ? m.file.name.split('.').pop() : 'jpg';
           const fileName = `posts/${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-          const { data, error } = await supabase.storage.from('posts_media').upload(fileName, m.file);
+          const { data, error } = await supabase.storage.from('posts_media').upload(fileName, m.file, {
+            contentType: m.file.type || 'image/jpeg'
+          });
           if (error) throw error;
           const { data: { publicUrl } } = supabase.storage.from('posts_media').getPublicUrl(fileName);
           uploadedUrls.push(publicUrl);
@@ -165,39 +168,39 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   const filteredUsers = allUsers.filter(u => 
     u.name?.toLowerCase().includes(mentionQuery)
   ).slice(0, 5);
-
   return (
     <div style={{
       position: 'fixed', inset: 0,
       background: '#000',
       zIndex: 200,
       display: 'flex', flexDirection: 'column',
-      animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+      animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+      color: 'white',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       
       <header style={{ 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-        padding: '16px 20px', background: '#000', borderBottom: '1px solid rgba(255,255,255,0.1)'
+        padding: '12px 16px', background: '#000', borderBottom: '1px solid #262626',
+        height: '44px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {step === 2 ? (
-            <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'white', padding: '4px' }}>
-              <ChevronLeft size={28} />
-            </button>
-          ) : (
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', padding: '4px' }}>
-              <X size={28} />
-            </button>
-          )}
-          <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>
-            {step === 1 ? 'Novo post' : 'Compartilhar'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <button onClick={step === 2 ? () => setStep(1) : onClose} style={{ background: 'none', border: 'none', color: 'white', padding: '4px', cursor: 'pointer' }}>
+            {step === 2 ? <ChevronLeft size={26} /> : <X size={26} />}
+          </button>
+          <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>
+            {step === 1 ? 'Novo post' : 'Novo post'}
           </h2>
         </div>
         {step === 1 ? (
           <button 
             disabled={mediaFiles.length === 0}
             onClick={() => setStep(2)}
-            style={{ background: 'none', border: 'none', color: '#0095F6', fontSize: '16px', fontWeight: '700', opacity: mediaFiles.length > 0 ? 1 : 0.5 }}
+            style={{ 
+              background: 'none', border: 'none', color: '#0095F6', 
+              fontSize: '15px', fontWeight: '700', 
+              opacity: mediaFiles.length > 0 ? 1 : 0.4 
+            }}
           >
             Avançar
           </button>
@@ -205,115 +208,161 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
           <button 
             onClick={handlePost}
             disabled={loading}
-            style={{ background: 'none', border: 'none', color: '#0095F6', fontSize: '16px', fontWeight: '700' }}
+            style={{ 
+              background: 'none', border: 'none', color: '#0095F6', 
+              fontSize: '15px', fontWeight: '700',
+              opacity: loading ? 0.6 : 1
+            }}
           >
-            {loading ? 'PUBLICANDO...' : 'Compartilhar'}
+            {loading ? '...' : 'Compartilhar'}
           </button>
         )}
       </header>
 
-      <div style={{ flex: 1, overflowY: 'auto', background: step === 1 ? '#000' : 'white' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: '#000' }}>
         {step === 1 ? (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ 
-              width: '100%', aspectRatio: '1/1', background: '#121212', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' 
+              width: '100%', aspectRatio: '1/1', background: '#000', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+              position: 'relative'
             }}>
               {mediaFiles.length > 0 ? (
                 mediaFiles[0].type === 'reel' ? (
-                  <video src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay loop muted />
+                  <video 
+                    src={mediaFiles[0].url} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    autoPlay loop muted playsInline
+                  />
                 ) : (
                   <img src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )
               ) : (
                 <div style={{ textAlign: 'center', color: '#8e8e8e' }}>
-                   <ImageIcon size={64} strokeWidth={1} style={{ marginBottom: '16px' }} />
-                   <p style={{ fontSize: '14px' }}>Nenhuma mídia selecionada</p>
+                   <div style={{ 
+                      width: '96px', height: '96px', borderRadius: '50%', border: '2px solid #262626',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px'
+                   }}>
+                     <ImageIcon size={40} color="#8e8e8e" />
+                   </div>
+                   <p style={{ fontSize: '18px', fontWeight: '400', color: '#eee' }}>Comece a criar posts</p>
+                </div>
+              )}
+              {uploadingMedia && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                   <RefreshCw className="spin" color="white" />
                 </div>
               )}
             </div>
 
-            <div style={{ flex: 1, padding: '20px' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                 <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '700' }}>Recentes</h3>
-                 <div style={{ display: 'flex', gap: '12px' }}>
-                   <button onClick={() => fetchMedia(CameraSource.Camera)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                     <Camera size={20} />
+            <div style={{ flex: 1, background: '#000' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <span style={{ fontSize: '15px', fontWeight: '700' }}>Recentes</span>
+                 </div>
+                 <div style={{ display: 'flex', gap: '8px' }}>
+                   <button onClick={() => fetchMedia(CameraSource.Camera)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <Camera size={18} />
                    </button>
-                   <button onClick={() => fileInputRef.current.click()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                     <ImageIcon size={20} />
+                   <button onClick={() => fileInputRef.current.click()} style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#262626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <ImageIcon size={18} />
                    </button>
                  </div>
                </div>
                
+               <div style={{ 
+                  display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', 
+                  background: '#262626', padding: '1px' 
+               }}>
+                  {[1,2,3,4,5,6,7,8].map(i => (
+                    <div key={i} style={{ aspectRatio: '1/1', background: '#111' }}></div>
+                  ))}
+               </div>
+
                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*,video/*" onChange={handleFileChange} />
-               
-               {uploadingMedia && (
-                 <div style={{ textAlign: 'center', marginTop: '40px' }}>
-                    <div className="spin" style={{ width: '24px', height: '24px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto' }}></div>
-                 </div>
-               )}
             </div>
+            
+            <footer style={{ 
+               height: '48px', display: 'flex', background: '#000', borderTop: '1px solid #262626',
+               alignItems: 'center', justifyContent: 'center', gap: '40px' 
+            }}>
+               <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>POST</span>
+               <span style={{ fontSize: '14px', fontWeight: '700', color: '#8e8e8e' }}>STORY</span>
+               <span style={{ fontSize: '14px', fontWeight: '700', color: '#8e8e8e' }}>REEL</span>
+            </footer>
           </div>
         ) : (
-          <div style={{ padding: '0 20px' }}>
-            <div style={{ display: 'flex', gap: '16px', padding: '20px 0' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '4px', overflow: 'hidden', background: '#eee', flexShrink: 0 }}>
-                 {mediaFiles[0].type === 'reel' ? (
-                   <video src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
-                 ) : (
-                   <img src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                 )}
-              </div>
-              <textarea 
+          <div style={{ padding: '0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px' }}>
+               <div style={{ 
+                  width: '240px', aspectRatio: '4/5', background: '#121212', borderRadius: '12px',
+                  overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', marginBottom: '24px'
+               }}>
+                  {mediaFiles[0].type === 'reel' ? (
+                    <video 
+                      src={mediaFiles[0].url} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      autoPlay loop muted playsInline
+                    />
+                  ) : (
+                    <img src={mediaFiles[0].url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+               </div>
+               
+               <textarea 
                 ref={textareaRef}
                 autoFocus
-                placeholder="Escreva uma legenda..."
+                placeholder="Adicione uma legenda..."
                 value={caption}
                 onChange={handleCaptionChange}
                 style={{ 
-                  flex: 1, border: 'none', outline: 'none', resize: 'none',
-                  fontSize: '15px', color: '#262626', minHeight: '80px',
-                  paddingTop: '8px'
-                 }}
+                  width: '100%', border: 'none', background: 'none', color: 'white',
+                  fontSize: '15px', minHeight: '100px', outline: 'none', resize: 'none',
+                  textAlign: 'center'
+                }}
               />
             </div>
 
-            {showMentionsList && filteredUsers.length > 0 && (
-              <div style={{ background: '#fafafa', borderRadius: '8px', border: '1px solid #eee', marginBottom: '16px', overflow: 'hidden' }}>
-                <div style={{ padding: '8px 16px', background: '#f0f0f0', fontSize: '11px', fontWeight: '800', color: '#999', textTransform: 'uppercase' }}>Sugestões</div>
-                {filteredUsers.map(u => (
-                  <button key={u.name} onClick={() => selectMention(u.name)} style={{ display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #eee', fontSize: '14px', fontWeight: '600', color: 'var(--primary)' }}>
-                    {u.name}
-                  </button>
+            <div style={{ padding: '0 16px' }}>
+              <div style={{ height: '1px', background: '#262626', width: '100%' }}></div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { label: 'Marcar pessoas', icon: <Camera size={18} /> },
+                  { label: location || 'Adicionar localização', icon: <MapPin size={18} />, action: detectLocation }
+                ].map((item, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={item.action}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '16px 0', borderBottom: '1px solid #121212', cursor: item.action ? 'pointer' : 'default'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      {item.icon}
+                      <span style={{ fontSize: '15px' }}>{item.label}</span>
+                    </div>
+                    <ChevronRight size={18} color="#8e8e8e" />
+                  </div>
                 ))}
               </div>
-            )}
+            </div>
 
-            <button 
-              onClick={() => {
-                setCaption(prev => prev + ' @');
-                textareaRef.current?.focus();
-              }}
-              style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            >
-               <span>Marcar pessoas</span>
-               <Search size={18} color="#999" />
-            </button>
-            <button 
-              onClick={detectLocation}
-              style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            >
-               <span>{detectingLocation ? 'Detectando...' : (location || 'Adicionar localização')}</span>
-               <RefreshCw size={18} color={location ? '#38A169' : '#999'} className={detectingLocation ? "spin" : ""} />
-            </button>
-             <button 
-               onClick={() => alert("Exclusividade: Posts Diamond possuem prioridade no feed.")}
-               style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #efefef', padding: '14px 0', fontSize: '15px', color: '#262626', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-             >
-               <span>Visualização prioritária</span>
-               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--gold)' }}></div>
-            </button>
+            <div style={{ padding: '32px 16px' }}>
+              <button 
+                onClick={handlePost}
+                disabled={loading}
+                style={{ 
+                  width: '100%', padding: '16px', borderRadius: '12px', 
+                  background: '#0095F6', color: 'white', fontSize: '16px', fontWeight: '700',
+                  border: 'none', boxShadow: '0 4px 15px rgba(0, 149, 246, 0.3)',
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                {loading ? 'COMPARTILHANDO...' : 'Compartilhar'}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -323,25 +372,9 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
       `}} />
-
-      {step === 2 && (
-        <footer style={{ padding: '16px', background: 'white', borderTop: '1px solid #efefef' }}>
-          <button 
-             onClick={handlePost}
-             disabled={loading}
-             style={{ 
-               width: '100%', padding: '14px', borderRadius: '12px', background: '#0095F6', 
-               color: 'white', fontWeight: '800', border: 'none', opacity: loading ? 0.6 : 1
-             }}
-          >
-             {loading ? 'COMPARTILHANDO...' : 'Compartilhar'}
-          </button>
-        </footer>
-      )}
     </div>
   );
 };
-
 
 export default SocialPostCreator;
 

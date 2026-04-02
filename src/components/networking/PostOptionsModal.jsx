@@ -1,14 +1,17 @@
 import React from 'react';
-import { Edit2, EyeOff, Trash2, Link, AlertTriangle } from 'lucide-react';
+import { Edit2, EyeOff, Trash2, Link, AlertTriangle, Pin } from 'lucide-react';
 
 /**
  * Menu de Opções da Postagem (Botão de 3 pontinhos)
  * Dinâmico: O próprio dono ou Staff possui controles absolutos (Instagram-like).
  * Usuário comum apenas denuncia ou oculta.
  */
-const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide }) => {
-  // Simplificação de propriedade: 'staff' ou o próprio autor tem direitos plenos.
-  const isPrivileged = userType === 'staff' || post.sponsorName === userName;
+const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide, onPin }) => {
+  // Simplificação de propriedade: 'staff', 'admin', 'organizador' ou o próprio autor tem direitos plenos.
+  const role = (userType || 'congressista').toLowerCase();
+  const isAdmin = ['admin', 'organizador', 'staff'].some(r => role.includes(r));
+  const isAuthor = post.sponsorName === userName;
+  const isPrivileged = isAdmin || isAuthor;
 
   return (
     <>
@@ -30,6 +33,12 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide 
           
           {isPrivileged ? (
             <>
+              {isAdmin && (
+                <button className="option-btn" onClick={() => { onPin(post.id, post.isPinned); onClose(); }}>
+                  <Pin size={20} color="var(--primary)" fill={post.isPinned ? "var(--primary)" : "none"} />
+                  <span>{post.isPinned ? 'Desafixar do topo' : 'Fixar no topo'}</span>
+                </button>
+              )}
               <button className="option-btn">
                 <Edit2 size={20} color="var(--text-main)" />
                 <span>Editar publicação</span>

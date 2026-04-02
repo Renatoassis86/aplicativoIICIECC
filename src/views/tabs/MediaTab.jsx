@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play } from 'lucide-react';
-import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment } from '../../services/social/socialService';
+import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin } from 'lucide-react';
+import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment, togglePinPost } from '../../services/social/socialService';
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
 import PostOptionsModal from '../../components/networking/PostOptionsModal';
 import CommentsSheet from '../../components/networking/CommentsSheet';
@@ -39,6 +39,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
     loadPosts();
   }, []);
 
+  const handlePinPost = async (postId, currentPinState) => {
+    try {
+      await togglePinPost(postId, currentPinState);
+      loadPosts(); 
+    } catch (e) {
+      console.error("[handlePinPost]", e);
+    }
+  };
+
   const handleLike = async (postId, currentState) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likedByMe: !currentState, likes: currentState ? p.likes - 1 : p.likes + 1 } : p));
     await toggleLikePost(postId, currentState, userCpf);
@@ -52,41 +61,43 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const handleAddComment = async (postId, text, parentId = null) => {
     const newComment = await postComment(postId, text, userName || 'Congressista', userCpf, parentId);
     if (!newComment) return;
+
+    const findAndAddRecursive = (list) => (list || []).map(c => {
+      if (c.id === parentId) return { ...c, replies: [...(c.replies || []), newComment] };
+      if (c.replies?.length > 0) return { ...c, replies: findAndAddRecursive(c.replies) };
+      return c;
+    });
+
     setPosts(prev => prev.map(p => {
-      if (p.id === postId) {
-        if (parentId) {
-          return {
-            ...p,
-            comments: p.comments.map(c => c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c)
-          };
-        }
-        return { ...p, comments: [...(p.comments || []), newComment] };
-      }
-      return p;
+      if (p.id !== postId) return p;
+      
+      // Se não houver parentId, adiciona ao topo
+      if (!parentId) return { ...p, comments: [...(p.comments || []), newComment], comments_count: (p.comments_count || 0) + 1 };
+      
+      // Se for resposta, adiciona aninhado
+      return { ...p, comments: findAndAddRecursive(p.comments), comments_count: (p.comments_count || 0) + 1 };
     }));
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: p.comments.filter(c => c.id !== commentId) } : p));
+    const removeRecursive = (list) => (list || []).filter(c => c.id !== commentId).map(c => ({
+      ...c, replies: removeRecursive(c.replies)
+    }));
+
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: removeRecursive(p.comments) } : p));
     await deleteCommentApi(commentId);
   };
 
-  const handleLikeComment = async (postId, commentId, currentState, isReply = false) => {
-    setPosts(prev => prev.map(p => {
-      if (p.id === postId) {
-         return {
-           ...p,
-           comments: p.comments.map(c => {
-             if (c.id === commentId && !isReply) return { ...c, likedByMe: !currentState, likes: currentState ? c.likes - 1 : c.likes + 1 };
-             if (isReply) {
-                return { ...c, replies: c.replies ? c.replies.map(r => r.id === commentId ? { ...r, likedByMe: !currentState } : r) : [] };
-             }
-             return c;
-           })
-         };
+  const handleLikeComment = async (postId, commentId, currentState) => {
+    const updateLikeRecursive = (list) => (list || []).map(c => {
+      if (c.id === commentId) {
+        return { ...c, likedByMe: !currentState, likes: currentState ? (c.likes || 0) - 1 : (c.likes || 0) + 1 };
       }
-      return p;
-    }));
+      if (c.replies?.length > 0) return { ...c, replies: updateLikeRecursive(c.replies) };
+      return c;
+    });
+
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: updateLikeRecursive(p.comments) } : p));
     await toggleLikeComment(commentId, currentState, userCpf);
   };
 
@@ -227,6 +238,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
                     <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {post.sponsorName}
                       {post.isSponsor && <ShieldCheck size={14} color="#38A169" />}
+                      {post.isPinned && <Pin size={14} color="var(--primary)" fill="var(--primary)" />}
                     </h4>
                     {/* Badge do Tier Algorítmico */}
                     {post.tier ? (
@@ -320,6 +332,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
            onClose={() => setActiveOptionsPost(null)} 
            onDelete={handleDeletePost}
            onHide={handleHidePost}
+           onPin={handlePinPost}
         />
       )}
 
@@ -327,9 +340,9 @@ export default function MediaTab({ userType, userName, userCpf }) {
         <CommentsSheet
            postId={activeCommentsPost.id}
            comments={posts.find(p => p.id === activeCommentsPost.id)?.comments || []}
-           userName={userName}
-           userType={userType}
-           ownerName={activeCommentsPost.sponsorName}
+           userName={userName || 'Participante'}
+           userType={userType || 'congressista'}
+           ownerName={activeCommentsPost.sponsorName || 'Organizador'}
            onClose={() => setActiveCommentsPost(null)}
            onAddComment={handleAddComment}
            onDeleteComment={handleDeleteComment}

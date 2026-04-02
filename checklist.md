@@ -46,10 +46,15 @@ Este documento rastreia o progresso das funcionalidades e a integridade do proje
 - [ ] Dashboard de estatísticas das respostas dos questionários.
 
 ### 2. Funcionalidades da Agenda
-- [ ] Implementar a aba `AgendaTab` com as sessões reais do congresso.
-- [ ] Sistema de "Favoritos" para sessões específicas.
+- [x] Implementar a aba `AgendaTab` com as sessões reais do congresso.
+- [x] Sistema de "Favoritos" para sessões (Offline-first / LocalStorage).
+- [x] Unificação do motor de visualização de mídia (Universal Media Engine).
+- [x] Session Detail Modal com Portals para estabilidade máxima.
 
-### 3. Networking & Networking
+### 3. Networking & Social Hub
+- [x] Feed Social Estilo Instagram com Algoritmo de Patrocínios.
+- [x] Sistema de Comentários com Threads Recursivas (Infinitas).
+- [x] Sistema de Curtidas em Postagens e Comentários.
 - [ ] Implementar o diretório de participantes.
 - [ ] Chat ou sistema de conexão entre congressistas.
 

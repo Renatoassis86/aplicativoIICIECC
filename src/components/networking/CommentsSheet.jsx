@@ -1,182 +1,149 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, Heart, Trash2 } from 'lucide-react';
 
 /**
  * Interface Deslizante de Comentários Integrada Sub-Rede (Instagram-like).
- * @param {Array} comments Lista inicial de comments passada pela tab de media
- * @param {Function} onAddComment Injeta comentário novo no escopo base
- * @param {Function} onDeleteComment Remove do escopo se for Staff/Author
- * @param {Function} onLike Toggle the like heart
+ * Suporte a comentários RECURSIVOS (Threads infinitas).
  */
+const CommentItem = ({ comment, depth = 0, onReply, onDelete, onLike, canDelete }) => {
+  if (!comment) return null;
+  const authorName = comment.authorName || 'Participante';
+  
+  return (
+    <div style={{ 
+      marginLeft: depth > 0 ? '12px' : '0', 
+      padding: '12px 0 4px', 
+      borderLeft: depth > 0 ? '2px solid #F1F1F1' : 'none',
+      background: depth % 2 !== 0 ? 'rgba(0,0,0,0.01)' : 'transparent',
+      borderRadius: '8px'
+    }}>
+      <div style={{ display: 'flex', gap: '12px', padding: depth > 0 ? '0 12px' : '0' }}>
+        <div style={{ 
+          width: depth === 0 ? '32px' : '24px', 
+          height: depth === 0 ? '32px' : '24px', 
+          borderRadius: '50%',
+          background: 'var(--bg-app)', color: 'var(--primary)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: '900', fontSize: depth === 0 ? '14px' : '11px',
+          flexShrink: 0
+        }}>
+          {authorName.charAt(0).toUpperCase()}
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: depth === 0 ? '13px' : '12px', color: 'var(--text-main)', lineHeight: '1.4' }}>
+            <span style={{ fontWeight: '700', color: 'var(--secondary)', marginRight: '6px' }}>{authorName}</span>
+            {comment.text}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '6px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Agorinha</span>
+            {comment.likes > 0 && <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>{comment.likes} curtidas</span>}
+            <button onClick={() => onReply(comment)} style={{ background: 'none', border: 'none', fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', padding: 0 }}>Responder</button>
+            {canDelete(authorName) && (
+              <button onClick={() => onDelete(comment.id)} style={{ background: 'none', border: 'none', fontSize: '11px', color: '#E53E3E', fontWeight: '600', padding: 0 }}>Excluir</button>
+            )}
+          </div>
+        </div>
+        <button onClick={() => onLike(comment.id, comment.likedByMe)} style={{ background: 'none', border: 'none', padding: '0 4px' }}>
+          <Heart size={depth === 0 ? 14 : 12} color={comment.likedByMe ? "#E53E3E" : "var(--text-muted)"} fill={comment.likedByMe ? "#E53E3E" : "none"} />
+        </button>
+      </div>
+      {comment.replies && comment.replies.length > 0 && (
+        <div style={{ marginTop: '8px' }}>
+          {comment.replies.map(r => (
+            <CommentItem key={r.id} comment={r} depth={depth + 1} onReply={onReply} onDelete={onDelete} onLike={onLike} canDelete={canDelete} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CommentsSheet = ({ postId, comments, userName, userType, ownerName, onClose, onAddComment, onDeleteComment, onLike }) => {
   const [text, setText] = useState('');
-  const [replyingTo, setReplyingTo] = useState(null); // { id, name }
+  const [replyingTo, setReplyingTo] = useState(null);
+
+  // Bloquear scroll ao abrir os comentários
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = 'auto'; };
+  }, []);
   
-  // Condição para remover: quem escreveu ou quem é dono/staff
-  const canDelete = (author) => userType === 'staff' || userName === ownerName || userName === author;
+  const emojis = ['❤️', '🔥', '🙌', '👏', '😮', '🙌', '💯', '✨'];
+  const canDelete = (author) => {
+    if (!author) return false;
+    const role = (userType || 'congressista').toLowerCase();
+    return ['admin', 'organizador', 'staff'].some(r => role.includes(r)) || userName === ownerName || userName === author;
+  };
 
   const handleSend = () => {
     if (!text.trim()) return;
     onAddComment(postId, text.trim(), replyingTo?.id);
     setText('');
     setReplyingTo(null);
+    
+    // Removido o fechamento automático para permitir conversas contínuas 
+    // como padrão moderno de UX (Instagram/Twitter).
   };
 
-  const startReply = (comment) => {
-    setReplyingTo({ id: comment.id, name: comment.authorName });
-    setText(''); // Limpa ou mantém? Geralmente limpa o prefixo se quiser @
-  };
-
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'white', zIndex: 1000,
+      background: 'white', zIndex: 9999999,
       display: 'flex', flexDirection: 'column',
-      animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+      animation: 'slideUpComms 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
     }}>
-      
-      {/* Header Fixo de Comentários */}
-      <header style={{ 
-        display: 'flex', alignItems: 'center', justifyContent: 'center', 
-        padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)',
-        position: 'relative'
-      }}>
-        <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>Publicação</h3>
-        <button onClick={onClose} style={{ position: 'absolute', right: '16px', background: 'none', border: 'none', padding: '4px' }}>
-          <X size={24} color="var(--text-main)" />
-        </button>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slideUpComms { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      `}} />
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)', position: 'relative' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>Comentários</h3>
+        <button onClick={onClose} style={{ position: 'absolute', right: '16px', background: 'none', border: 'none' }}><X size={24} /></button>
       </header>
 
-      {/* Lista de Comentários */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
-        
-        {/* Contexto da Legenda (Opcional - Post Owner) */}
-        <div style={{ display: 'flex', gap: '12px', padding: '16px 0', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
-           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--gold)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>
-             {ownerName?.charAt(0)}
-           </div>
-           <div style={{ flex: 1 }}>
-              <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.4' }}>
-                <span style={{ fontWeight: '800', marginRight: '6px' }}>{ownerName}</span>
-                Publicação original
-              </p>
-           </div>
-        </div>
-
         {comments && comments.length > 0 ? comments.map(c => (
-          <div key={c.id} style={{ display: 'flex', gap: '12px', padding: '16px 0' }}>
-            
-            {/* Avatar do Comentador */}
-            <div style={{ 
-              width: '32px', height: '32px', borderRadius: '50%',
-              background: 'var(--bg-app)', color: 'var(--primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-serif)', fontWeight: '900', fontSize: '14px',
-              flexShrink: 0
-            }}>
-              {c.authorAvatar || c.authorName?.charAt(0)}
-            </div>
-
-            {/* Conteúdo Central */}
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.4' }}>
-                <span style={{ fontWeight: '700', color: 'var(--secondary)', display: 'inline-block', marginRight: '6px' }}>
-                  {c.authorName}
-                </span>
-                {c.text}
-              </p>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '6px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Agorinha</span>
-                {c.likes > 0 && <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>{c.likes} curtidas</span>}
-                <button 
-                  onClick={() => startReply(c)}
-                  style={{ background: 'none', border: 'none', fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', padding: 0 }}
-                >
-                  Responder
-                </button>
-                {canDelete(c.authorName) && (
-                  <button onClick={() => onDeleteComment(postId, c.id)} style={{ background: 'none', border: 'none', fontSize: '12px', color: '#E53E3E', fontWeight: '600', padding: 0 }}>
-                    Excluir
-                  </button>
-                )}
-              </div>
-
-              {/* Nested Replies Rendering (Threads) */}
-              {c.replies && c.replies.length > 0 && (
-                <div style={{ paddingLeft: '12px', borderLeft: '1px solid #efefef', marginTop: '12px' }}>
-                   {c.replies.map(r => (
-                      <div key={r.id} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#F8F9FA', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800' }}>
-                           {r.authorName?.charAt(0)}
-                         </div>
-                         <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '12px', color: 'var(--text-main)' }}>
-                              <span style={{ fontWeight: '700', marginRight: '4px' }}>{r.authorName}</span>
-                              {r.text}
-                            </p>
-                         </div>
-                      </div>
-                   ))}
-                </div>
-              )}
-            </div>
-
-            {/* Like Externo do Comentário */}
-            <button onClick={() => onLike(postId, c.id, c.likedByMe, false)} style={{ background: 'none', border: 'none', padding: '0 4px', height: 'fit-content' }}>
-               <Heart size={14} color={c.likedByMe ? "#E53E3E" : "var(--text-muted)"} fill={c.likedByMe ? "#E53E3E" : "none"} />
-            </button>
-          </div>
+          <CommentItem 
+            key={c.id} 
+            comment={c} 
+            onReply={(com) => { setReplyingTo({ id: com.id, name: com.authorName }); setText(`@${com.authorName} `); }}
+            onDelete={(id) => onDeleteComment(postId, id)}
+            onLike={(id, state) => onLike(postId, id, state, false)}
+            canDelete={canDelete}
+          />
         )) : (
-          <div style={{ padding: '60px 0', textAlign: 'center', opacity: 0.6 }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: '500' }}>Nenhum comentário por enquanto.</p>
-          </div>
+          <div style={{ padding: '60px 0', textAlign: 'center', opacity: 0.6 }}>Nenhum comentário.</div>
         )}
-        {/* Barra de contexto de resposta inserida no fluxo */}
-        {replyingTo && (
-          <div style={{ background: '#F8F9FA', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #efefef', borderRadius: '8px', marginBottom: '12px' }}>
-             <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Respondendo a <strong>{replyingTo.name}</strong></p>
-             <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none' }}><X size={14} /></button>
-          </div>
-        )}
-
-        {/* Caixa de Input Inserida no fluxo (Logo abaixo da última mensagem) */}
-        <div style={{ 
-          padding: '12px 0 24px', 
-          display: 'flex', alignItems: 'center', gap: '12px', background: 'white'
-        }}>
-          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <input 
-              type="text" 
-              placeholder={replyingTo ? `Responda a ${replyingTo.name}...` : "Adicione um comentário..."} 
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              style={{ 
-                width: '100%', padding: '12px 48px 12px 16px', 
-                borderRadius: '24px', border: '1px solid rgba(0,0,0,0.1)', outline: 'none', fontSize: '14px',
-                background: '#F8F9FA'
-              }} 
-            />
-            <button 
-              disabled={!text.trim()} 
-              onClick={handleSend}
-              style={{ 
-                position: 'absolute', right: '12px', background: 'none', border: 'none', padding: 0,
-                color: text.trim() ? '#0095F6' : 'rgba(0,0,0,0.2)', transition: 'color 0.2s',
-                fontWeight: '700', fontSize: '14px'
-              }}
-            >
-              Publicar
-            </button>
-          </div>
-        </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-      `}} />
-    </div>
+      <div style={{ padding: '12px 16px env(safe-area-inset-bottom, 16px)', background: 'white', borderTop: '1px solid #efefef' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+          {emojis.map((e, idx) => (
+            <button key={idx} onClick={() => setText(text + e)} style={{ fontSize: '20px', background: 'none', border: 'none' }}>{e}</button>
+          ))}
+        </div>
+        
+        {replyingTo && (
+          <div style={{ background: '#F8F9FA', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', borderRadius: '8px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px' }}>Respondendo a <strong>{replyingTo.name}</strong></span>
+            <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none' }}><X size={14} /></button>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <input 
+            autoFocus
+            placeholder="Adicione um comentário..." 
+            value={text} 
+            onChange={e => setText(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            style={{ flex: 1, padding: '12px 16px', borderRadius: '24px', border: '1px solid #ddd', background: '#f9f9f9', outline: 'none', color: '#000' }}
+          />
+          <button onClick={handleSend} disabled={!text.trim()} style={{ color: text.trim() ? 'var(--primary)' : '#ccc', fontWeight: '800', background: 'none', border: 'none', padding: '8px' }}>Enviar</button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 };
 
