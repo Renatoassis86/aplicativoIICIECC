@@ -19,7 +19,7 @@ const SponsorsView = ({ onClose }) => {
           tierColor: '#B9F2FF',
           tagline: 'Líder em gestão académica clássica.',
           bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina. \n\nEspecializada em sistemas de gestão que respeitam as particularidades da pedagogia clássica, a OIKOS oferece ferramentas robustas para controle acadêmico, financeiro e pedagógico.',
-          logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?w=400&h=400&fit=crop&q=80',
+          logo: '/assets/sponsors/oikos.png',
           website: 'https://oikos.com.br',
           booth: 'Pavilhão Central • Estande 01'
         },
@@ -30,7 +30,7 @@ const SponsorsView = ({ onClose }) => {
           tierColor: '#B9F2FF',
           tagline: 'Consultoria e Implantação.',
           bio: 'A PACTUM atua no suporte estratégico e institucional a escolas clássicas em todo o Brasil. \n\nCom uma equipe de especialistas renomados, ajudamos instituições a transicionarem para o modelo clássico com segurança e excelência acadêmica.',
-          logo: 'https://images.unsplash.com/photo-1543286386-713bdd54865e?w=400&h=400&fit=crop&q=80',
+          logo: '/assets/sponsors/pactum.png',
           website: 'https://pactum.edu.br',
           booth: 'Pavilhão Norte • Estande 12'
         },
@@ -41,7 +41,7 @@ const SponsorsView = ({ onClose }) => {
           tierColor: '#B9F2FF',
           tagline: 'Educação Superior Clássica.',
           bio: 'A Faculdade Internacional Cidade Viva é o braço acadêmico do CIECC, oferecendo Pós-graduação e formação contínua de professores na tradição clássica cristã.',
-          logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=400&h=400&fit=crop&q=80',
+          logo: '/assets/sponsors/ficv.png',
           website: 'https://ficv.edu.br',
           booth: 'Hall de Entrada'
         }
@@ -60,7 +60,7 @@ const SponsorsView = ({ onClose }) => {
           tierColor: '#FFD700',
           tagline: 'Livros e Formação.',
           bio: 'A Editora Trinitas é a maior editora especializada em conteúdos clássicos e cristãos do Brasil. \n\nNossa missão é resgatar a tradição das letras e da sabedoria cristã através de publicações de alta qualidade.',
-          logo: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80',
+          logo: '/assets/sponsors/trinitas.png',
           website: 'https://editoratrinitas.com.br',
           booth: 'Lounge dos Autores'
         },
@@ -71,7 +71,7 @@ const SponsorsView = ({ onClose }) => {
           tierColor: '#FFD700',
           tagline: 'Ensino de Excelência.',
           bio: 'A Schola Classics oferece uma plataforma de ensino completa voltada ao currículo clássico, com ferramentas digitais exclusivas para pais e professores.',
-          logo: 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?w=400&h=400&fit=crop&q=80',
+          logo: '/assets/sponsors/schola.png',
           website: 'https://schola.com.br',
           booth: 'Auditório 2'
         }

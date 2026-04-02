@@ -326,7 +326,7 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
                 onClick={handleAddComment}
                 style={{ background: 'var(--gold)', color: 'var(--secondary)', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: '900', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                <Send size={16} /> ENVIAR INSIGHT
+                <Send size={16} /> ENVIAR COMENTÁRIO
               </button>
             </div>
           </div>

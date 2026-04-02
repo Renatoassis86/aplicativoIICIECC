@@ -181,7 +181,7 @@ const Home = ({ userName }) => {
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-12">
               <p className="text-white font-bold text-[10px] serif">Entrevistas Exclusivas</p>
-              <span className="text-white/60 text-[8px] uppercase font-bold mt-2">CIECC Insights</span>
+              <span className="text-white/60 text-[8px] uppercase font-bold mt-2">CIECC Comentários</span>
             </div>
           </div>
         </div>
