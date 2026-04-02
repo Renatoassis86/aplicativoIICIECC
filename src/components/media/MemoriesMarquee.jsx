@@ -19,9 +19,6 @@ const MemoriesMarquee = ({ photos, onOpenMedia }) => {
             Relembre os melhores momentos da jornada pedagógica.
           </p>
         </div>
-        <div style={{ background: 'var(--gold)', color: 'var(--secondary)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '900' }}>
-          {photos.length} FOTOS
-        </div>
       </div>
 
       <div className="marquee-container" style={{ 
