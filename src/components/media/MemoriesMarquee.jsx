@@ -25,28 +25,28 @@ const MemoriesMarquee = ({ photos, onOpenMedia }) => {
       </div>
 
       <div className="marquee-container" style={{ 
-        height: '130px', 
+        height: '150px', 
         maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)'
       }}>
         <div className="marquee-content" style={{ 
-          animationDuration: '240s', // Deeply slowed for a smooth experience
+          animationDuration: '240s', 
           display: 'flex',
-          gap: '8px'
+          gap: '10px'
         }}>
           {displayPhotos.map((photo, idx) => (
             <div 
               key={`${photo.id}-${idx}`}
               onClick={() => onOpenMedia(photo, idx % photos.length)}
               style={{ 
-                minWidth: '110px', 
-                height: '110px', 
-                borderRadius: '12px', 
+                minWidth: '130px', 
+                height: '130px', 
+                borderRadius: '16px', 
                 overflow: 'hidden',
-                background: '#04070e',
+                background: 'var(--primary)',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 position: 'relative',
                 flexShrink: 0
               }}

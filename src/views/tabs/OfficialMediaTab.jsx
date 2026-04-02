@@ -81,31 +81,42 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 2. FOTOS EM TEMPO REAL (GRID) */}
+        {/* 2. FOTOS EM TEMPO REAL (CARROSSEL) */}
         <div style={{ marginBottom: '50px' }}>
-           <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>Fotos em Tempo Real</h3>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+             <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>Fotos em Tempo Real</h3>
+             <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--primary)', background: 'var(--accent)', padding: '4px 10px', borderRadius: '20px' }}>AO VIVO</span>
+           </div>
+           
+           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
               {livePhotos.map((img, index) => (
                 <div 
                   key={img.id} 
                   onClick={() => openGallery(index, 'live')} 
                   className="clickable" 
-                  style={{ aspectRatio: '1', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', position: 'relative' }}
+                  style={{ 
+                    minWidth: '130px', 
+                    height: '130px', 
+                    borderRadius: '16px', 
+                    overflow: 'hidden', 
+                    flexShrink: 0,
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                    border: '1px solid rgba(0,0,0,0.05)' 
+                  }}
                 >
                   <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'var(--primary)', color: 'white', padding: '2px 4px', borderRadius: '4px', fontSize: '8px', fontWeight: '900' }}>LIVE</div>
                 </div>
               ))}
            </div>
         </div>
 
-        {/* 3. ENTREVISTAS (VÍDEOS) */}
+        {/* 3. ENTREVISTAS (CARROSSEL BOLINHAS) */}
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>Entrevistas Exclusivas</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
               {interviews.map(item => (
                 <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', padding: '3px', background: 'var(--gold)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--gold)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
                       <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                     </div>
@@ -116,13 +127,13 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 4. PODCASTS (ÁUDIO) */}
+        {/* 4. PODCASTS (CARROSSEL BOLINHAS) */}
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>CIECC Podcasts</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
               {podcasts.map(item => (
                 <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', padding: '3px', background: 'var(--secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
                       <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                     </div>
