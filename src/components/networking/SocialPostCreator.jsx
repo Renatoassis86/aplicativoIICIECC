@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { ImagePersistenceService } from '../../services/imagePersistence';
 import { CameraSource } from '@capacitor/camera';
 
-const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userId, userAvatar }) => {
+const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, sponsorTier = 1, userId, userAvatar }) => {
   const [caption, setCaption] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -153,7 +153,7 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
       await createPost(
         sponsorName, 
         sponsorRole || 'Organizador', 
-        4, 
+        sponsorTier, 
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
         location ? `${caption}\n\n📍 ${location}` : caption, 

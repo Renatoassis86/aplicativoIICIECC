@@ -20,13 +20,33 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [activeOptionsPost, setActiveOptionsPost] = useState(null);
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
 
-  // Determina se pode postar
-  // Lógica de autorização para postagem (Case Insensitive)
-  const userRole = (userType || 'congressista').toLowerCase();
-  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
-  const canPost = allowedRoles.some(role => userRole.includes(role));
+  // Determina metadados do autor para postagem
+  const getAuthorMetaData = (type) => {
+    const roleId = (type || 'congressista').toLowerCase();
+    
+    // Organizadores / Admins / Staff
+    if (['organizador', 'admin', 'staff', 'master'].some(r => roleId.includes(r))) {
+      return { role: 'Organizador', tier: 4 }; // Nível Diamante para destaque
+    }
 
-  console.log('[MediaTab] User:', userName, 'Role:', userRole, 'CanPost:', canPost);
+    // Patrocinadores
+    if (roleId.includes('diamante') || roleId.includes('master')) return { role: 'Patrocinador Diamante', tier: 4 };
+    if (roleId.includes('ouro') || roleId.includes('gold')) return { role: 'Patrocinador Ouro', tier: 3 };
+    if (roleId.includes('prata') || roleId.includes('silver')) return { role: 'Patrocinador Prata', tier: 2 };
+    if (roleId.includes('bronze')) return { role: 'Patrocinador Bronze', tier: 1 };
+    
+    // Patrocinador Genérico
+    if (roleId.includes('patrocinador') || roleId.includes('sponsor')) return { role: 'Patrocinador', tier: 1 };
+
+    return { 
+      role: type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Participante', 
+      tier: 0 
+    };
+  };
+
+  const authorMeta = getAuthorMetaData(userType);
+  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
+  const canPost = allowedRoles.some(role => (userType || 'congressista').toLowerCase().includes(role));
 
   const loadPosts = async () => {
     setLoading(true);
@@ -323,7 +343,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
       {showCreator && (
         <SocialPostCreator 
           sponsorName={userName || 'Expositor'} 
-          sponsorRole={userType || 'sponsor'}
+          sponsorRole={authorMeta.role}
+          sponsorTier={authorMeta.tier}
           userId={userCpf}
           onClose={() => setShowCreator(false)} 
           onSuccess={() => { setShowCreator(false); loadPosts(); }} 
