@@ -41,8 +41,14 @@ function App() {
           return;
         }
 
-        if (profile.onboarding_completed || profile.user_type === 'admin' || profile.user_type === 'staff' || profile.user_type?.includes('patrocinador')) {
-          setSelectedType(profile.user_type || 'admin');
+        const canBypassInitial = profile.onboarding_completed || 
+          profile.user_type === 'organizador' || 
+          profile.user_type === 'admin' || 
+          profile.user_type === 'staff' || 
+          profile.user_type?.includes('patrocinador');
+
+        if (canBypassInitial) {
+          setSelectedType(profile.user_type || 'congressista');
           setUserAvatar(profile.avatar_url);
           setAuthStatus('logged-in');
         } else if (profile.user_type) {
