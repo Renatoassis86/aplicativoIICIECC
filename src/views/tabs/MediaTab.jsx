@@ -281,6 +281,13 @@ export default function MediaTab({ userType, userName, userCpf }) {
                   {post.caption}
                 </p>
                 
+                {/* Usuários Marcados */}
+                {post.taggedUsers && post.taggedUsers.length > 0 && (
+                  <p style={{ fontSize: '13px', color: '#0095F6', fontWeight: '700', marginBottom: '8px' }}>
+                    Com: {post.taggedUsers.map(name => `@${name}`).join(', ')}
+                  </p>
+                )}
+                
                 {/* Primeiros 3 Comentários */}
                 {post.comments && post.comments.length > 0 && (
                   <div style={{ marginBottom: '8px' }}>

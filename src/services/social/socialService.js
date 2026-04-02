@@ -58,7 +58,7 @@ const processPostsResponse = async (rawPosts, userId) => {
     const { data: allComments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
     const { data: engagements } = await supabase.from('social_engagements').select('*');
 
-    const hydratedPosts = rawPosts.map(post => {
+    const hydratedPosts = await Promise.all(rawPosts.map(async post => {
       const flatComments = (allComments || []).filter(c => c.post_id === post.id);
       
       // Build recursive comment tree
@@ -82,6 +82,13 @@ const processPostsResponse = async (rawPosts, userId) => {
       const pLikes = (engagements || []).filter(e => e.type === 'like' && e.post_id === post.id);
       const pSaves = (engagements || []).filter(e => e.type === 'save' && e.post_id === post.id);
 
+      // Hydrate Tagged Users (busca nomes dos IDs)
+      let taggedUsersNames = [];
+      if (post.tagged_user_ids && post.tagged_user_ids.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('full_name').in('id', post.tagged_user_ids);
+        taggedUsersNames = (profiles || []).map(p => p.full_name);
+      }
+
       return {
         id: post.id,
         sponsorName: post.author_name,
@@ -97,9 +104,10 @@ const processPostsResponse = async (rawPosts, userId) => {
         likes: pLikes.length,
         likedByMe: pLikes.some(e => e.user_id === userId),
         savedByMe: pSaves.some(e => e.user_id === userId),
-        timeAgo: agilizarTempoRelativo(post.created_at)
+        timeAgo: agilizarTempoRelativo(post.created_at),
+        taggedUsers: taggedUsersNames
       };
-    });
+    }));
 
     return hydratedPosts;
 };
