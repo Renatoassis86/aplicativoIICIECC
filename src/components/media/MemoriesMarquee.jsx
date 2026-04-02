@@ -25,29 +25,30 @@ const MemoriesMarquee = ({ photos, onOpenMedia }) => {
       </div>
 
       <div className="marquee-container" style={{ 
-        height: '180px', 
+        height: '130px', 
         maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)'
       }}>
         <div className="marquee-content" style={{ 
-          animationDuration: '60s', // Velocidade ajustada para 200 fotos
+          animationDuration: '240s', // Deeply slowed for a smooth experience
           display: 'flex',
-          gap: '12px'
+          gap: '8px'
         }}>
           {displayPhotos.map((photo, idx) => (
             <div 
               key={`${photo.id}-${idx}`}
               onClick={() => onOpenMedia(photo, idx % photos.length)}
               style={{ 
-                minWidth: '240px', 
-                height: '160px', 
-                borderRadius: '16px', 
+                minWidth: '110px', 
+                height: '110px', 
+                borderRadius: '12px', 
                 overflow: 'hidden',
-                background: '#eee',
+                background: '#04070e',
                 cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(0,0,0,0.05)',
-                position: 'relative'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                position: 'relative',
+                flexShrink: 0
               }}
             >
               <img 
@@ -56,15 +57,6 @@ const MemoriesMarquee = ({ photos, onOpenMedia }) => {
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 loading="lazy"
               />
-              <div style={{ 
-                position: 'absolute', inset: 0, 
-                background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
-                display: 'flex', alignItems: 'bottom', padding: '12px'
-              }}>
-                <span style={{ color: 'white', fontSize: '10px', fontWeight: '800', marginTop: 'auto' }}>
-                  {photo.label}
-                </span>
-              </div>
             </div>
           ))}
         </div>
