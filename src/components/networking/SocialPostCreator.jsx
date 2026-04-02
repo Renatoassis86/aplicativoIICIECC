@@ -10,8 +10,10 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
   const [mediaFiles, setMediaFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
-  const [step, setStep] = useState(1); // 1: Seletor, 2: Detalhes (Legenda)
+  const [step, setStep] = useState(1); // 1: Seletor, 2: Detalhes (Legenda), 3: Marcar Pessoas
   const [cursorPos, setCursorPos] = useState(0); 
+  const [taggedUsers, setTaggedUsers] = useState([]); // Lista de objetos {id, full_name}
+  const [tagQuery, setTagQuery] = useState('');
 
   // Mentions Logic
   const [allUsers, setAllUsers] = useState([]);
@@ -155,7 +157,8 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         mediaFiles.length > 0 ? mediaFiles[0].type : 'image', 
         uploadedUrls, 
         location ? `${caption}\n\n📍 ${location}` : caption, 
-        userId || 'CIECC_SYSTEM'
+        userId || 'CIECC_SYSTEM',
+        taggedUsers.map(u => u.id)
       );
       onSuccess();
     } catch (err) {
@@ -185,11 +188,8 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
         height: '44px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button onClick={step === 2 ? () => setStep(1) : onClose} style={{ background: 'none', border: 'none', color: 'white', padding: '4px', cursor: 'pointer' }}>
-            {step === 2 ? <ChevronLeft size={26} /> : <X size={26} />}
-          </button>
           <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>
-            {step === 1 ? 'Novo post' : 'Novo post'}
+            {step === 1 ? 'Novo post' : step === 3 ? 'Marcar pessoas' : 'Novo post'}
           </h2>
         </div>
         {step === 1 ? (
@@ -203,6 +203,16 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
             }}
           >
             Avançar
+          </button>
+        ) : step === 3 ? (
+          <button 
+            onClick={() => setStep(2)}
+            style={{ 
+              background: 'none', border: 'none', color: '#0095F6', 
+              fontSize: '15px', fontWeight: '700'
+            }}
+          >
+            Concluir
           </button>
         ) : (
           <button 
@@ -291,6 +301,67 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
                <span style={{ fontSize: '14px', fontWeight: '700', color: '#8e8e8e' }}>REEL</span>
             </footer>
           </div>
+        ) : step === 3 ? (
+          <div style={{ padding: '20px' }}>
+             <p style={{ fontSize: '13px', color: '#8e8e8e', marginBottom: '20px' }}>Toque em um usuário para marcá-lo na publicação.</p>
+             
+             <div style={{ 
+               background: '#121212', borderRadius: '12px', padding: '12px', 
+               display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' 
+             }}>
+               <Search size={20} color="#8e8e8e" />
+               <input 
+                 autoFocus
+                 type="text"
+                 placeholder="Pesquisar por nome..."
+                 value={tagQuery}
+                 onChange={(e) => setTagQuery(e.target.value)}
+                 style={{ background: 'none', border: 'none', color: 'white', flex: 1, outline: 'none', fontSize: '14px' }}
+               />
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+               {allUsers.filter(u => u.name?.toLowerCase().includes(tagQuery.toLowerCase())).slice(0, 10).map(u => {
+                 const isTagged = taggedUsers.find(tu => tu.full_name === u.name);
+                 return (
+                   <div 
+                     key={u.id || u.name}
+                     onClick={() => {
+                        if (isTagged) {
+                          setTaggedUsers(taggedUsers.filter(tu => tu.full_name !== u.name));
+                        } else {
+                          setTaggedUsers([...taggedUsers, { id: u.id || u.user_id, full_name: u.name }]);
+                        }
+                     }}
+                     style={{ 
+                       padding: '12px', background: isTagged ? 'rgba(0,149,246,0.1)' : '#000', 
+                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '8px',
+                       cursor: 'pointer'
+                     }}
+                   >
+                     <span style={{ fontSize: '14px', color: isTagged ? '#0095F6' : 'white', fontWeight: isTagged ? '700' : '400' }}>
+                       {u.name}
+                     </span>
+                     {isTagged && <RefreshCw size={14} color="#0095F6" />}
+                   </div>
+                 );
+               })}
+             </div>
+
+             {taggedUsers.length > 0 && (
+               <div style={{ marginTop: '40px' }}>
+                 <h5 style={{ fontSize: '12px', color: '#8e8e8e', textTransform: 'uppercase', marginBottom: '12px' }}>Selecionados</h5>
+                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {taggedUsers.map(u => (
+                      <div key={u.id} style={{ background: '#262626', padding: '6px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px' }}>{u.full_name}</span>
+                        <X size={14} style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setTaggedUsers(taggedUsers.filter(tu => tu.id !== u.id)); }} />
+                      </div>
+                    ))}
+                 </div>
+               </div>
+             )}
+          </div>
         ) : (
           <div style={{ padding: '0' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px' }}>
@@ -327,25 +398,40 @@ const SocialPostCreator = ({ onClose, onSuccess, sponsorName, sponsorRole, userI
               <div style={{ height: '1px', background: '#262626', width: '100%' }}></div>
               
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {[
-                  { label: 'Marcar pessoas', icon: <Camera size={18} /> },
-                  { label: location || 'Adicionar localização', icon: <MapPin size={18} />, action: detectLocation }
-                ].map((item, idx) => (
-                  <div 
-                    key={idx}
-                    onClick={item.action}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '16px 0', borderBottom: '1px solid #121212', cursor: item.action ? 'pointer' : 'default'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      {item.icon}
-                      <span style={{ fontSize: '15px' }}>{item.label}</span>
+                <div 
+                  onClick={() => setStep(3)}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '16px 0', borderBottom: '1px solid #121212', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <Camera size={18} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '15px' }}>Marcar pessoas</span>
+                      {taggedUsers.length > 0 && (
+                        <p style={{ fontSize: '12px', color: '#0095F6', fontWeight: '700' }}>
+                          {taggedUsers.map(u => u.full_name).join(', ')}
+                        </p>
+                      )}
                     </div>
-                    <ChevronRight size={18} color="#8e8e8e" />
                   </div>
-                ))}
+                  <ChevronRight size={18} color="#8e8e8e" />
+                </div>
+                
+                <div 
+                  onClick={detectLocation}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '16px 0', borderBottom: '1px solid #121212', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <MapPin size={18} />
+                    <span style={{ fontSize: '15px' }}>{location || 'Adicionar localização'}</span>
+                  </div>
+                  <ChevronRight size={18} color="#8e8e8e" />
+                </div>
               </div>
             </div>
 

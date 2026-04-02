@@ -109,7 +109,8 @@ export const togglePinPost = async (postId, currentState) => {
   return !currentState;
 };
 
-export const createPost = async (authorName, authorRole, authorTier, contentType, mediaUrls, caption, userId) => {
+export const createPost = async (authorName, authorRole, authorTier, contentType, mediaUrls, caption, userId, taggedUserIds = []) => {
+  // 1. Criar o post
   const { data, error } = await supabase.from('social_posts').insert({
     author_name: authorName,
     author_role: authorRole,
@@ -117,10 +118,49 @@ export const createPost = async (authorName, authorRole, authorTier, contentType
     content_type: contentType,
     media_urls: mediaUrls,
     caption,
-    user_id: userId
+    user_id: userId,
+    tagged_user_ids: taggedUserIds // Novo campo no banco
   }).select().single();
+  
   if (error) throw error;
+
+  // 2. Notificar usuários marcados (se houver)
+  if (taggedUserIds && taggedUserIds.length > 0) {
+    const notifications = taggedUserIds.map(targetId => ({
+      title: "Você foi marcado!",
+      message: `${authorName} marcou você em uma nova publicação no feed.`,
+      target_user_id: targetId, // Novo campo pessoal nas notificações
+      type: 'tag',
+      author_id: userId,
+      target_role: 'congressista' // Fallback para role geral
+    }));
+
+    await supabase.from('system_notifications').insert(notifications);
+  }
+
   return data;
+};
+
+/**
+ * BUSCAR USUÁRIOS PARA MARCAÇÃO
+ * Procura na tabela de perfis (profiles ou members) por nomes semelhantes ao query.
+ */
+export const searchUsers = async (query) => {
+  if (!query || query.length < 2) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('profiles') // Ajustado para tabela de perfis central
+      .select('id, full_name, role, avatar_url')
+      .ilike('full_name', `%${query}%`)
+      .limit(8);
+      
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("[SocialService] searchUsers error:", err);
+    return [];
+  }
 };
 
 export const deletePostApi = async (postId) => {

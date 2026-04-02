@@ -14,10 +14,13 @@ import { Capacitor } from '@capacitor/core';
 
 export const fetchInbox = async (userId, userRole) => {
   try {
-    // 1. Constrói o filtro lógico: Tudo de "all" + Se for patrocinador vê "sponsors" + Se for staff vê "staff"
+    // 1. Constrói o filtro lógico: Tudo de "all" + Role Específica + Menção Pessoal
     let audienceFilter = `target_role.eq.all,target_role.eq.${userRole || 'congressista'}`;
     if (userRole?.includes('patrocinador')) audienceFilter += `,target_role.eq.sponsors`;
     if (userRole === 'staff' || userRole === 'admin' || userRole === 'organizador') audienceFilter += `,target_role.eq.staff`;
+    
+    // Adiciona o filtro para notificações direcionadas diretamente à este ID (ex: Marcação)
+    audienceFilter += `,target_user_id.eq.${userId}`;
 
     // 2. Busca mensagens destinadas a este público
     const { data: notifications, error } = await supabase
