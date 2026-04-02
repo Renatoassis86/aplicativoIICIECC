@@ -63,48 +63,54 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
 
       <div style={{ padding: '0 20px' }}>
         
-        {/* 1. FLASHES DO II CIECC 2026 (CARROSSEL) */}
+        {/* 1. TRANSMISSÃO AO VIVO (TOPO) */}
+        <div style={{ marginBottom: '40px' }}>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <div className="live-indicator-pulse" style={{ width: '12px', height: '12px', background: '#FF0000', borderRadius: '50%' }}></div>
+              <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase' }}>Transmissão Ao Vivo</h3>
+           </div>
+           
+           <div style={{ 
+             width: '100%', borderRadius: '24px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', 
+             boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.05)'
+           }}>
+             <iframe 
+               width="100%" height="100%" src="https://www.youtube.com/embed/t5CB9rnexOY?modestbranding=1&rel=0" 
+               title="Live" frameBorder="0" allowFullScreen
+             ></iframe>
+           </div>
+        </div>
+
+        {/* 2. FLASHES DO II CIECC 2026 (CARROSSEL) */}
         <div style={{ marginBottom: '50px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
              <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>Flashes do Momento</h3>
-             <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--primary)', background: 'var(--accent)', padding: '4px 10px', borderRadius: '20px' }}>COBERTURA 2026</span>
+             <span style={{ fontSize: '11px', fontWeight: '900', color: 'white', background: '#FF0000', padding: '4px 10px', borderRadius: '20px' }}>AO VIVO</span>
            </div>
            
-           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
+           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px', margin: '0 -20px', padding: '0 20px' }}>
               {livePhotos.map((img, index) => (
                 <div 
                   key={img.id} 
                   onClick={() => openGallery(index, 'live')} 
                   className="clickable" 
                   style={{ 
-                    minWidth: '120px', 
-                    height: '120px', 
+                    minWidth: '140px', 
+                    height: '140px', 
                     borderRadius: '12px', 
                     overflow: 'hidden', 
                     flexShrink: 0,
-                    background: 'rgba(107, 20, 26, 0.08)',
-                    border: '1.5px solid rgba(107, 20, 26, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                    background: '#eee'
                   }}
                 >
-                  <img 
-                    src={img.url} 
-                    alt="" 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'contain',
-                      padding: '4px' 
-                    }} 
-                  />
+                  <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}
            </div>
         </div>
 
-        {/* 2. ENTREVISTAS (CARROSSEL BOLINHAS) */}
+        {/* 3. ENTREVISTAS (CARROSSEL BOLINHAS) */}
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>Entrevistas Exclusivas</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
@@ -121,7 +127,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 3. PODCASTS (CARROSSEL BOLINHAS) */}
+        {/* 4. PODCASTS (CARROSSEL BOLINHAS) */}
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>CIECC Podcasts</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
@@ -138,7 +144,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 4. MEMÓRIAS I CIECC 2025 (CARROSSEL INFINITO) */}
+        {/* 5. MEMÓRIAS I CIECC 2025 (CARROSSEL INFINITO) */}
         <div style={{ marginTop: '50px', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '10px' }}>
            <MemoriesMarquee 
              photos={memories2025} 
