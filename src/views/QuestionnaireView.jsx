@@ -45,8 +45,14 @@ const QuestionnaireView = ({ onComplete }) => {
     window.scrollTo(0, 0);
   };
 
-  const updateData = (field, value) => {
+  const updateData = (field, value, autoNext = false) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (autoNext) {
+      // Delay suave para feedback visual da seleção
+      setTimeout(() => {
+        handleNext();
+      }, 300);
+    }
   };
 
   const progress = ((step + 1) / totalSteps) * 100;
@@ -128,7 +134,7 @@ const QuestionnaireView = ({ onComplete }) => {
               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Sua instituição participou do 1º Congresso Internacional de Educação Cristã Clássica?</p>
               <div style={{ display: 'grid', gap: '12px' }}>
                 {['Sim', 'Não'].map(opt => (
-                  <button key={opt} onClick={() => updateData('participou_anterior', opt)} style={{
+                  <button key={opt} onClick={() => updateData('participou_anterior', opt, true)} style={{
                     padding: '16px', border: formData.participou_anterior === opt ? '2px solid var(--primary)' : '1px solid var(--border)',
                     borderRadius: '12px', background: formData.participou_anterior === opt ? 'var(--accent)' : 'white',
                     textAlign: 'left', fontWeight: '600', color: formData.participou_anterior === opt ? 'var(--primary)' : 'var(--secondary)'
@@ -147,7 +153,7 @@ const QuestionnaireView = ({ onComplete }) => {
                 <label className="input-label">Cargo/Função na Instituição</label>
                 <div style={{ display: 'grid', gap: '8px' }}>
                   {['Mantenedor(a)', 'Diretor(a)', 'Coordenador(a)', 'Professor(a)', 'Administrativo', 'Outro'].map(opt => (
-                    <button key={opt} onClick={() => updateData('cargo', opt)} style={{
+                    <button key={opt} onClick={() => updateData('cargo', opt, true)} style={{
                       padding: '12px', border: formData.cargo === opt ? '2px solid var(--primary)' : '1px solid var(--border)',
                       borderRadius: '8px', background: formData.cargo === opt ? 'var(--accent)' : 'white',
                       textAlign: 'left', fontSize: '14px'
@@ -168,7 +174,7 @@ const QuestionnaireView = ({ onComplete }) => {
               <label className="input-label">Tempo de funcionamento</label>
               <div style={{ display: 'grid', gap: '8px' }}>
                 {['Menos de 1 ano', '1 a 5 anos', '6 a 10 anos', 'Mais de 10 anos'].map(opt => (
-                  <button key={opt} onClick={() => updateData('tempo_escola', opt)} style={{
+                  <button key={opt} onClick={() => updateData('tempo_escola', opt, true)} style={{
                     padding: '12px', border: formData.tempo_escola === opt ? '2px solid var(--primary)' : '1px solid var(--border)',
                     borderRadius: '8px', background: formData.tempo_escola === opt ? 'var(--accent)' : 'white',
                     textAlign: 'left', fontSize: '14px'
@@ -178,7 +184,7 @@ const QuestionnaireView = ({ onComplete }) => {
               <div style={{ marginTop: '20px' }}>
                 <label className="input-label">Confessionalidade Cristã</label>
                 {['Escola cristã confessional', 'Em transição', 'Em estudo', 'Não considerado'].map(opt => (
-                  <button key={opt} onClick={() => updateData('confessionalidade', opt)} style={{
+                  <button key={opt} onClick={() => updateData('confessionalidade', opt, true)} style={{
                     display: 'block', width: '100%', marginBottom: '8px', padding: '12px', border: '1px solid var(--border)',
                     borderRadius: '8px', textAlign: 'left', fontSize: '13px'
                   }}>{opt}</button>
@@ -193,7 +199,7 @@ const QuestionnaireView = ({ onComplete }) => {
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>“Nossa escola possui clareza e alinhamento institucional quanto à cosmovisão cristã aplicada ao currículo.”</p>
               <div style={{ display: 'grid', gap: '8px' }}>
                 {['Discordo totalmente', 'Discordo', 'Neutro', 'Concordo', 'Concordo totalmente'].map(opt => (
-                  <button key={opt} onClick={() => updateData('concordancia_cosmovisao', opt)} style={{
+                  <button key={opt} onClick={() => updateData('concordancia_cosmovisao', opt, true)} style={{
                     padding: '12px', border: formData.concordancia_cosmovisao === opt ? '2px solid var(--primary)' : '1px solid var(--border)',
                     borderRadius: '8px', textAlign: 'left', fontSize: '14px'
                   }}>{opt}</button>
@@ -227,7 +233,7 @@ const QuestionnaireView = ({ onComplete }) => {
               <p className="input-label">Quanto investe por aluno/ano em livros?</p>
               <div style={{ display: 'grid', gap: '8px' }}>
                 {['Até R$ 500', 'R$ 500 a R$ 1.000', 'Mais de R$ 1.000', 'Prefiro não responder'].map(opt => (
-                  <button key={opt} onClick={() => updateData('investimento_livros', opt)} style={{
+                  <button key={opt} onClick={() => updateData('investimento_livros', opt, true)} style={{
                     padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'left', fontSize: '14px'
                   }}>{opt}</button>
                 ))}
@@ -244,7 +250,7 @@ const QuestionnaireView = ({ onComplete }) => {
                  <div className="input-group">
                     <label className="input-label">Nível de Interesse em solução completa</label>
                     {['Muito interesse', 'Interesse moderado', 'Pouco interesse', 'Nenhum'].map(opt => (
-                      <button key={opt} className="btn-primary" style={{ background: 'white', color: 'var(--secondary)', border: '1px solid var(--border)', marginBottom: '8px', fontSize: '14px' }}>
+                      <button key={opt} onClick={() => updateData('interesse_solucao', opt, true)} className="btn-primary" style={{ background: 'white', color: 'var(--secondary)', border: '1px solid var(--border)', marginBottom: '8px', fontSize: '14px' }}>
                         {opt}
                       </button>
                     ))}
