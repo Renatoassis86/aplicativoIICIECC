@@ -158,7 +158,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onClick={() => setActiveTab('media')}
         >
           <Video size={22} />
-          <span>HUB VIP</span>
+          <span>MÍDIA</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`} 

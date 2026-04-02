@@ -56,7 +56,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <img src="/logo.png" alt="" style={{ height: '30px', filter: 'brightness(0) invert(1)' }} />
-          <h2 style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>CIECC <span style={{ color: 'var(--gold)' }}>Hub VIP</span></h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>MÍDIA</h2>
         </div>
         <p style={{ fontSize: '13px', opacity: 0.7 }}>Acompanhe tudo do II CIECC em tempo real.</p>
       </header>
