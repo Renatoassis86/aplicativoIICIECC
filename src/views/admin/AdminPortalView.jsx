@@ -423,7 +423,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .log-item { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .log-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justifyContent: center; }
 
-        .alert-textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; color: white; margin-bottom: 16px; resize: none; outline: none; transition: border-color 0.3s; }
+        .alert-textarea { width: 100%; background: #FFFFFF; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; color: #000000; margin-bottom: 16px; resize: none; outline: none; transition: border-color 0.3s; font-weight: 600; }
         .alert-textarea:focus { border-color: var(--gold); }
         .alert-btn { width: 100%; background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s; }
         .alert-btn:hover { transform: scale(1.02); }
@@ -482,28 +482,24 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
         /* Global Contrast Fix for Light Containers */
-        [style*="background: white"], 
-        [style*="background:white"],
-        [style*="background-color: white"],
-        [style*="background-color:white"],
-        .card-main,
-        .white-bg {
-          color: #1E293B !important;
+        .white-bg, .card-main, [style*="background: white"], [style*="background-color: white"] {
+          background-color: #FFFFFF !important;
+          color: #1A202C !important;
         }
 
-        [style*="background: white"] h3, 
-        [style*="background: white"] h4,
-        [style*="background: white"] label,
-        [style*="background: white"] p {
-          color: #1E293B !important;
+        .white-bg h1, .white-bg h2, .white-bg h3, .white-bg h4, .card-main h1, .card-main h2, .card-main h3, .card-main h4 {
+          color: #000000 !important;
+          font-weight: 800 !important;
         }
 
         input, select, textarea {
-          color: #1E293B !important;
+          color: #000000 !important;
+          background-color: #FFFFFF !important;
         }
 
         .stat-value, .view-title, .sidebar-logo-text h1 {
-          color: white !important;
+          color: #FFFFFF !important;
+          font-weight: 900 !important;
         }
       `}} />
     </div>
