@@ -141,6 +141,21 @@ class CMSService {
     }
   }
 
+  async deleteMedia(id) {
+    try {
+      const { data, error } = await supabase
+        .from('media_assets')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Erro ao excluir mídia:', error);
+      return { data: null, error };
+    }
+  }
+
   async addMediaLink(title, description, type, url, isLive = false) {
     try {
       const { data, error } = await supabase

@@ -167,7 +167,8 @@ const MediaCMS = () => {
             <button 
               onClick={handleAddMedia}
               disabled={loading}
-              style={{ padding: '16px', borderRadius: '12px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', marginTop: '8px' }}
+              className="btn-primary"
+              style={{ padding: '16px', borderRadius: '12px', width: '100%', cursor: 'pointer', marginTop: '8px' }}
             >
               {loading ? 'Processando...' : 'ADICIONAR MÍDIA'}
             </button>
