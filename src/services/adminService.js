@@ -12,8 +12,7 @@ export const bulkImportMembers = async (membersArray) => {
     const payload = membersArray.map(m => ({
       ...m,
       cpf: stripCPF(m.cpf),
-      created_at: m.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: m.created_at || new Date().toISOString()
     }));
 
     // 1. Executa e insere lote de usuários na tabela de membros
@@ -84,8 +83,7 @@ export const createOrUpdateAdminUser = async (userData) => {
         .upsert({ 
             cpf: cleanCpf, 
             name, 
-            email,
-            updated_at: new Date().toISOString()
+            email
         }, { onConflict: 'cpf' });
 
     if (memberError) throw memberError;
