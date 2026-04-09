@@ -127,11 +127,8 @@ const UserManagementCMS = () => {
                         <button 
                             onClick={handleCreateUser}
                             disabled={loading}
-                            style={{ 
-                                padding: '16px', borderRadius: '12px', background: 'var(--primary)', 
-                                color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
-                            }}
+                            className="btn-primary"
+                            style={{ width: '100%', textTransform: 'uppercase' }}
                         >
                             <Save size={18} /> SALVAR USUÁRIO
                         </button>
