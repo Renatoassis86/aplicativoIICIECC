@@ -237,8 +237,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div style={{ padding: '40px 32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <div style={{ width: '40px', height: '40px', background: 'var(--gold)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)' }}>
-               <img src="/logo.png" alt="CIECC" style={{ height: '24px', objectFit: 'contain' }} />
+            <div style={{ width: '32px', height: '32px', background: 'var(--gold)', borderRadius: '8px', minWidth: '32px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)' }}>
             </div>
             <div className="sidebar-logo-text">
               <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white', fontFamily: 'var(--font-serif)' }}>CIECC</h1>
