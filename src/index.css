@@ -17,13 +17,6 @@
   /* Typography */
   --font-main: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif; /* For "Classical" feel */
-  
-  /* Layout */
-  --nav-height: 72px;
-  --safe-area: 20px;
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
 }
 
 * {
@@ -41,80 +34,67 @@ body {
 
 /* 
    ==========================================================================
-   SISTEMA DE CONTRASTE INTELIGENTE (CMS GUARD)
-   Se o fundo é CLARO -> Fonte ESCURA
-   Se o fundo é ESCURO -> Fonte CLARA
+   SISTEMA DE CONTRASTE RADICAL (ULTRA GUARD)
+   Destaque total para legibilidade máxima
    ==========================================================================
 */
 
-/* 1. REGRA PARA FUNDOS CLAROS (Cards, Modais, CMS) */
-[style*="background: white"], 
+/* 1. REGRA PARA FUNDOS CLAROS (Cards, CMS) -> TEXTO PRETO PURO */
+.white-bg, 
+.card,
+[style*="background: white"],
 [style*="background-color: white"],
 [style*="background:white"],
 [style*="background-color:white"],
-[style*="background:#fff"], 
-[style*="background: #fff"], 
-[style*="background-color:#fff"],
-[style*="background-color: #fff"],
-[style*="background:rgb(255, 255, 255)"],
-[style*="background: rgb(255, 255, 255)"],
-.white-bg, 
-.bg-white,
-.card {
+[style*="background: #fff"],
+[style*="background:#fff"] {
     background-color: #FFFFFF !important;
 }
 
-/* Forçar cor escura em TUDO dentro de fundo branco - RESIDÊNCIA MÁXIMA */
+/* Enfatizar Títulos em Fundos Brancos */
+.white-bg h1, .white-bg h2, .white-bg h3, .white-bg h4, .white-bg h5, .white-bg h6,
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+    color: #000000 !important;
+    font-weight: 800 !important;
+}
+
+/* Enfatizar Labels e Textos em Fundos Brancos */
+.white-bg *, .white-bg label, .white-bg span, .white-bg p,
+.card *, .card label, .card span, .card p,
 [style*="background: white"] *, 
-[style*="background-color: white"] *,
-[style*="background:white"] *,
-[style*="background-color:white"] *,
-[style*="background:#fff"] *, 
-[style*="background: #fff"] *, 
-.white-bg *, 
-.bg-white *, 
-.card * {
-    color: #1E293B !important;
+[style*="background-color: white"] * {
+    color: #1A202C !important; /* Quase preto para corpo */
 }
 
-/* Inputs em fundos brancos precisam manter legibilidade */
-[style*="background: white"] input,
-[style*="background: white"] select,
-[style*="background: white"] textarea,
-.card input {
-    color: #1E293B !important;
-    background-color: #FFFFFF !important;
-    border: 1px solid #E2E8F0 !important;
-}
-
-/* 2. REGRA PARA FUNDOS ESCUROS (App Shell, Dark Mode) */
+/* 2. REGRA PARA FUNDOS ESCUROS (Portal Shell) -> TEXTO BRANCO PURO */
 .admin-portal-shell,
 .admin-portal-container,
 .app-shell,
-.premium-gradient,
-body:has(.admin-portal-shell) {
-    background-color: #0A0F1A !important;
-    color: #E2E8F0 !important;
+.premium-gradient {
+    background-color: #050810 !important;
 }
 
-/* Links e ícones em fundo escuro */
-.admin-portal-shell svg, 
-.admin-portal-shell .lucide {
-    color: #94A3B8;
-}
-
-.admin-portal-shell .active svg {
-    color: var(--primary);
-}
-
-/* 3. EXCEÇÕES NECESSÁRIAS (Badges e Botões Primary) */
-.badge-official, 
-.btn-primary, 
-.btn-primary *,
-[style*="background: var(--primary)"] *,
-[style*="background:var(--primary)"] *,
-button[style*="background: var(--primary)"] {
+/* Enfatizar Títulos em Fundos Escuros */
+.admin-portal-shell h1, .admin-portal-shell h2, .admin-portal-shell h3, 
+.admin-portal-shell h4, .admin-portal-shell h5, .admin-portal-shell h6,
+.admin-portal-container h1, .admin-portal-container h2, .admin-portal-container h3 {
     color: #FFFFFF !important;
+    font-weight: 800 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Textos informativos em fundo escuro */
+.admin-portal-shell p, .admin-portal-shell span, .admin-portal-shell label {
+    color: #F8FAFC !important;
+}
+
+/* 3. EXCEÇÕES NECESSÁRIAS (Botões e Badges) */
+.btn-primary, .btn-primary *, .badge-official {
+    color: #FFFFFF !important;
+}
+
+.btn-secondary, .btn-secondary * {
+    color: #1A202C !important;
 }
 
 /* 
@@ -132,14 +112,6 @@ button[style*="background: var(--primary)"] {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-primary {
-  background: var(--primary);
-  padding: 14px 24px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  box-shadow: 0 4px 10px rgba(107, 20, 26, 0.2);
-}
-
 .section-title {
     font-size: 20px;
     font-weight: 800;
@@ -149,8 +121,14 @@ button[style*="background: var(--primary)"] {
     gap: 12px;
 }
 
+/* Inputs em areas administrativas */
+input, select, textarea {
+    background: white;
+    border: 1px solid #E2E8F0;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0A0F1A; }
+::-webkit-scrollbar-track { background: #050810; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
