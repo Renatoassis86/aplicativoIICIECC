@@ -49,9 +49,9 @@ const HomeCMS = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ fontWeight: '800', fontSize: '18px' }}>Textos da Página Inicial</h3>
+          <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#1E293B' }}>Textos da Página Inicial</h3>
           <button 
             disabled={loading}
             onClick={loadContent}
@@ -90,6 +90,7 @@ const HomeCMS = () => {
             label="Localização" 
             value={content.home_location} 
             onChange={(v) => handleChange('home_location', v)} 
+            placeholder="Ex: São Paulo, SP"
           />
           <InputGroup 
             label="Data do Countdown (ISO)" 
@@ -100,8 +101,8 @@ const HomeCMS = () => {
         </div>
       </div>
 
-      <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px' }}>Vídeo de Destaque</h3>
+      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Vídeo de Destaque</h3>
         <InputGroup 
           label="URL do Embed do YouTube" 
           value={content.home_video_url} 
@@ -121,7 +122,8 @@ const HomeCMS = () => {
           style={{ 
             flex: 1, background: 'var(--primary)', color: 'white', border: 'none', 
             padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+            boxShadow: '0 4px 15px rgba(107, 20, 26, 0.2)'
           }}
         >
           <Save size={20} /> SALVAR ALTERAÇÕES NA HOME
@@ -141,7 +143,8 @@ const InputGroup = ({ label, value, onChange, placeholder, fullWidth = false }) 
       placeholder={placeholder}
       style={{ 
         padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0',
-        fontSize: '14px', outline: 'none', transition: 'border-color 0.2s'
+        fontSize: '14px', outline: 'none', transition: 'border-color 0.2s',
+        color: '#1E293B', background: 'white'
       }}
       onFocus={(e) => e.target.style.borderColor = '#6366F1'}
       onBlur={(e) => e.target.style.borderColor = '#E2E8F0'}

@@ -24,37 +24,38 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
   if (isForgotMode) {
     return (
-      <div className="login-screen fade-in" style={{
+      <div className="login-screen fade-in white-bg" style={{
         height: '100vh', display: 'flex', flexDirection: 'column', 
         justifyContent: 'center', padding: '24px', background: 'white'
       }}>
         <header style={{ marginBottom: '32px', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px' }}>Recuperar Senha</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Insira seu e-mail cadastrado para receber as instruções.</p>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: '#1E293B' }}>Recuperar Senha</h2>
+          <p style={{ color: '#475569', fontSize: '14px', fontWeight: '600' }}>Insira seu e-mail cadastrado para receber as instruções.</p>
         </header>
 
         {forgotSent ? (
-          <div style={{ textAlign: 'center', padding: '20px', background: 'var(--accent)', borderRadius: '12px', border: '1px solid var(--primary)' }}>
+          <div style={{ textAlign: 'center', padding: '20px', background: '#FEF2F2', borderRadius: '12px', border: '1px solid var(--primary)' }}>
             <p style={{ color: 'var(--primary)', fontWeight: '700' }}>Sua senha foi enviada para seu e-mail!</p>
           </div>
         ) : (
           <form onSubmit={handleForgotSubmit}>
             <div className="input-group">
-              <label className="input-label">E-mail</label>
+              <label className="input-label" style={{ color: '#475569' }}>E-mail</label>
               <input 
                 type="email" 
                 className="input-field" 
                 placeholder="seu@email.com"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
+                style={{ color: '#1E293B', background: 'white' }}
                 required
               />
             </div>
-            <button type="submit" className="btn-primary">Enviar Instruções</button>
+            <button type="submit" className="btn-primary" style={{ boxShadow: '0 4px 15px rgba(107, 20, 26, 0.2)' }}>Enviar Instruções</button>
             <button 
               type="button" 
               onClick={() => setIsForgotMode(false)}
-              style={{ width: '100%', marginTop: '16px', color: 'var(--text-muted)', fontWeight: '600' }}
+              style={{ width: '100%', marginTop: '16px', color: '#64748B', fontWeight: '700' }}
             >
               Voltar ao Login
             </button>

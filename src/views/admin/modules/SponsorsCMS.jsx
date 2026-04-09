@@ -14,6 +14,8 @@ export default function SponsorsCMS() {
   const [sponsors, setSponsors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [photoSource, setPhotoSource] = useState('link'); // 'link' ou 'upload'
+  const [uploadFile, setUploadFile] = useState(null);
   
   const [newSponsor, setNewSponsor] = useState({
     name: '',
@@ -40,9 +42,26 @@ export default function SponsorsCMS() {
   const handleAdd = async () => {
     if (!newSponsor.name) return;
     setSaving(true);
-    const { error } = await supabase.from('sponsors').insert([newSponsor]);
+    
+    let finalLogoUrl = newSponsor.logo_url;
+
+    if (photoSource === 'upload' && uploadFile) {
+      const fileExt = uploadFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const { data, error } = await supabase.storage
+        .from('sponsors')
+        .upload(fileName, uploadFile);
+      
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('sponsors').getPublicUrl(fileName);
+        finalLogoUrl = urlData.publicUrl;
+      }
+    }
+
+    const { error } = await supabase.from('sponsors').insert([{ ...newSponsor, logo_url: finalLogoUrl }]);
     if (!error) {
       setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length });
+      setUploadFile(null);
       fetchSponsors();
     }
     setSaving(false);
@@ -64,9 +83,9 @@ export default function SponsorsCMS() {
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div style={{ maxWidth: '1000px' }}>
-      <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', marginBottom: '32px' }}>
-        <h3 style={{ fontWeight: '800', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div className="sponsors-cms-container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+      <div style={{ maxWidth: '1000px' }}>
+        <h3 style={{ fontWeight: '800', color: '#1E293B', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Plus size={24} color="var(--primary)" /> Adicionar Novo Patrocinador
         </h3>
         
@@ -75,41 +94,70 @@ export default function SponsorsCMS() {
             placeholder="Nome da Empresa"
             value={newSponsor.name}
             onChange={e => setNewSponsor({...newSponsor, name: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}
+            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
           />
           <select 
             value={newSponsor.tier}
             onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}
+            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: '600' }}
           >
-            <option value="diamond">Diamante</option>
-            <option value="gold">Ouro</option>
-            <option value="silver">Prata</option>
-            <option value="bronze">Bronze</option>
+            <option value="gold">Cota Ouro</option>
+            <option value="silver">Cota Prata</option>
+            <option value="bronze">Cota Bronze</option>
           </select>
           <input 
             type="number"
             placeholder="Ordem"
             value={newSponsor.order_index}
             onChange={e => setNewSponsor({...newSponsor, order_index: parseInt(e.target.value)})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}
+            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-          <input 
-            placeholder="URL do Logo (SVG ou PNG Transparente)"
-            value={newSponsor.logo_url}
-            onChange={e => setNewSponsor({...newSponsor, logo_url: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}
-          />
-          <input 
-            placeholder="URL do Site"
-            value={newSponsor.website_url}
-            onChange={e => setNewSponsor({...newSponsor, website_url: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}
-          />
-        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Logo da Empresa</label>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                    <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                    <input type="radio" checked={photoSource === 'upload'} onChange={() => setPhotoSource('upload')} /> Upload PC
+                </label>
+            </div>
+            
+            {photoSource === 'link' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <input 
+                    placeholder="URL do Logo"
+                    value={newSponsor.logo_url}
+                    onChange={e => setNewSponsor({...newSponsor, logo_url: e.target.value})}
+                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                  />
+                  <input 
+                    placeholder="URL do Site"
+                    value={newSponsor.website_url}
+                    onChange={e => setNewSponsor({...newSponsor, website_url: e.target.value})}
+                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                  />
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ border: '2px dashed #CBD5E1', padding: '14px', borderRadius: '12px', textAlign: 'center', background: 'white' }}>
+                        <input type="file" id="sponsor-logo" accept="image/*" onChange={(e) => setUploadFile(e.target.files[0])} style={{ display: 'none' }} />
+                        <label htmlFor="sponsor-logo" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <ImageIcon size={20} color="#64748B" />
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#1E293B' }}>{uploadFile ? uploadFile.name : 'Selecionar Logo no PC'}</span>
+                        </label>
+                    </div>
+                    <input 
+                        placeholder="URL do Site"
+                        value={newSponsor.website_url}
+                        onChange={e => setNewSponsor({...newSponsor, website_url: e.target.value})}
+                        style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                    />
+                </div>
+            )}
+         </div>
 
         <button 
           onClick={handleAdd}
@@ -126,11 +174,12 @@ export default function SponsorsCMS() {
 
       <div style={{ display: 'grid', gap: '16px' }}>
         {sponsors.map(sponsor => (
-          <div key={sponsor.id} style={{ 
-            background: 'white', padding: '20px', borderRadius: '20px', 
-            display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid #F1F5F9'
+          <div key={sponsor.id} className="white-bg" style={{ 
+            backgroundColor: 'white', padding: '24px', borderRadius: '24px', 
+            display: 'flex', alignItems: 'center', gap: '24px', 
+            boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid #F1F5F9' 
           }}>
-            <div style={{ width: '80px', height: '80px', background: '#F8FAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+            <div style={{ width: '80px', height: '80px', backgroundColor: '#F8FAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
               {sponsor.logo_url ? (
                 <img src={sponsor.logo_url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               ) : (
@@ -142,12 +191,17 @@ export default function SponsorsCMS() {
               <input 
                 value={sponsor.name}
                 onChange={e => updateSponsor(sponsor.id, 'name', e.target.value)}
-                style={{ fontSize: '16px', fontWeight: '800', border: 'none', background: 'none', width: '100%' }}
+                style={{ fontSize: '16px', fontWeight: '800', border: 'none', background: 'none', width: '100%', color: '#1E293B' }}
               />
               <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                 <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--primary)', background: '#FDF2F2', padding: '2px 8px', borderRadius: '6px' }}>
-                    {sponsor.tier}
-                 </span>
+                  <span style={{ 
+                    fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', 
+                    color: sponsor.tier === 'gold' ? '#B45309' : sponsor.tier === 'silver' ? '#4B5563' : '#78350F', 
+                    background: sponsor.tier === 'gold' ? '#FEF3C7' : sponsor.tier === 'silver' ? '#F3F4F6' : '#FFEDD5', 
+                    padding: '3px 10px', borderRadius: '4px', letterSpacing: '0.5px'
+                  }}>
+                    {sponsor.tier === 'gold' ? 'COTA OURO' : sponsor.tier === 'silver' ? 'COTA PRATA' : 'COTA BRONZE'}
+                  </span>
                  <a href={sponsor.website_url} target="_blank" style={{ fontSize: '11px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px' }}>
                    <ExternalLink size={10} /> {sponsor.website_url || 'Nenhum link'}
                  </a>
@@ -156,7 +210,7 @@ export default function SponsorsCMS() {
 
             <button 
               onClick={() => handleDelete(sponsor.id)}
-              style={{ padding: '10px', borderRadius: '10px', background: '#FEE2E2', color: '#991B1B', border: 'none' }}
+              style={{ padding: '10px', borderRadius: '10px', background: '#FEE2E2', color: '#991B1B', border: 'none', cursor: 'pointer' }}
             >
               <Trash2 size={18} />
             </button>

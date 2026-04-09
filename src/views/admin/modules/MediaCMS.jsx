@@ -77,8 +77,8 @@ const MediaCMS = () => {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
       {/* FORMULÁRIO */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-          <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px' }}>Adicionar Novo Conteúdo</h3>
+        <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+          <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Adicionar Novo Conteúdo</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -97,7 +97,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700' }}>Título</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>Título</label>
               <input 
                 type="text" 
                 value={newMedia.title} 
@@ -108,7 +108,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700' }}>Descrição (Opcional)</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>Descrição (Opcional)</label>
               <textarea 
                 value={newMedia.description} 
                 onChange={(e) => setNewMedia(prev => ({ ...prev, description: e.target.value }))}
@@ -120,10 +120,10 @@ const MediaCMS = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Origem do Arquivo</label>
                <div style={{ display: 'flex', gap: '12px' }}>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
                    <input type="radio" checked={newMedia.source === 'link'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'link' }))} /> Link Externo
                  </label>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
                    <input type="radio" checked={newMedia.source === 'upload'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'upload' }))} /> Upload Direto
                  </label>
                </div>
@@ -146,7 +146,7 @@ const MediaCMS = () => {
                    />
                    <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                      <Upload size={24} color="#64748B" />
-                     <span style={{ fontSize: '13px', fontWeight: '700' }}>{uploadFile ? uploadFile.name : 'Clique para selecionar arquivo'}</span>
+                     <span style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>{uploadFile ? uploadFile.name : 'Clique para selecionar arquivo'}</span>
                    </label>
                  </div>
                )}
@@ -176,21 +176,21 @@ const MediaCMS = () => {
       </div>
 
       {/* LISTAGEM */}
-      <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxHeight: '800px', overflowY: 'auto' }}>
-        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px' }}>Mídias Cadastradas</h3>
+      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxHeight: '800px', overflowY: 'auto' }}>
+        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Mídias Cadastradas</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {mediaList.map(item => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', border: '1px solid #F1F5F9', background: item.is_live_stream ? '#FEF2F2' : 'white' }}>
+            <div key={item.id} className="white-bg" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', border: '1px solid #F1F5F9', background: item.is_live_stream ? '#FEF2F2' : 'white' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                 {item.media_type === 'video' ? <Video size={20} /> : <Music size={20} />}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <p style={{ fontWeight: '800', fontSize: '14px' }}>{item.title}</p>
+                  <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{item.title}</p>
                   {item.is_live_stream && <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900' }}>LIVE</span>}
                 </div>
-                <p style={{ fontSize: '12px', color: '#64748B' }}>{item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}{item.url_or_path}</p>
+                <p style={{ fontSize: '12px', color: '#475569' }}>{item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}{item.url_or_path}</p>
               </div>
               <button 
                 onClick={() => handleDelete(item.id)}
@@ -223,7 +223,7 @@ const ModeButton = ({ active, onClick, icon, label }) => (
 
 const inputStyle = {
   padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0',
-  fontSize: '14px', outline: 'none'
+  fontSize: '14px', outline: 'none', color: '#1E293B', background: 'white'
 };
 
 export default MediaCMS;

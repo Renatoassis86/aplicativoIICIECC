@@ -170,8 +170,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                          <UserPlus size={18} color="#6366F1" />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '14px', fontWeight: '700' }}>Novo congressista cadastrado via QR</p>
-                        <p style={{ fontSize: '12px', color: '#64748B' }}>Há 4 minutos • VIP Silver</p>
+                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#FFFFFF' }}>Novo congressista cadastrado via QR</p>
+                        <p style={{ fontSize: '12px', color: '#94A3B8' }}>Há 4 minutos • VIP Silver</p>
                       </div>
                       <ChevronRight size={18} color="#CBD5E1" />
                     </div>
@@ -399,7 +399,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
         .stat-card:hover { transform: translateY(-4px); border-color: var(--gold); }
 
-        .stat-label { fontSize: 13px; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .stat-label { fontSize: 13px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
         .stat-value { fontSize: 32px; fontWeight: 900; color: white; letter-spacing: -1px; }
         .stat-trend { fontSize: 11px; fontWeight: 800; padding: 4px 8px; borderRadius: 6px; }
 
@@ -431,8 +431,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .menu-item {
           width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.5); font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 4px; font-size: 14px; text-align: left;
         }
-        .menu-item.active { background: rgba(255,255,255,0.08); color: white; font-weight: 700; }
-        .menu-item:hover:not(.active) { background: rgba(255,255,255,0.03); color: #FFF; }
+        .menu-item.active { background: rgba(255,255,255,0.12); color: white; font-weight: 700; }
+        .menu-item:hover:not(.active) { background: rgba(255,255,255,0.06); color: #FFF; }
 
         .sidebar-footer { padding: 32px 16px; border-top: 1px solid var(--border-color); }
         .footer-btn { width: 100%; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); color: #CBD5E1; border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
@@ -447,7 +447,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .view-title { font-size: 28px; font-weight: 900; color: white; letter-spacing: -1px; font-family: var(--font-serif); }
         .status-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
         .online-indicator { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; box-shadow: 0 0 10px #22C55E; }
-        .status-text { color: rgba(255,255,255,0.5); font-size: 13px; }
+        .status-text { color: rgba(255,255,255,0.8); font-size: 13px; }
 
         .mobile-only { display: none; }
 
@@ -480,6 +480,31 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* Global Contrast Fix for Light Containers */
+        [style*="background: white"], 
+        [style*="background:white"],
+        [style*="background-color: white"],
+        [style*="background-color:white"],
+        .card-main,
+        .white-bg {
+          color: #1E293B !important;
+        }
+
+        [style*="background: white"] h3, 
+        [style*="background: white"] h4,
+        [style*="background: white"] label,
+        [style*="background: white"] p {
+          color: #1E293B !important;
+        }
+
+        input, select, textarea {
+          color: #1E293B !important;
+        }
+
+        .stat-value, .view-title, .sidebar-logo-text h1 {
+          color: white !important;
+        }
       `}} />
     </div>
   );

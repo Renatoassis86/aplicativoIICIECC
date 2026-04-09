@@ -24,19 +24,12 @@
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
-  
-  /* Effects */
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 12px 24px -6px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -44,273 +37,120 @@ body {
   background-color: var(--bg-app);
   color: var(--text-main);
   line-height: 1.6;
-  overscroll-behavior-y: contain;
-  overflow-x: hidden;
-  touch-action: pan-y;
 }
 
-html {
-  overflow-x: hidden;
-  touch-action: manipulation;
+/* 
+   ==========================================================================
+   SISTEMA DE CONTRASTE INTELIGENTE (CMS GUARD)
+   Se o fundo é CLARO -> Fonte ESCURA
+   Se o fundo é ESCURO -> Fonte CLARA
+   ==========================================================================
+*/
+
+/* 1. REGRA PARA FUNDOS CLAROS (Cards, Modais, CMS) */
+[style*="background: white"], 
+[style*="background-color: white"],
+[style*="background:white"],
+[style*="background-color:white"],
+[style*="background:#fff"], 
+[style*="background: #fff"], 
+[style*="background-color:#fff"],
+[style*="background-color: #fff"],
+[style*="background:rgb(255, 255, 255)"],
+[style*="background: rgb(255, 255, 255)"],
+.white-bg, 
+.bg-white,
+.card {
+    background-color: #FFFFFF !important;
 }
 
-button {
-  font-family: var(--font-main);
-  cursor: pointer;
-  border: none;
-  background: none;
-  transition: var(--transition);
+/* Forçar cor escura em TUDO dentro de fundo branco - RESIDÊNCIA MÁXIMA */
+[style*="background: white"] *, 
+[style*="background-color: white"] *,
+[style*="background:white"] *,
+[style*="background-color:white"] *,
+[style*="background:#fff"] *, 
+[style*="background: #fff"] *, 
+.white-bg *, 
+.bg-white *, 
+.card * {
+    color: #1E293B !important;
 }
 
-input {
-  font-family: var(--font-main);
-  outline: none;
-  transition: var(--transition);
+/* Inputs em fundos brancos precisam manter legibilidade */
+[style*="background: white"] input,
+[style*="background: white"] select,
+[style*="background: white"] textarea,
+.card input {
+    color: #1E293B !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 2. REGRA PARA FUNDOS ESCUROS (App Shell, Dark Mode) */
+.admin-portal-shell,
+.admin-portal-container,
+.app-shell,
+.premium-gradient,
+body:has(.admin-portal-shell) {
+    background-color: #0A0F1A !important;
+    color: #E2E8F0 !important;
 }
+
+/* Links e ícones em fundo escuro */
+.admin-portal-shell svg, 
+.admin-portal-shell .lucide {
+    color: #94A3B8;
+}
+
+.admin-portal-shell .active svg {
+    color: var(--primary);
+}
+
+/* 3. EXCEÇÕES NECESSÁRIAS (Badges e Botões Primary) */
+.badge-official, 
+.btn-primary, 
+.btn-primary *,
+[style*="background: var(--primary)"] *,
+[style*="background:var(--primary)"] *,
+button[style*="background: var(--primary)"] {
+    color: #FFFFFF !important;
+}
+
+/* 
+   ==========================================================================
+   UI COMPONENTS
+   ==========================================================================
+*/
 
 .fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* Reusable UI Components */
-.card {
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition);
-  border: 1px solid rgba(0,0,0,0.03);
-}
-
-.card:active {
-  transform: scale(0.98);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .btn-primary {
   background: var(--primary);
-  color: white;
   padding: 14px 24px;
   border-radius: var(--radius-sm);
   font-weight: 700;
-  width: 100%;
-  text-align: center;
   box-shadow: 0 4px 10px rgba(107, 20, 26, 0.2);
 }
 
-.btn-primary:active {
-  transform: translateY(1px);
-  filter: brightness(0.9);
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 8px;
-}
-
-.input-field {
-  width: 100%;
-  padding: 14px;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-}
-
-.input-field:focus {
-  border-color: var(--primary);
-}
-
-/* Premium Visuals */
-.premium-gradient {
-  background: linear-gradient(135deg, #111111 0%, #333333 100%);
-}
-
 .section-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--secondary);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.badge-official {
-  background: var(--primary);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Bottom Nav Refined */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 1000;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: #A0AEC0;
-  font-size: 10px;
-  font-weight: 600;
-  transition: var(--transition);
-  flex: 1;
-}
-
-.nav-item.active {
-  color: var(--primary);
-}
-
-.nav-item.active svg {
-  transform: translateY(-2px);
-}
-
-/* Marquee / Carousel Animation */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.33%); }
-}
-
-.marquee-container {
-  overflow: hidden;
-  width: 100%;
-  position: relative;
-  background: white;
-  padding: 12px 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-}
-
-.marquee-content {
-  display: flex;
-  width: max-content;
-  animation: marquee 30s linear infinite;
-  gap: 30px;
-  padding-left: 30px;
-}
-
-.marquee-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 100px;
-}
-
-/* Unified Modal Overlay System */
-.fixed-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: white;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  animation: modalFadeIn 0.3s ease-out;
-  overflow: hidden;
-  height: 100dvh; /* Force dynamic viewport height */
-}
-
-/* Base class for centered modal on desktop, full on mobile */
-.modal-wrapper {
-  width: 100%;
-  max-width: 430px;
-  margin: 0 auto;
-  position: relative;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: white;
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Accessibility & Mobile Fixes */
-.clickable {
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: all 0.2s ease;
-}
-
-.clickable:active {
-  opacity: 0.6;
-  transform: scale(0.96);
-}
-
-.pulse {
-  border-radius: 50%;
-  animation: pulse-animation 2s infinite;
-}
-
-@keyframes pulse-animation {
-  0% { box-shadow: 0 0 0 0px rgba(107, 20, 26, 0.4); }
-  100% { box-shadow: 0 0 0 20px rgba(107, 20, 26, 0); }
-}
-
-/* Fix for Safari/iOS height issues */
-.tab-layout {
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Bulletproof Full Page Portal */
-.fixed-page-portal {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100dvh !important;
-  z-index: 100000000 !important;
-  background: #04070e;
-  display: flex;
-  flex-direction: column;
-  animation: slideInRightMedia 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@keyframes slideInRightMedia { 
-  from { transform: translateX(100%); } 
-  to { transform: translateX(0); } 
-}
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0A0F1A; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }

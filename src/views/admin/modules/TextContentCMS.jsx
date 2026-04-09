@@ -55,7 +55,7 @@ export default function TextContentCMS() {
   return (
     <div style={{ maxWidth: '1000px' }}>
       <header style={{ marginBottom: '32px' }}>
-        <p style={{ color: '#64748B', marginBottom: '20px' }}>
+        <p style={{ color: '#475569', marginBottom: '20px', fontWeight: '600' }}>
           Gerencie aqui todos os textos, títulos e descrições do aplicativo. 
           Use o formato JSON para objetos complexos.
         </p>
@@ -68,7 +68,7 @@ export default function TextContentCMS() {
             onChange={e => setSearch(e.target.value)}
             style={{ 
               width: '100%', padding: '16px 16px 16px 48px', borderRadius: '16px', 
-              border: '1px solid #E2E8F0', fontSize: '15px' 
+              border: '1px solid #E2E8F0', fontSize: '15px', color: '#1E293B', background: 'white'
             }}
           />
         </div>
@@ -98,7 +98,7 @@ export default function TextContentCMS() {
               style={{ 
                 width: '100%', minHeight: '100px', padding: '16px', borderRadius: '12px', 
                 border: '1px solid #E2E8F0', fontSize: '14px', fontFamily: 'monospace',
-                background: '#F8FAFC', resize: 'vertical'
+                background: '#F8FAFC', color: '#1E293B', resize: 'vertical'
               }}
             />
             

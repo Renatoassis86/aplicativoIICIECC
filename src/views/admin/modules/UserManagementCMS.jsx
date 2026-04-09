@@ -68,10 +68,10 @@ const UserManagementCMS = () => {
             {/* CRIAR USUÁRIO */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#1E293B' }}>
                         <UserPlus size={20} color="var(--primary)" /> Configurar Acesso
                     </h3>
-                    <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
+                    <p style={{ fontSize: '12px', color: '#475569', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div style={inputGroupStyle}>
@@ -142,7 +142,7 @@ const UserManagementCMS = () => {
             {/* LISTAGEM */}
             <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px' }}>Gerenciamento de Usuários</h3>
+                    <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#1E293B' }}>Gerenciamento de Usuários</h3>
                     <button onClick={loadData} style={{ background: 'none', border: 'none', color: '#6366F1', cursor: 'pointer' }}>
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
@@ -172,7 +172,7 @@ const UserManagementCMS = () => {
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <p style={{ fontWeight: '800', fontSize: '14px' }}>{u.name}</p>
+                                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{u.name}</p>
                                     <span style={{ 
                                         padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900',
                                         background: u.user_type === 'admin' ? '#E0E7FF' : '#F1F5F9',
@@ -182,7 +182,7 @@ const UserManagementCMS = () => {
                                         {u.user_type}
                                     </span>
                                 </div>
-                                <p style={{ fontSize: '12px', color: '#64748B' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
+                                <p style={{ fontSize: '12px', color: '#475569' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
                             </div>
                         </div>
                     ))}
@@ -199,7 +199,7 @@ const UserManagementCMS = () => {
 };
 
 const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '8px' };
-const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#475569' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none' };
+const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#1E293B' };
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none', color: '#1E293B', background: 'white' };
 
 export default UserManagementCMS;

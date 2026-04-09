@@ -9,6 +9,8 @@ const ScheduleCMS = () => {
     const [editingSession, setEditingSession] = useState(null);
     const [editingSpeaker, setEditingSpeaker] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [photoSource, setPhotoSource] = useState('link'); // 'link' ou 'upload'
 
     useEffect(() => {
         loadData();
@@ -64,6 +66,12 @@ const ScheduleCMS = () => {
             institution: data.institution
         });
 
+        // Lógica de upload se necessário (a ser integrada com cmsService ou supabase direct)
+        if (!error && photoSource === 'upload' && uploadFile) {
+            // Aqui viria a chamada de upload para o bucket 'speakers'
+            console.log("Upload de foto detectado:", uploadFile);
+        }
+
         if (!error) {
             setEditingSpeaker(null);
             loadData();
@@ -110,7 +118,7 @@ const ScheduleCMS = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                         {sessions.map(s => (
-                            <div key={s.id} style={cardStyle}>
+                            <div key={s.id} className="white-bg" style={cardStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <span style={badgeStyle}>{s.category || 'Palestra'}</span>
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -118,10 +126,12 @@ const ScheduleCMS = () => {
                                         <button onClick={() => deleteItem('agenda_sessions', s.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
                                     </div>
                                 </div>
-                                <h4 style={{ margin: '12px 0 8px', fontWeight: '800' }}>{s.title}</h4>
-                                <div style={metaStyle}><Clock size={14} /> {s.start_time} - {s.end_time}</div>
-                                <div style={metaStyle}><MapPin size={14} /> {s.room || 'Auditório Principal'}</div>
-                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>🎤 {s.speakers.name}</div>}
+                                <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#1E293B', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
+                                <div style={metaStyle}><Clock size={14} color="#64748B" /> {s.start_time} - {s.end_time}</div>
+                                <div style={metaStyle}><MapPin size={14} color="#64748B" /> {s.room || 'Auditório Principal'}</div>
+                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: '#6B141A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ opacity: 0.7 }}>🎤</span> {s.speakers.name}
+                                </div>}
                             </div>
                         ))}
                     </div>
@@ -139,14 +149,14 @@ const ScheduleCMS = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
                         {speakers.map(sp => (
-                            <div key={sp.id} style={cardStyle}>
+                            <div key={sp.id} className="white-bg" style={cardStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                     <button onClick={() => setEditingSpeaker(sp)} style={iconBtnStyle}><Edit2 size={14} /></button>
                                     <button onClick={() => deleteItem('speakers', sp.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
                                     <img src={sp.photo_url || 'https://via.placeholder.com/150'} alt="" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 12px' }} />
-                                    <h4 style={{ fontWeight: '800', margin: '0 0 4px' }}>{sp.name}</h4>
+                                    <h4 style={{ fontWeight: '800', margin: '0 0 4px', color: '#1E293B' }}>{sp.name}</h4>
                                     <p style={{ fontSize: '12px', color: '#64748B' }}>{sp.institution}</p>
                                 </div>
                             </div>
@@ -215,7 +225,30 @@ const ScheduleCMS = () => {
                         <form onSubmit={handleSaveSpeaker} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <input name="name" placeholder="Nome Completo" defaultValue={editingSpeaker.name} required style={inputStyle} />
                             <input name="institution" placeholder="Instituição / Título" defaultValue={editingSpeaker.institution} style={inputStyle} />
-                            <input name="photo_url" placeholder="URL da Foto" defaultValue={editingSpeaker.photo_url} style={inputStyle} />
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Foto do Palestrante</label>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                                        <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                                        <input type="radio" checked={photoSource === 'upload'} onChange={() => setPhotoSource('upload')} /> Upload PC
+                                    </label>
+                                </div>
+                                {photoSource === 'link' ? (
+                                    <input name="photo_url" placeholder="URL da Foto (https://...)" defaultValue={editingSpeaker.photo_url} style={inputStyle} />
+                                ) : (
+                                    <div style={{ border: '2px dashed #CBD5E1', padding: '16px', borderRadius: '12px', textAlign: 'center', background: 'white' }}>
+                                        <input type="file" id="speaker-photo" accept="image/*" onChange={(e) => setUploadFile(e.target.files[0])} style={{ display: 'none' }} />
+                                        <label htmlFor="speaker-photo" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                            <Plus size={20} color="#64748B" />
+                                            <span style={{ fontSize: '12px', fontWeight: '700' }}>{uploadFile ? uploadFile.name : 'Selecionar Foto no PC'}</span>
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+
                             <textarea name="bio" placeholder="Mini Bio" defaultValue={editingSpeaker.bio} style={{ ...inputStyle, minHeight: '120px' }} />
                             
                             <button type="submit" disabled={loading} style={btnSaveStyle}>
@@ -229,18 +262,18 @@ const ScheduleCMS = () => {
     );
 };
 
-const tabStyle = { padding: '12px 24px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B' };
+const tabStyle = { padding: '12px 24px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#1E293B' };
 const activeTabStyle = { ...tabStyle, background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' };
 const btnPlusStyle = { padding: '10px 18px', borderRadius: '10px', background: 'var(--secondary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' };
-const cardStyle = { background: 'white', padding: '24px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #F1F5F9' };
+const cardStyle = { backgroundColor: 'white', padding: '24px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #F1F5F9' };
 const badgeStyle = { fontSize: '10px', fontWeight: '900', color: '#6366F1', background: '#EEF2FF', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
-const iconBtnStyle = { width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B', background: 'white' };
+const iconBtnStyle = { width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#445569', background: 'white' };
 const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: '#FEE2E2' };
-const metaStyle = { fontSize: '13px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' };
+const metaStyle = { fontSize: '13px', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '700' };
 const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
-const modalStyle = { background: 'white', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none' };
-const labelStyle = { fontSize: '12px', fontWeight: '700', color: '#94A3B8', marginBottom: '4px', display: 'block' };
+const modalStyle = { backgroundColor: 'white', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', color: '#1E293B' };
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none', color: '#1E293B', backgroundColor: 'white' };
+const labelStyle = { fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px', display: 'block' };
 const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px' };
 
 export default ScheduleCMS;

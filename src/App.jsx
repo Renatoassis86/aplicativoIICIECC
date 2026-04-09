@@ -24,9 +24,11 @@ function App() {
     console.log("[App] Iniciando verificação de autenticação...");
     const checkPersistedAuth = async () => {
       try {
-        // 0. Detecção de URL Admin Direta
+        // 0. Detecção de URL Admin Direta (Query ou Pathname)
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('admin') === 'true') {
+        const isPathAdmin = window.location.pathname.endsWith('/admin');
+        
+        if (urlParams.get('admin') === 'true' || isPathAdmin) {
           console.log("[App] Modo Admin Direto detectado via URL");
           setAuthStatus('admin-portal');
           return;
