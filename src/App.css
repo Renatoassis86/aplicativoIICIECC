@@ -1,0 +1,61 @@
+
+/* App Shell & Layout Wrappers */
+.app-shell {
+  background: #f0f2f5;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop Portal Structure */
+@media (min-width: 1025px) {
+  .admin-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background: #0A0F1A;
+  }
+  
+  .mobile-wrapper {
+     /* No desktop, o mobile-wrapper vira um simulador opcional ou desaparece se quisermos full width */
+     width: 100%;
+     max-width: none; 
+     margin: 0;
+     box-shadow: none;
+     border-radius: 0;
+  }
+  
+  .app-content-wide {
+     flex: 1;
+     width: 100%;
+     max-width: 1600px;
+     margin: 0 auto;
+     padding: 20px;
+  }
+}
+
+/* Mobile Wrapper (Phone Simulation on Small Screen or explicit) */
+@media (max-width: 1024px) {
+  .mobile-wrapper {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 430px) {
+  .mobile-wrapper {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }

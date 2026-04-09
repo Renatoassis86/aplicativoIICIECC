@@ -64,9 +64,8 @@ const MediaCMS = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Excluir esta mídia permanentemente?')) return;
     try {
-      // Nota: Implementar delete no cmsService se necessário, 
-      // por enquanto vamos usar supabase direto para prototipar rápido
-      const { error } = await cmsService.cms.deleteMedia(id); // Supomos que adicionei ao service
+      // Nota: O método deleteMedia deve estar presente no cmsService
+      const { error } = await cmsService.deleteMedia(id); 
       if (error) throw error;
       loadMedia();
     } catch (e) {

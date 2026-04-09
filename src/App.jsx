@@ -8,6 +8,8 @@ import QuestionnaireController from './views/questionnaires/QuestionnaireControl
 import AdminImportView from './views/admin/AdminImportView';
 import AdminPortalView from './views/admin/AdminPortalView';
 
+import './App.css';
+
 function App() {
   const [authStatus, setAuthStatus] = useState('loading'); 
   const [view, setView] = useState('app'); // 'app' ou 'admin-portal'
@@ -15,27 +17,34 @@ function App() {
   const [currentUserCpf, setCurrentUserCpf] = useState(null);
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState(null);
+  const [errorState, setErrorState] = useState(null);
 
   // Carregar estado inicial
   useEffect(() => {
+    console.log("[App] Iniciando verificação de autenticação...");
     const checkPersistedAuth = async () => {
-      // 0. Detecção de URL Admin Direta
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'true') {
-        setAuthStatus('admin-portal');
-        return;
-      }
-
-      const savedCpf = localStorage.getItem('current_user_cpf');
-      if (!savedCpf) {
-        setAuthStatus('logged-out');
-        return;
-      }
-
-      setCurrentUserCpf(savedCpf);
       try {
-        const { data: member } = await supabase.from('members').select('name').eq('cpf', savedCpf).single();
+        // 0. Detecção de URL Admin Direta
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'true') {
+          console.log("[App] Modo Admin Direto detectado via URL");
+          setAuthStatus('admin-portal');
+          return;
+        }
+
+        const savedCpf = localStorage.getItem('current_user_cpf');
+        if (!savedCpf) {
+          console.log("[App] Nenhum CPF salvo. Indo para logged-out.");
+          setAuthStatus('logged-out');
+          return;
+        }
+
+        console.log("[App] CPF salvo encontrado:", savedCpf);
+        setCurrentUserCpf(savedCpf);
+        
+        const { data: member, error: memberErr } = await supabase.from('members').select('name').eq('cpf', savedCpf).single();
         if (member) setUserName(member.name);
+        if (memberErr) console.warn("[App] Erro ao buscar membro:", memberErr);
 
         const { data: profile, error } = await supabase
           .from('profiles')
@@ -44,20 +53,25 @@ function App() {
           .single();
 
         if (error || !profile) {
+          console.log("[App] Perfil não encontrado ou erro. Indo para logged-out.");
           setAuthStatus('logged-out');
           return;
         }
 
+        console.log("[App] Perfil carregado:", profile.user_type);
         const canBypassInitial = profile.onboarding_completed || 
-          profile.user_type === 'organizador' || 
-          profile.user_type === 'admin' || 
-          profile.user_type === 'staff' || 
+          ['organizador', 'admin', 'staff'].includes(profile.user_type) || 
           profile.user_type?.includes('patrocinador');
 
         if (canBypassInitial) {
           setSelectedType(profile.user_type || 'congressista');
           setUserAvatar(profile.avatar_url);
           setAuthStatus('logged-in');
+          
+          // Se for organizador e estiver no desktop, abre o portal
+          if (profile.user_type === 'organizador' && window.innerWidth > 1024) {
+            setView('admin-portal');
+          }
         } else if (profile.user_type) {
           setSelectedType(profile.user_type);
           setUserAvatar(profile.avatar_url);
@@ -67,13 +81,19 @@ function App() {
         } else {
           setAuthStatus('reset-password');
         }
-      } catch (_) {
+      } catch (err) {
+        console.error("[App] Erro fatal na inicialização:", err);
+        setErrorState(err.message);
         setAuthStatus('logged-out');
       }
     };
 
     checkPersistedAuth();
   }, []);
+
+  if (errorState) {
+    return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
+  }
 
   const handleLogin = async (cpf, password) => {
     setAuthStatus('loading');
@@ -308,62 +328,6 @@ function App() {
         </div>
       )}
 
-      <style dangerouslySetInnerHTML={{__html: `
-        .app-shell {
-          background: #f0f2f5;
-          min-height: 100vh;
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-
-        /* Desktop Portal Structure */
-        @media (min-width: 1025px) {
-          .desktop-portal {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-            background: #F4F7FE;
-          }
-          .mobile-wrapper {
-             /* No desktop, o mobile-wrapper vira um simulador opcional ou desaparece se quisermos full width */
-             width: 100%;
-             max-width: none; 
-             margin: 0;
-             box-shadow: none;
-             border-radius: 0;
-          }
-          .app-content-wide {
-             flex: 1;
-             width: 100%;
-             max-width: 1600px;
-             margin: 0 auto;
-             padding: 20px;
-          }
-        }
-
-        /* Mobile Wrapper (Phone Simulation on Small Screen or explicit) */
-        @media (max-width: 1024px) {
-          .mobile-wrapper {
-            width: 100%;
-            max-width: 430px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            position: relative;
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-          }
-        }
-        @media (max-width: 430px) {
-          .mobile-wrapper {
-            max-width: 100%;
-            box-shadow: none;
-          }
-        }
-      `}} />
     </div>
   );
 }
