@@ -145,6 +145,20 @@ const AdminImportView = ({ onBackToApp }) => {
     setImportResult(null);
   };
 
+  // Função para baixar planilha modelo
+  const downloadTemplate = () => {
+    const headers = "CPF;Nome;Email;Data de Nascimento;Tipo Inscricao";
+    const example = "00000000000;NOME DO CONGRESSISTA;exemplo@email.com;01/01/1990;Presencial Padrão";
+    const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + example;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "modelo_importacao_ciecc.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="admin-container fade-in" style={{
       minHeight: '100vh',
@@ -162,13 +176,13 @@ const AdminImportView = ({ onBackToApp }) => {
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <img src="/logo.png" alt="CIECC" style={{ height: '40px', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="CIECC" style={{ height: '40px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', m: 0 }}>Portal Admin</h1>
+            <h1 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>Portal Admin</h1>
             <p style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: '600' }}>Importação Massiva ('members')</p>
           </div>
         </div>
-        <button onClick={onBackToApp} style={{ color: 'white' }}>
+        <button onClick={onBackToApp} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
           <LogOut size={24} />
         </button>
       </header>
@@ -177,18 +191,19 @@ const AdminImportView = ({ onBackToApp }) => {
         
         {/* === STEP 1: UPLOAD === */}
         {step === 1 && (
-          <div className="card fade-in" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="card fade-in" style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '24px' }}>
             <div style={{
               width: '80px', height: '80px', borderRadius: '50%',
-              background: 'rgba(107, 20, 26, 0.05)',
+              background: 'var(--accent)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 24px'
             }}>
               <Upload size={32} color="var(--primary)" />
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>Importar Planilha</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px', marginBottom: '32px' }}>
-              Faça upload do seu arquivo .CSV ou .XLSX contendo os CPFs e Nomes dos congressistas.
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '12px' }}>Importar Congressistas</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '400px', margin: '0 auto 32px' }}>
+              Suba a lista de inscritos para liberar o acesso ao aplicativo. <br/>
+              O CPF será o login e a senha inicial será <strong>congresso2026</strong>.
             </p>
             
             <input 
@@ -198,14 +213,27 @@ const AdminImportView = ({ onBackToApp }) => {
               style={{ display: 'none' }}
               onChange={handleFileUpload}
             />
-            <button 
-              className="btn-primary" 
-              style={{ maxWidth: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '0 auto' }}
-              onClick={() => fileInputRef.current.click()}
-            >
-              <FileText size={18} />
-              Selecionar Arquivo
-            </button>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+              <button 
+                className="btn-primary" 
+                style={{ width: '100%', maxWidth: '320px' }}
+                onClick={() => fileInputRef.current.click()}
+              >
+                <FileText size={18} />
+                Selecionar Planilha do Computador
+              </button>
+
+              <button 
+                onClick={downloadTemplate}
+                style={{ 
+                  background: 'transparent', border: 'none', color: 'var(--primary)', 
+                  fontSize: '13px', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer' 
+                }}
+              >
+                Baixar Planilha Modelo (.CSV)
+              </button>
+            </div>
           </div>
         )}
 

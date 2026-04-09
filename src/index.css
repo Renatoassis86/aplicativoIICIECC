@@ -93,8 +93,24 @@ body {
     color: #FFFFFF !important;
 }
 
-.btn-secondary, .btn-secondary * {
-    color: #1A202C !important;
+.btn-primary {
+    background-color: var(--primary) !important;
+    border: none !important;
+    padding: 14px 24px !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 20, 26, 0.2);
 }
 
 /* 

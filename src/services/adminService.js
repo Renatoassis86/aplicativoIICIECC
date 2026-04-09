@@ -16,19 +16,32 @@ export const bulkImportMembers = async (membersArray) => {
       updated_at: new Date().toISOString()
     }));
 
-    // Executa e insere lote de usuários no banco de dados.
-    // 'onConflict' na coluna CPF exige que a tabela esteja com CPF configurado como UNIQUE id
-    const { data, error } = await supabase
+    // 1. Executa e insere lote de usuários na tabela de membros
+    const { data: members, error: membersErr } = await supabase
       .from('members')
       .upsert(payload, { onConflict: 'cpf' })
       .select();
 
-    if (error) {
-      console.error('Erro no Supabase Bulk Import:', error);
-      throw error;
-    }
+    if (membersErr) throw membersErr;
 
-    return { success: true, count: payload.length, data };
+    // 2. Garante que todos existam na tabela de perfis com a senha padrão 'congresso2026'
+    // e flag de password_reset: true (Exige troca na entrada)
+    const profilesPayload = payload.map(m => ({
+      cpf: m.cpf,
+      user_type: 'congressista',
+      onboarding_completed: true,
+      password_reset: true,      
+      current_password: 'congresso2026',
+      updated_at: new Date().toISOString()
+    }));
+
+    const { error: profilesErr } = await supabase
+      .from('profiles')
+      .upsert(profilesPayload, { onConflict: 'cpf' });
+
+    if (profilesErr) throw profilesErr;
+
+    return { success: true, count: payload.length, data: members };
   } catch (error) {
     console.error('Falha genérica no adminService:', error);
     return { success: false, error: error.message };
