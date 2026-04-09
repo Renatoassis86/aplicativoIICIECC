@@ -282,7 +282,16 @@ function App() {
             
             {/* ADMIN FLOWS */}
             {authStatus === 'admin-portal' && (
-              <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
+              window.innerWidth > 1024 ? (
+                <AdminPortalView 
+                  onLogout={handleLogout}
+                  onBackToApp={() => setAuthStatus('logged-out')}
+                  userName="Acesso Direto Admin"
+                  userCpf="ADMIN-URL"
+                />
+              ) : (
+                <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
+              )
             )}
             
             {(authStatus === 'logged-in' && view === 'admin-portal') && (
