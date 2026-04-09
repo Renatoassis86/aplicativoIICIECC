@@ -82,11 +82,11 @@ const processPostsResponse = async (rawPosts, userId) => {
       const pLikes = (engagements || []).filter(e => e.type === 'like' && e.post_id === post.id);
       const pSaves = (engagements || []).filter(e => e.type === 'save' && e.post_id === post.id);
 
-      // Hydrate Tagged Users (busca nomes dos IDs)
+      // Hydrate Tagged Users (busca nomes dos CPFs)
       let taggedUsersNames = [];
       if (post.tagged_user_ids && post.tagged_user_ids.length > 0) {
-        const { data: profiles } = await supabase.from('profiles').select('full_name').in('id', post.tagged_user_ids);
-        taggedUsersNames = (profiles || []).map(p => p.full_name);
+        const { data: memberData } = await supabase.from('members').select('name').in('cpf', post.tagged_user_ids);
+        taggedUsersNames = (memberData || []).map(m => m.name);
       }
 
       return {
@@ -137,7 +137,7 @@ export const createPost = async (authorName, authorRole, authorTier, contentType
     const notifications = taggedUserIds.map(targetId => ({
       title: "Você foi marcado!",
       message: `${authorName} marcou você em uma nova publicação no feed.`,
-      target_user_id: targetId, // Novo campo pessoal nas notificações
+      target_user_cpf: targetId, // CPF do congressista
       type: 'tag',
       author_id: userId,
       target_role: 'congressista' // Fallback para role geral
@@ -158,13 +158,18 @@ export const searchUsers = async (query) => {
   
   try {
     const { data, error } = await supabase
-      .from('profiles') // Ajustado para tabela de perfis central
-      .select('id, full_name, role, avatar_url')
-      .ilike('full_name', `%${query}%`)
-      .limit(8);
+      .from('members') 
+      .select('cpf, name')
+      .ilike('name', `%${query}%`)
+      .limit(10);
       
     if (error) throw error;
-    return data || [];
+    // Map to normalized format
+    return (data || []).map(u => ({
+      id: u.cpf,
+      full_name: u.name,
+      role: 'Participante'
+    }));
   } catch (err) {
     console.error("[SocialService] searchUsers error:", err);
     return [];

@@ -124,7 +124,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
       case 'agenda': return 'Agenda Geral';
       case 'network': return 'Networking';
       case 'media': return 'CIECC Mídia';
-      case 'feed': return 'Feed Social';
+      case 'feed': return 'Conectar';
       case 'more': return 'Ajustes e Mais';
       default: return '';
     }
@@ -165,7 +165,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onClick={() => setActiveTab('feed')}
         >
           <Image size={22} />
-          <span>CONEXÕES</span>
+          <span>Conectar</span>
         </button>
         <button 
           className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`} 

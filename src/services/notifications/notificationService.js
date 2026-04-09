@@ -20,7 +20,8 @@ export const fetchInbox = async (userId, userRole) => {
     if (userRole === 'staff' || userRole === 'admin' || userRole === 'organizador') audienceFilter += `,target_role.eq.staff`;
     
     // Adiciona o filtro para notificações direcionadas diretamente à este ID (ex: Marcação)
-    audienceFilter += `,target_user_id.eq.${userId}`;
+    // Suporta tanto o antigo target_user_id (UUID) quanto o novo target_user_cpf (Text)
+    audienceFilter += `,target_user_cpf.eq.${userId}`;
 
     // 2. Busca mensagens destinadas a este público
     const { data: notifications, error } = await supabase

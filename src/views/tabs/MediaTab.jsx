@@ -39,14 +39,14 @@ export default function MediaTab({ userType, userName, userCpf }) {
     if (roleId.includes('patrocinador') || roleId.includes('sponsor')) return { role: 'Patrocinador', tier: 1 };
 
     return { 
-      role: type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Participante', 
+      role: type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Congressista', 
       tier: 0 
     };
   };
 
   const authorMeta = getAuthorMetaData(userType);
-  const allowedRoles = ['expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
-  const canPost = allowedRoles.some(role => (userType || 'congressista').toLowerCase().includes(role));
+  const allowedRoles = ['congressista', 'participante', 'expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
+  const canPost = true; // No "Instagram", todos podem postar para gerar conexões. Somente patrocinadores/staff tem selos especiais.
 
   const loadPosts = async () => {
     setLoading(true);

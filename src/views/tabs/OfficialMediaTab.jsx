@@ -1,13 +1,48 @@
 import React from 'react';
 import { 
   X,
-  ChevronLeft
+  ChevronLeft,
+  Radio
 } from 'lucide-react';
 import { memories2025 } from '../../data/memories2025';
 import MemoriesMarquee from '../../components/media/MemoriesMarquee';
+import { useCMS } from '../../hooks/useCMS';
+import { supabase } from '../../lib/supabase';
 
 const OfficialMediaTab = ({ onOpenMedia }) => {
+  const { cms } = useCMS();
+  const [mediaList, setMediaList] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadMedia = async () => {
+      const data = await cms.getMedia();
+      setMediaList(data);
+      setLoading(false);
+    };
+    loadMedia();
+  }, [cms]);
+
   const getDriveUrl = (id) => `https://lh3.googleusercontent.com/d/${id}`;
+
+  const getImageUrl = (item) => {
+    if (item.source_type === 'link') {
+      if (item.url_or_path.includes('youtube.com') || item.url_or_path.includes('youtu.be')) {
+        const id = item.url_or_path.split('v=')[1] || item.url_or_path.split('/').pop();
+        return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+      }
+      return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop'; // Default
+    }
+    // Para uploads, pegar URL pública do Supabase
+    const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
+    return data.publicUrl;
+  };
+
+  const getMediaUrl = (item) => {
+    if (item.source_type === 'link') return item.url_or_path;
+    const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
+    return data.publicUrl;
+  };
 
   // FOTOS EM TEMPO REAL (II CIECC 2026)
   const livePhotos = [
@@ -17,32 +52,23 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     { id: '1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx', label: 'AO VIVO: Coffee Break', url: getDriveUrl('1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx') }
   ];
 
-  // MEMÓRIAS (I CIECC 2025) - Agora usa a base completa via MemoriesMarquee
+  const interviews = mediaList.filter(m => m.media_type === 'video' && !m.is_live_stream).map(m => ({
+    id: m.id,
+    url: getImageUrl(m),
+    videoUrl: getMediaUrl(m),
+    title: m.title,
+    type: 'video'
+  }));
 
-  const openGallery = (index, source) => {
-    const gallery = source === 'live' ? livePhotos : memories2025;
-    const title = source === 'live' ? 'II CIECC • AO VIVO' : 'I CIECC • Memórias 2025';
-    const id = `gallery-${source}`;
-    
-    onOpenMedia({
-      id,
-      type: 'gallery',
-      photos: gallery,
-      startIndex: index,
-      title: title
-    });
-  };
+  const podcasts = mediaList.filter(m => m.media_type === 'audio').map(m => ({
+    id: m.id,
+    url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=200&h=200&fit=crop',
+    audioUrl: getMediaUrl(m),
+    title: m.title,
+    type: 'podcast'
+  }));
 
-  const interviews = [
-    { id: 'story5', url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', title: 'Dr. Schlect', type: 'story' },
-    { id: 'story10', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop', videoUrl: 'https://www.youtube.com/embed/fcqS1WTO9ds', title: 'Thiago Dutra', type: 'story' },
-    { id: 'story12', url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop', videoUrl: 'https://www.w3schools.com/html/movie.mp4', title: 'Ana Paula', type: 'story' },
-  ];
-
-  const podcasts = [
-    { id: 'pod201', title: 'Artes Liberais', url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=200&h=200&fit=crop', type: 'podcast' },
-    { id: 'pod202', title: 'Educação Clássica', url: 'https://images.unsplash.com/photo-1491843331657-f050bc7013d2?w=200&h=200&fit=crop', type: 'podcast' },
-  ];
+  const liveStream = mediaList.find(m => m.is_live_stream);
 
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '90px' }}>
@@ -74,10 +100,17 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
              width: '100%', borderRadius: '24px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', 
              boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.05)'
            }}>
-             <iframe 
-               width="100%" height="100%" src="https://www.youtube.com/embed/t5CB9rnexOY?modestbranding=1&rel=0" 
-               title="Live" frameBorder="0" allowFullScreen
-             ></iframe>
+             {liveStream ? (
+               <iframe 
+                 width="100%" height="100%" src={liveStream.url_or_path.includes('youtube') && !liveStream.url_or_path.includes('embed') ? `https://www.youtube.com/embed/${liveStream.url_or_path.split('v=')[1]}` : liveStream.url_or_path} 
+                 title="Live" frameBorder="0" allowFullScreen
+               ></iframe>
+             ) : (
+               <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+                  <Radio size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+                  <p>Nenhuma transmissão ativa no momento.</p>
+               </div>
+             )}
            </div>
         </div>
 
@@ -119,16 +152,18 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>Entrevistas Exclusivas</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
-              {interviews.map(item => (
+              {interviews.length > 0 ? interviews.map(item => (
                 <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
                   <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--gold)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
                       <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                     </div>
                   </div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{item.title}</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
                 </div>
-              ))}
+              )) : (
+                <p style={{ fontSize: '12px', color: '#999' }}>Nenhuma entrevista disponível.</p>
+              )}
            </div>
         </div>
 
@@ -136,16 +171,18 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         <div style={{ marginBottom: '40px' }}>
            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>CIECC Podcasts</h3>
            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
-              {podcasts.map(item => (
+              {podcasts.length > 0 ? podcasts.map(item => (
                 <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
                   <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
                       <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                     </div>
                   </div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{item.title}</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
                 </div>
-              ))}
+              )) : (
+                <p style={{ fontSize: '12px', color: '#999' }}>Nenhum podcast disponível.</p>
+              )}
            </div>
         </div>
 

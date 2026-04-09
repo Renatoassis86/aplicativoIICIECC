@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Hub central para persistência de imagens no App.
@@ -12,8 +13,35 @@ export const ImagePersistenceService = {
    * com fallback robusto para Web (Input HTML5)
    */
   async capturePhoto(source = CameraSource.Prompt) {
+    // 1. Fallback imediato para Web se não estiver em plataforma nativa
+    // Isso garante que o gesto do usuário seja respeitado para abrir o Seletor/Câmera
+    if (!Capacitor.isNativePlatform()) {
+      return new Promise((resolve) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*,video/*';
+        
+        if (source === CameraSource.Camera) {
+          input.setAttribute('capture', 'environment');
+        }
+        
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return resolve(null);
+          
+          resolve({
+            webPath: URL.createObjectURL(file),
+            blob: file, 
+            format: file.name ? file.name.split('.').pop() : file.type.split('/')[1]
+          });
+        };
+        
+        input.click();
+      });
+    }
+
+    // 2. Modo Nativo (Capacitor) para iOS/Android
     try {
-      // 1. Tentar Modo Nativo (Capacitor)
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: true,
@@ -32,39 +60,8 @@ export const ImagePersistenceService = {
         format: image.format
       };
     } catch (err) {
-      console.warn("[ImagePersistence] Nativo falhou ou cancelado, tentando Web Fallback...", err);
-      
-      // Se for apenas cancelado pelo usuário, parar aqui
-      if (err.message?.includes('User cancelled')) return null;
-
-      // 2. Fallback para Web (input invisível)
-      return new Promise((resolve) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        
-        input.onchange = async (e) => {
-          const file = e.target.files[0];
-          if (!file) return resolve(null);
-
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const dataUrl = reader.result;
-            const res = await fetch(dataUrl);
-            const blob = await res.blob();
-            
-            resolve({
-              webPath: dataUrl,
-              blob: blob,
-              format: file.type.split('/')[1]
-            });
-          };
-          reader.readAsDataURL(file);
-        };
-
-        // Simula clique
-        input.click();
-      });
+      console.warn("[ImagePersistence] Nativo falhou ou cancelado:", err);
+      return null;
     }
   },
 

@@ -11,7 +11,7 @@ const AdminImportView = ({ onBackToApp }) => {
   const [columns, setColumns] = useState([]);
   
   // Mapeamento: chave interna -> nome da coluna no arquivo
-  const [mapping, setMapping] = useState({ cpf: '', name: '', ticket_type: '' });
+  const [mapping, setMapping] = useState({ cpf: '', name: '', email: '', birth_date: '', ticket_type: '' });
   
   // Filas validadas
   const [validRows, setValidRows] = useState([]);
@@ -69,6 +69,8 @@ const AdminImportView = ({ onBackToApp }) => {
       const lower = h.toString().toLowerCase();
       if (lower.includes('cpf')) initialMap.cpf = h;
       else if (lower.includes('nome') || lower.includes('name')) initialMap.name = h;
+      else if (lower.includes('email') || lower.includes('e-mail')) initialMap.email = h;
+      else if (lower.includes('nasc') || lower.includes('birth')) initialMap.birth_date = h;
       else if (lower.includes('tipo') || lower.includes('ticket')) initialMap.ticket_type = h;
     });
     setMapping(initialMap);
@@ -95,6 +97,8 @@ const AdminImportView = ({ onBackToApp }) => {
         valids.push({
           cpf: cleanCpf,
           name: rawName,
+          email: mapping.email ? row[mapping.email] : null,
+          birth_date: mapping.birth_date ? row[mapping.birth_date] : null,
           ticket_type: mapping.ticket_type ? row[mapping.ticket_type] : 'Presencial Padrão',
           originalRow: index + 2
         });
@@ -135,6 +139,7 @@ const AdminImportView = ({ onBackToApp }) => {
     setStep(1);
     setFile(null);
     setRawData([]);
+    setMapping({ cpf: '', name: '', email: '', birth_date: '', ticket_type: '' });
     setValidRows([]);
     setInvalidRows([]);
     setImportResult(null);
@@ -235,6 +240,30 @@ const AdminImportView = ({ onBackToApp }) => {
                   onChange={(e) => setMapping({...mapping, name: e.target.value})}
                 >
                   <option value="">Selecione a coluna...</option>
+                  {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className="input-group" style={{ margin: 0 }}>
+                <label className="input-label">E-mail (Opcional)</label>
+                <select 
+                  className="input-field" 
+                  value={mapping.email} 
+                  onChange={(e) => setMapping({...mapping, email: e.target.value})}
+                >
+                  <option value="">Ignorar ou selecione...</option>
+                  {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className="input-group" style={{ margin: 0 }}>
+                <label className="input-label">Data de Nascimento (Opcional)</label>
+                <select 
+                  className="input-field" 
+                  value={mapping.birth_date} 
+                  onChange={(e) => setMapping({...mapping, birth_date: e.target.value})}
+                >
+                  <option value="">Ignorar ou selecione...</option>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>

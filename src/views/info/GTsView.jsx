@@ -1,7 +1,14 @@
 import React from 'react';
 import { ArrowLeft, BookOpen, ExternalLink, Send, Info, Award, Calendar, MapPin } from 'lucide-react';
 
+import { useContent } from '../../hooks/useContent';
+
 const GTsView = ({ onClose }) => {
+  const { content: revista } = useContent('gts', 'gts_revista_summae');
+  const { content: eixos } = useContent('gts', 'gts_eixos_tematicos');
+  const { content: prazos } = useContent('gts', 'gts_prazos');
+  const { content: premiacoes } = useContent('gts', 'gts_premiacoes');
+
   return (
     <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
       <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
@@ -45,31 +52,30 @@ const GTsView = ({ onClose }) => {
           </div>
 
           {/* Seção 1: Revista Summae Sapientiae */}
-          <section className="card" style={{ padding: '24px', marginBottom: '24px', borderLeft: '4px solid var(--gold)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px' }}>
-                <BookOpen size={24} color="var(--primary)" />
+          {revista && (
+            <section className="card" style={{ padding: '24px', marginBottom: '24px', borderLeft: '4px solid var(--gold)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px' }}>
+                  <BookOpen size={24} color="var(--primary)" />
+                </div>
+                <h4 style={{ fontSize: '17px', fontWeight: '900', color: 'var(--secondary)' }}>{revista.title}</h4>
               </div>
-              <h4 style={{ fontSize: '17px', fontWeight: '900', color: 'var(--secondary)' }}>Revista Summae Sapientiae</h4>
-            </div>
-            
-            <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', marginBottom: '20px' }}>
-              A equipe editorial da Revista <strong>Summae Sapientiae</strong> tem o prazer de anunciar a chamada para o dossiê temático: <strong>Educação Cristã Clássica</strong>. Este número especial busca investigar as bases filosóficas, históricas e práticas desse modelo educacional.
-            </p>
+              
+              <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', marginBottom: '20px' }}
+                 dangerouslySetInnerHTML={{ __html: revista.description }} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button 
-                onClick={() => window.open('https://periodicos.ficv.edu.br/summaesapientiae/issue/view/9/16', '_blank')}
-                style={{ background: 'var(--secondary)', color: 'white', padding: '14px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                <ExternalLink size={18} /> Veja a edição do CIECC 2025
-              </button>
-              <button 
-                onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/chamada-dossie.html', '_blank')}
-                style={{ background: 'var(--primary)', color: 'white', padding: '14px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                <Send size={18} /> Chamada de artigos CIECC 2026
-              </button>
-            </div>
-          </section>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {revista.links?.map((link, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => window.open(link.url, '_blank')}
+                    style={{ background: link.type === 'primary' ? 'var(--primary)' : 'var(--secondary)', color: 'white', padding: '14px', borderRadius: '12px', fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    {link.type === 'primary' ? <Send size={18} /> : <ExternalLink size={18} />} {link.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Seção 2: Grupos de Trabalho (GTs) */}
           <section className="card" style={{ padding: '24px', marginBottom: '24px' }}>
@@ -98,12 +104,7 @@ const GTsView = ({ onClose }) => {
             {/* Listagem de GTs */}
             <h5 style={{ fontSize: '13px', fontWeight: '900', marginBottom: '16px', textTransform: 'uppercase', color: 'var(--secondary)' }}>Eixos Temáticos:</h5>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-              {[
-                { n: 1, t: 'História da Educação Cristã Clássica', d: 'Reflexões teóricas, históricas e filosóficas.' },
-                { n: 2, t: 'Educação e Virtude', d: 'Estudos sobre formação moral, caráter e ética.' },
-                { n: 3, t: 'Métodos e Práticas Pedagógicas', d: 'Investigação sobre método clássico, trivium, quadrivium e línguas.' },
-                { n: 4, t: 'Educação Clássica na Sociedade', d: 'Impacto na cultura contemporânea e desafios.' }
-              ].map(gt => (
+              {eixos?.map(gt => (
                 <div key={gt.n} style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
                   <p style={{ fontSize: '14px', fontWeight: '900', color: 'var(--primary)' }}>GT {gt.n} - {gt.t}</p>
                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{gt.d}</p>
@@ -117,11 +118,13 @@ const GTsView = ({ onClose }) => {
                   <Calendar size={18} color="#E53E3E" />
                   <p style={{ fontSize: '13px', fontWeight: '800', color: '#C53030' }}>Prazos Importantes</p>
                </div>
-               <p style={{ fontSize: '12px', color: '#742A2A', lineHeight: '1.4' }}>
-                 • <strong>Submissões até:</strong> 10/04/2026 às 23h59 <br/>
-                 • <strong>Resultados:</strong> 20/04/2026 <br/>
-                 • <strong>Evento:</strong> 01 e 02 de maio de 2026
-               </p>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                 {prazos?.map((prazo, idx) => (
+                   <p key={idx} style={{ fontSize: '12px', color: '#742A2A', lineHeight: '1.4' }}>
+                     • <strong>{prazo.label}:</strong> {prazo.value}
+                   </p>
+                 ))}
+               </div>
             </div>
 
             <button 
@@ -135,14 +138,12 @@ const GTsView = ({ onClose }) => {
           <section className="card" style={{ padding: '24px', marginBottom: '24px', background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)', color: 'white' }}>
             <h4 style={{ fontSize: '17px', fontWeight: '900', marginBottom: '16px', color: 'var(--gold)' }}>Premiações (Modalidade Artigos)</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ minWidth: '24px', height: '24px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div>
-                <p style={{ fontSize: '13px', lineHeight: '1.4' }}><strong>Isenção de taxa:</strong> Gratuidade na inscrição para o II CIECC da FICV para autores aprovados.</p>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ minWidth: '24px', height: '24px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div>
-                <p style={{ fontSize: '13px', lineHeight: '1.4' }}><strong>Bolsa de Pós-Graduação:</strong> Os melhores artigos receberão uma Bolsa Integral para qualquer Pós da FICV.</p>
-              </div>
+              {premiacoes?.map((premio, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ minWidth: '24px', height: '24px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div>
+                  <p style={{ fontSize: '13px', lineHeight: '1.4' }}><strong>{premio.label}:</strong> {premio.description}</p>
+                </div>
+              ))}
             </div>
           </section>
 

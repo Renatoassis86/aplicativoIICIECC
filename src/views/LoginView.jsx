@@ -65,138 +65,334 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
   }
 
   return (
-    <div className="login-screen" style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      padding: '24px',
-      background: 'url("/hero.png") center/cover no-repeat',
-      position: 'relative'
+    <div className="login-page" style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      width: '100vw', 
+      height: '100vh', 
+      zIndex: 99999,
+      background: '#0A0F1A'
     }}>
-      <div className="overlay" style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, bottom: 0,
-        background: 'linear-gradient(to top, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.8) 50%, rgba(17,17,17,0.4) 100%)',
-        zIndex: 1
-      }}></div>
-
-      <div className="login-content fade-in" style={{ zIndex: 2, textAlign: 'center' }}>
-        <div style={{ marginBottom: '40px' }}>
-          <img 
-            src="/logo.png" 
-            alt="CIECC" 
-            style={{ 
-              width: '80%', 
-              maxWidth: '280px',
-              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))' 
-            }} 
-          />
+      <div className="login-container">
+        
+        {/* LEFT SIDE: Branding/Hero (Desktop Only) */}
+        <div className="login-hero-side">
+          <div className="hero-overlay"></div>
+          <div className="hero-content">
+            <img 
+              src="/logo.png" 
+              alt="CIECC" 
+              className="desktop-logo"
+            />
+            <div className="hero-text">
+              <h1 className="hero-title">Educação que permanece.</h1>
+              <p className="hero-subtitle">II Congresso Internacional de Educação Cristã Clássica</p>
+            </div>
+            
+            <div className="hero-footer">
+               <div className="location-badge">São Paulo, SP</div>
+               <div className="date-badge">01 e 02 de Maio, 2026</div>
+            </div>
+          </div>
         </div>
 
-        <header style={{ marginBottom: '32px' }}>
-          <h2 style={{ color: 'white', fontFamily: 'var(--font-serif)', fontSize: '28px', marginBottom: '8px' }}>Bem-vindo,</h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px' }}>Hub Digital do II Congresso CIECC</p>
-        </header>
-
-        <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
-          <div className="input-group">
-            <span className="input-label" style={{ color: 'rgba(255,255,255,0.6)' }}>Seu CPF</span>
-            <div style={{ position: 'relative' }}>
-              <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder="000.000.000-00"
-                value={loginCpf}
-                onChange={(e) => setLoginCpf(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', paddingLeft: '44px' }}
-                required
-              />
+        {/* RIGHT SIDE: Login Form */}
+        <div className="login-form-side">
+          <div className="login-form-card fade-in">
+            
+            <div className="mobile-only-header">
+              <img src="/logo.png" alt="CIECC" className="mobile-logo" />
             </div>
-          </div>
 
-          <div className="input-group">
-            <span className="input-label" style={{ color: 'rgba(255,255,255,0.6)' }}>Sua Senha</span>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
-              <input 
-                type="password" 
-                className="input-field" 
-                placeholder="••••••••"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', paddingLeft: '44px' }}
-                required
-              />
-            </div>
-          </div>
+            <header style={{ marginBottom: '32px' }}>
+              <h2 className="form-title">Bem-vindo,</h2>
+              <p className="form-subtitle">Acesse o Hub Digital do Congresso</p>
+            </header>
 
-          <button type="submit" className="btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px' }}>
-            Acessar Hub <ArrowRight size={20} />
-          </button>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <span className="input-label">Seu CPF</span>
+                <div style={{ position: 'relative' }}>
+                  <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
+                  <input 
+                    type="text" 
+                    className="input-field-custom" 
+                    placeholder="000.000.000-00"
+                    value={loginCpf}
+                    onChange={(e) => setLoginCpf(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              <div className="input-group">
+                <span className="input-label">Sua Senha</span>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
+                  <input 
+                    type="password" 
+                    className="input-field-custom" 
+                    placeholder="••••••••"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="login-submit-btn">
+                Acessar Hub <ArrowRight size={20} />
+              </button>
+
+          <div className="login-actions">
             <button 
               type="button" 
               onClick={() => setIsForgotMode(true)}
-              style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', border: 'none', background: 'none' }}
+              className="action-link"
             >
               Esqueci minha senha
             </button>
-            <button 
-              type="button" 
-              onClick={onAdminAccess}
-              style={{ color: 'var(--gold)', fontSize: '13px', border: 'none', background: 'none', fontWeight: 'bold' }}
-            >
-              Portal Admin
-            </button>
           </div>
-        </form>
+            </form>
 
-
-        <footer style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
-            Ainda não está inscrito? <span style={{ color: 'var(--primary)', fontWeight: '600' }}>Saiba mais</span>
-          </p>
-          
-          <div style={{ 
-            marginTop: '20px', 
-            paddingTop: '20px', 
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end', // Alinhado à direita
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <p style={{ 
-              color: 'rgba(212, 193, 156, 0.4)', // Cores da fonte do congresso (dourado suave)
-              fontSize: '10px', 
-              textTransform: 'uppercase', 
-              letterSpacing: '1px', 
-              fontWeight: '500' 
-            }}>
-              Criado por
-            </p>
-            {/* Logo Arkos em SVG - Cor do Congresso */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 32L20 8L32 32" stroke="#D4C19C" strokeWidth="3" />
-                <path d="M4 21H36" stroke="#D4C19C" strokeWidth="3" />
-                <circle cx="20" cy="6" r="3" fill="#D4C19C" />
-              </svg>
-              <span style={{ 
-                color: '#D4C19C', 
-                fontSize: '15px', 
-                fontWeight: '700', 
-                letterSpacing: '1px',
-                fontFamily: 'sans-serif'
-              }}>ARKOS</span>
-            </div>
+            <footer className="form-footer">
+              <p className="signup-notice">
+                Ainda não está inscrito? <span className="highlight-text">Saiba mais</span>
+              </p>
+              
+              <div className="arkos-footer">
+                <p className="created-by">Criado por</p>
+                <div className="arkos-brand">
+                  <svg width="18" height="18" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 32L20 8L32 32" stroke="#D4C19C" strokeWidth="3" />
+                    <path d="M4 21H36" stroke="#D4C19C" strokeWidth="3" />
+                  </svg>
+                  <span className="arkos-text">ARKOS</span>
+                </div>
+              </div>
+            </footer>
           </div>
-        </footer>
+        </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .login-page {
+          height: 100vh;
+          width: 100vw;
+          background: #0A0F1A;
+          display: flex;
+          overflow: hidden;
+        }
+
+        .login-container {
+          display: flex;
+          width: 100%;
+          height: 100%;
+        }
+
+        /* Hero Side (Desktop) */
+        .login-hero-side {
+          flex: 1.2;
+          background: url("/hero.png") center/cover no-repeat;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 60px;
+        }
+
+        .hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(74, 16, 29, 0.9) 0%, rgba(10, 15, 26, 0.8) 100%);
+        }
+
+        .hero-content {
+          position: relative;
+          z-index: 2;
+          max-width: 600px;
+        }
+
+        .desktop-logo {
+          height: 100px;
+          margin-bottom: 40px;
+          filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        }
+
+        .hero-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 56px;
+          color: white;
+          font-weight: 900;
+          line-height: 1.1;
+          margin-bottom: 20px;
+          letter-spacing: -2px;
+        }
+
+        .hero-subtitle {
+          font-size: 20px;
+          color: var(--gold);
+          font-weight: 500;
+          margin-bottom: 40px;
+          opacity: 0.9;
+        }
+
+        .hero-footer {
+          display: flex;
+          gap: 20px;
+        }
+
+        .location-badge, .date-badge {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 8px 16px;
+          border-radius: 100px;
+          color: white;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        /* Form Side */
+        .login-form-side {
+          flex: 1;
+          background: #0A0F1A;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px;
+          position: relative;
+        }
+
+        .login-form-card {
+          width: 100%;
+          max-width: 400px;
+        }
+
+        .form-title {
+          color: white;
+          font-family: 'Playfair Display', serif;
+          font-size: 36px;
+          font-weight: 900;
+          margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+          color: rgba(255,255,255,0.5);
+          font-size: 16px;
+        }
+
+        .input-label {
+          display: block;
+          color: rgba(255,255,255,0.5);
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .input-field-custom {
+          width: 100%;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 16px 16px 16px 44px;
+          color: white;
+          font-size: 15px;
+          transition: all 0.3s;
+          outline: none;
+        }
+
+        .input-field-custom:focus {
+          border-color: var(--gold);
+          background: rgba(255,255,255,0.08);
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+        }
+
+        .login-submit-btn {
+          width: 100%;
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 18px;
+          border-radius: 14px;
+          font-weight: 900;
+          font-size: 16px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          transition: all 0.3s;
+          margin-top: 10px;
+          box-shadow: 0 10px 20px rgba(74, 16, 29, 0.3);
+        }
+
+        .login-submit-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 25px rgba(74, 16, 29, 0.4);
+        }
+
+        .login-actions {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 24px;
+        }
+
+        .action-link {
+          background: none;
+          border: none;
+          color: rgba(255,255,255,0.4);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+
+        .action-link:hover { color: white; }
+        .admin-link { color: var(--gold); }
+
+        .form-footer {
+          margin-top: 60px;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          padding-top: 30px;
+        }
+
+        .signup-notice { color: rgba(255,255,255,0.4); font-size: 13px; text-align: center; }
+        .highlight-text { color: var(--primary); font-weight: 700; cursor: pointer; }
+
+        .arkos-footer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 24px;
+        }
+
+        .created-by { color: rgba(212, 193, 156, 0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .arkos-brand { display: flex; align-items: center; gap: 6px; }
+        .arkos-text { color: #D4C19C; font-size: 14px; font-weight: 800; opacity: 0.6; }
+
+        .mobile-only-header { display: none; }
+
+        @media (max-width: 1024px) {
+          .login-hero-side { display: none; }
+          .login-form-side { flex: 1; padding: 30px; background: url("/hero.png") center/cover no-repeat; }
+          .login-form-side::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10,15,26,1) 0%, rgba(10,15,26,0.95) 40%, rgba(10,15,26,0.5) 100%);
+          }
+          .login-form-card { position: relative; z-index: 2; }
+          .mobile-only-header { display: block; text-align: center; margin-bottom: 40px; }
+          .mobile-logo { height: 70px; }
+          .form-title { font-size: 28px; text-align: center; }
+          .form-subtitle { text-align: center; display: block; }
+        }
+      `}} />
     </div>
   );
 };

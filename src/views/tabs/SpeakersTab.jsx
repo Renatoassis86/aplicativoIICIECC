@@ -13,80 +13,37 @@ import {
   Calendar
 } from 'lucide-react';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
+import { supabase } from '../../lib/supabase';
 
 const SpeakersTab = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpeaker, setSelectedSpeaker] = useState(null);
+  const [speakersList, setSpeakersList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const speakers = [
-    { 
-      id: 1, 
-      name: 'Dr. Chris Schlect', 
-      desc: 'DIRETOR DO PROGRAMA DE PÓS-GRADUAÇÃO NO NEW SAINT ANDREWS COLLEGE', 
-      img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-      category: 'Internacional',
-      time: '01 Mai • 09:30',
-      longBio: 'Christopher Schlect trabalha na área da educação clássica e cristã há mais de trinta anos. Em sua instituição de origem, o New Saint Andrews College, ele atua como Chefe do Departamento de Humanidades e Diretor do programa de pós-graduação em estudos clássicos e cristãos. Leciona regularmente cursos de graduação e pós-graduação nas áreas de história, retórica clássica e educação. Também lecionou na Washington State University e atualmente integra o corpo docente do programa de Liderança Clássica para Pós-Graduados do Gordon College. Além de seu trabalho no ensino superior, Schlect possui muitos anos de experiência docente no ensino médio.'
-    },
-    { 
-      id: 2, 
-      name: 'Dr. Keith Nix', 
-      desc: 'DIRETOR DA VERITAS SCHOOL EM RICHMOND', 
-      img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop',
-      category: 'Internacional',
-      time: '02 Mai • 09:00',
-      longBio: 'Keith Nix atua como Diretor da Veritas School em Richmond, Virgínia, desde 2010. Antes de sua passagem pela Veritas, foi membro do conselho e, posteriormente, Diretor da The Westminster School em Birmingham, Alabama. Keith utiliza sua vasta experiência para apoiar outros líderes e escolas no movimento da educação clássica, oferecendo frequentemente consultoria e orientação a conselhos e líderes escolares. Keith é membro do Conselho Consultivo do Presidente da Society for Classical Learning (SCL).'
-    },
-    { 
-      id: 3, 
-      name: 'Ms. Thiago Dutra', 
-      desc: 'CHANCELER DE EDUCAÇÃO DA CIDADE VIVA', 
-      img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
-      category: 'Nacional',
-      time: '01 Mai • 14:00',
-      longBio: 'Bacharel em Direito (UFPB), Bacharel em Teologia (FTSA), Especialista em Educação Cristã Clássica (FICV), Mestre em Direitos Humanos (UFPB), Mestre em Gestão de Organizações Aprendentes (UFPB). Diretor de Educação da Fundação Cidade Viva (Cidade Viva Education, Escola Internacional Cidade Viva, Faculdade Internacional Cidade Viva e Escola Bíblica Cidade Viva). Pastor Mestre da Igreja Cidade Viva Natal. Professor de Teologia e autor de livros com foco em Família, Igreja e Educação (FICV). Casado com Dayane há 13 anos e pai de Bella (9 anos), Davi (5 anos) e João Miguel (3 anos).'
-    },
-    { 
-      id: 7, 
-      name: 'Rosely Garcia', 
-      desc: 'EMPRESÁRIA E FUNDADORA DA PACTUM', 
-      img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
-      category: 'Nacional',
-      time: 'Painel Empresarial',
-      longBio: 'Rosely Garcia é cristã, esposa de Ademir Garcia e mãe de Elisa, Ana e Benício. É empresária e fundadora da PACTUM, empresa dedicada à implantação, consultoria e desenvolvimento de escolas cristãs clássicas, oferecendo suporte estratégico, pedagógico e institucional a igrejas e mantenedores. Possui formação em Economia, Administração e Marketing pela Syracuse University (Nova York, 2003). Concluiu o MBA em Gestão de Pessoas pela FGV (2014) e o programa Owner/President Management (OPM) pela Harvard Business School (Boston, 2023).'
-    },
-    { 
-      id: 4, 
-      name: 'Esp. Matheus Macedo', 
-      desc: 'DIRETOR DA ZOE CHRISTIAN SCHOOL', 
-      img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
-      category: 'Nacional',
-      time: '02 Mai • 15:30',
-      longBio: 'Casado com Tatiana, pai de Malu, Lara e Timóteo. Matheus é formado em Direito pela Universidade Federal de Pernambuco e em Teologia pelo IBRMEC. Possui LLM em Direito Societário pela FGV e é pós graduado em Educação Cristã Clássica pela Faculdade Internacional Cidade Viva. Dedica-se ao estudo da Educação Cristã Clássica desde 2017. Hoje, exerce seu ministério como pastor da Igreja Nova Vida em Boa Viagem, e é diretor da Zoe Christian School, primeira escola de educação cristã clássica de Pernambuco.'
-    },
-    { 
-      id: 5, 
-      name: 'Esp. Maurício Fonseca', 
-      desc: 'EDITOR-CHEFE NA EDITORA TRINITAS', 
-      img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-      category: 'Indústria',
-      time: '01 Mai • 16:00',
-      longBio: 'Maurício Fonseca é presbítero na Igreja Presbiteriana do Brasil e editor-chefe da Editora Trinitas. Graduado em Administração (Mackenzie) e Pedagogia, possui especialização pela FIA e Master em Gestão Internacional (França). É fundador da Escola Cristã Clássica Trinitas.'
-    },
-    { 
-      id: 6, 
-      name: 'Ms. Elmer Pires', 
-      desc: 'SÓCIO CO-FUNDADOR DA EDITORA TRINITAS', 
-      img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=400&h=400&fit=crop',
-      category: 'Indústria',
-      time: '02 Mai • 11:30',
-      longBio: 'Mestre em Educação pela Universidade Bob Jones (EUA). É sócio co-fundador da editora Trinitas e da Escola Cristã Clássica Trinitas, onde trabalha como diretor. É pastor da Igreja Batista Reformada de São Bernardo do Campo.'
+  React.useEffect(() => {
+    fetchSpeakers();
+  }, []);
+
+  const fetchSpeakers = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('speakers').select('*').order('name');
+    if (data) {
+      setSpeakersList(data.map(s => ({
+        id: s.id,
+        name: s.name,
+        desc: s.institution,
+        img: s.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
+        category: s.category || 'Palestrante',
+        longBio: s.bio
+      })));
     }
-  ];
+    setLoading(false);
+  };
 
-  const filteredSpeakers = speakers.filter(s => 
+  const filteredSpeakers = speakersList.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.desc.toLowerCase().includes(searchQuery.toLowerCase())
+    s.desc?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

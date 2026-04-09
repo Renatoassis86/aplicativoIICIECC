@@ -24,14 +24,37 @@ import {
 import CountdownTimer from '../../components/home/CountdownTimer';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
+import { useCMS } from '../../hooks/useCMS';
+import { useContent } from '../../hooks/useContent';
+import { supabase } from '../../lib/supabase';
 
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
   onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia
 }) => {
+  const { content: shortcutsData } = useContent('home', 'home_shortcuts');
+  const { content: confirmedSpeakersData } = useContent('home', 'home_confirmed_speakers');
+  const { content: homeBadge } = useContent('home', 'home_badge_text');
+  const { content: homeTitle } = useContent('home', 'home_title');
+  const { content: homeSubtitle } = useContent('home', 'home_subtitle');
+  const { content: homeLocation } = useContent('home', 'home_location');
+  const { content: homeDateRange } = useContent('home', 'home_date_range');
+  const { content: homeVideoUrl } = useContent('home', 'home_video_url');
+  const { content: homeCountdownDate } = useContent('home', 'home_countdown_date');
+  
+  const [sponsors, setSponsors] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
+
+  useEffect(() => {
+    async function fetchSponsors() {
+      const { data } = await supabase.from('sponsors').select('*').eq('active', true).order('order_index');
+      if (data) setSponsors(data);
+    }
+    fetchSponsors();
+  }, []);
+
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
 
@@ -44,96 +67,27 @@ const HomeTab = ({
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  const shortcuts = [
-    { label: 'Programação', icon: <Calendar color="var(--primary)" size={24} />, bg: 'var(--accent)', action: () => onNavigate('agenda') },
-    { label: 'Palestrantes', icon: <Star color="#D69E2E" size={24} />, bg: '#FFFFF0', action: () => onNavigate('speakers') },
-    { label: 'Parceiros', icon: <Briefcase color="#2B6CB0" size={24} />, bg: '#EBF8FF', action: onOpenSponsors },
-    { label: 'Patrocinadores', icon: <Award color="#38A169" size={24} />, bg: '#F0FFF4', action: onOpenSponsors },
-    { label: 'Meu QR Code', icon: <QrCode color="#E53E3E" size={24} />, bg: '#FFF5F5', action: onOpenTicket },
-    { label: 'Meus Tickets', icon: <Ticket color="#805AD5" size={24} />, bg: '#FAF5FF', action: onOpenTicket },
-    { label: 'Como chegar', icon: <MapPin color="#718096" size={24} />, bg: '#F7FAFC', action: onOpenMap },
-    { label: 'FAQ', icon: <HelpCircle color="#D81E1E" size={24} />, bg: '#FDF2F2', action: onOpenFAQ },
-  ];
+  // Ícones dinâmicos para atalhos
+  const getIcon = (iconName) => {
+    const icons = { Calendar, Star, Briefcase, Award, QrCode, Ticket, MapPin, HelpCircle };
+    const IconComp = icons[iconName] || HelpCircle;
+    return <IconComp size={24} color="var(--primary)" />;
+  };
 
-  const sponsors = [
-    {
-      id: 1,
-      name: 'OIKOS',
-      tierName: 'Patrocinador Master',
-      tierColor: '#B9F2FF',
-      logo: '/assets/sponsors/oikos.png',
-      tagline: 'Líder em gestão académica clássica.',
-      bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina.',
-      website: 'https://oikos.com.br',
-      booth: 'Pavilhão Central • Estande 01'
-    },
-    {
-      id: 2,
-      name: 'PACTUM',
-      tierName: 'Patrocinador Diamante',
-      tierColor: '#B9F2FF',
-      logo: '/assets/sponsors/pactum.png',
-      tagline: 'Consultoria e Implantação.',
-      bio: 'A PACTUM atua no suporte estratégico e institucional a escolas clássicas.',
-      website: 'https://pactum.edu.br',
-      booth: 'Pavilhão Norte • Estande 12'
-    },
-    {
-      id: 3,
-      name: 'Editora Trinitas',
-      tierName: 'Patrocinador Ouro',
-      tierColor: '#FFD700',
-      logo: '/assets/sponsors/trinitas.png',
-      tagline: 'Livros e Formação.',
-      bio: 'A maior editora especializada em conteúdos clássicos e cristãos do Brasil.',
-      website: 'https://editoratrinitas.com.br',
-      booth: 'Lounge dos Autores'
-    },
-    {
-      id: 4,
-      name: 'FICV',
-      tierName: 'Parceiro Master',
-      tierColor: '#B9F2FF',
-      logo: '/assets/sponsors/ficv.png',
-      tagline: 'Educação Superior Clássica.',
-      bio: 'Pós-graduação e formação contínua de professores.',
-      website: 'https://ficv.edu.br',
-      booth: 'Hall de Entrada'
-    },
-    {
-      id: 5,
-      name: 'Cidade Viva',
-      tierName: 'Realizador',
-      tierColor: '#4A101D',
-      logo: '/assets/sponsors/cidadeviva.png',
-      tagline: 'Educação para o Reino.',
-      bio: 'Fundação Cidade Viva apoiando o II CIECC.',
-      website: 'https://cidadeviva.org',
-      booth: 'VIP Lounge'
-    },
-    {
-       id: 6,
-       name: 'Schola Classics',
-       tierName: 'Patrocinador Ouro',
-       tierColor: '#FFD700',
-       logo: '/assets/sponsors/schola.png',
-       tagline: 'Ensino de Excelência.',
-       bio: 'Plataforma de ensino voltada ao currículo clássico.',
-       website: 'https://schola.com.br',
-       booth: 'Auditório 2'
-    },
-    {
-       id: 7,
-       name: 'Veritas School',
-       tierName: 'Diamante',
-       tierColor: '#B9F2FF',
-       logo: '/assets/sponsors/veritas.png',
-       tagline: 'Verdade em Educação.',
-       bio: 'Referência internacional em pedagogia clássica.',
-       website: 'https://veritas.edu',
-       booth: 'Pavilhão Sul'
-    }
-  ];
+  const getAction = (key) => {
+    const actions = {
+      agenda: () => onNavigate('agenda'),
+      speakers: () => onNavigate('speakers'),
+      sponsors: onOpenSponsors,
+      ticket: onOpenTicket,
+      map: onOpenMap,
+      faq: onOpenFAQ
+    };
+    return actions[key] || (() => {});
+  };
+
+  const shortcuts = shortcutsData || [];
+  const confirmedSpeakers = confirmedSpeakersData || [];
 
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px' }}>
@@ -201,7 +155,7 @@ const HomeTab = ({
           {/* Removido o logo centralizado para dar espaço ao vídeo */}
 
           <div style={{ marginBottom: '12px' }}>
-            <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>II EDIÇÃO • 2026</span>
+            <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>{homeBadge}</span>
           </div>
           <h1 style={{ 
             fontFamily: 'var(--font-serif)', 
@@ -211,16 +165,16 @@ const HomeTab = ({
             marginBottom: '16px',
             color: 'white'
           }}>
-            II CIECC 2026: <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>Educação que permanece</span>
+            {homeTitle} <br/>
+            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>{homeSubtitle}</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <MapPin size={12} color="var(--gold)" /> São Paulo, SP
+              <MapPin size={12} color="var(--gold)" /> {homeLocation}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <Calendar size={12} color="var(--gold)" /> 01 e 02 Mai
+              <Calendar size={12} color="var(--gold)" /> {homeDateRange}
             </div>
           </div>
 
@@ -238,11 +192,11 @@ const HomeTab = ({
           }} onClick={() => {
             const container = document.getElementById('video-container');
             if (container) {
-              container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/t5CB9rnexOY?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
+              container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
             }
           }} id="video-container">
             <img 
-              src="https://img.youtube.com/vi/t5CB9rnexOY/hqdefault.jpg" 
+              src={`https://img.youtube.com/vi/${homeVideoUrl.split('/').pop()}/hqdefault.jpg`} 
               alt="Preview II CIECC" 
               style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
             />
@@ -259,7 +213,7 @@ const HomeTab = ({
           </div>
 
           <div style={{ padding: '0 0px', margin: '16px 0 24px' }}>
-            <CountdownTimer targetDate="2026-05-01T08:00:00" />
+            <CountdownTimer targetDate={homeCountdownDate} />
           </div>
 
           <button 
@@ -330,21 +284,7 @@ const HomeTab = ({
         
         <div className="marquee-container" style={{ background: 'transparent', border: 'none', padding: '0' }}>
           <div className="marquee-content" style={{ animationDuration: '25s', gap: '20px' }}>
-            {[...[
-              { name: 'Dr. Christopher Schlect', desc: 'New St. Andrews (USA)', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
-              { name: 'Dr. Keith Nix', desc: 'Veritas School (Richmond)', img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop' },
-              { name: 'Ms. Thiago Dutra', desc: 'Diretor Schola Classics', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop' },
-              { name: 'Esp. Matheus Macedo', desc: 'Diretor Zoe Christian School', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-              { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-              { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
-            ], ...[
-              { name: 'Dr. Christopher Schlect', desc: 'New St. Andrews (USA)', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
-              { name: 'Dr. Keith Nix', desc: 'Veritas School (Richmond)', img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop' },
-              { name: 'Ms. Thiago Dutra', desc: 'Diretor Schola Classics', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop' },
-              { name: 'Esp. Matheus Macedo', desc: 'Diretor Zoe Christian School', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-              { name: 'Esp. Maurício Fonseca', desc: 'Editor-chefe Editora Trinitas', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-              { name: 'Ms. Elmer Pires', desc: 'Fundador Editora Trinitas', img: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop' }
-            ]].map((p, idx) => (
+            {confirmedSpeakers.map((p, idx) => (
               <div key={`${p.name}-${idx}`}
                 onClick={() => setSelectedSpeaker(p)}
                 style={{ 
@@ -380,11 +320,11 @@ const HomeTab = ({
           {shortcuts.map(item => (
             <div 
               key={item.label} 
-              onClick={item.action ? item.action : null}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: item.action ? 'pointer' : 'default' }}
+              onClick={getAction(item.key)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
             >
               <div style={{ 
-                background: 'white', 
+                background: item.bg || 'white', 
                 width: '64px', height: '64px', 
                 borderRadius: '16px', 
                 display: 'flex', 
@@ -393,7 +333,7 @@ const HomeTab = ({
                 boxShadow: 'var(--shadow-sm)',
                 border: '1px solid rgba(0,0,0,0.03)'
               }}>
-                {item.icon}
+                {getIcon(item.icon)}
               </div>
               <span style={{ fontSize: '10px', fontWeight: '700', textAlign: 'center', color: 'var(--text-main)', opacity: 0.8 }}>{item.label}</span>
             </div>
@@ -423,32 +363,32 @@ const HomeTab = ({
           
           <div className="marquee-container" style={{ height: '140px' }}>
              <div className="marquee-content" style={{ animationDuration: '20s' }}>
-                {[...sponsors, ...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
-                  <div 
-                    key={`${s.id}-${idx}`} 
-                    onClick={() => setSelectedSponsor(s)}
-                    className="marquee-item"
-                    style={{ 
-                      cursor: 'pointer', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center',
-                      gap: '8px',
-                      minWidth: '150px'
-                    }}
-                  >
-                    <div style={{
-                      width: '100px', height: '100px', 
-                      background: 'white', borderRadius: '16px',
-                      padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-                      border: '1px solid #f0f0f0'
-                    }}>
-                       <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
-                  </div>
-                ))}
+                 {[...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
+                   <div 
+                     key={`${s.id}-${idx}`} 
+                     onClick={() => setSelectedSponsor(s)}
+                     className="marquee-item"
+                     style={{ 
+                       cursor: 'pointer', 
+                       display: 'flex', 
+                       flexDirection: 'column', 
+                       alignItems: 'center',
+                       gap: '8px',
+                       minWidth: '150px'
+                     }}
+                   >
+                     <div style={{
+                       width: '100px', height: '100px', 
+                       background: 'white', borderRadius: '16px',
+                       padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                       boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                       border: '1px solid #f0f0f0'
+                     }}>
+                        <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                     </div>
+                     <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
+                   </div>
+                 ))}
              </div>
           </div>
 

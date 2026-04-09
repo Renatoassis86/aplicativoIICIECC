@@ -19,6 +19,13 @@ function App() {
   // Carregar estado inicial
   useEffect(() => {
     const checkPersistedAuth = async () => {
+      // 0. Detecção de URL Admin Direta
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'true') {
+        setAuthStatus('admin-portal');
+        return;
+      }
+
       const savedCpf = localStorage.getItem('current_user_cpf');
       if (!savedCpf) {
         setAuthStatus('logged-out');
@@ -106,8 +113,7 @@ function App() {
 
       // 3. Validar Senha
       if (!currentProfile.password_reset) {
-        const isAdminType = currentProfile.user_type === 'organizador' || currentProfile.user_type === 'staff' || currentProfile.user_type === 'admin';
-        const expectedPassword = isAdminType ? 'admin' : 'congresso2026';
+        const expectedPassword = 'congresso2026';
 
         if (password === expectedPassword) {
           setCurrentUserCpf(cpf);
@@ -128,7 +134,7 @@ function App() {
         setUserAvatar(currentProfile.avatar_url);
 
         const type = currentProfile.user_type;
-        const canBypassOnboarding = type === 'organizador' || type === 'admin' || type === 'staff' || type?.includes('patrocinador');
+        const canBypassOnboarding = type === 'organizador' || type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
 
         if (currentProfile.onboarding_completed || canBypassOnboarding) {
           setSelectedType(type || 'congressista');
@@ -231,65 +237,76 @@ function App() {
     );
   }
 
+  const isAdminView = authStatus === 'admin-portal' || view === 'admin-portal';
+
   return (
-    <div className="app-shell">
-      <div className="mobile-wrapper">
-        <div className="App" style={{ background: '#F7F8FA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          {authStatus === 'logged-out' && (
-            <LoginView 
-              onLogin={handleLogin} 
-              onAdminAccess={() => {
-                setAuthStatus('admin-portal');
-              }} 
-            />
-          )}
-          
-          {authStatus === 'admin-portal' && (
-            <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
-          )}
-          
-          {authStatus === 'reset-password' && (
-            <PasswordResetView onComplete={handlePasswordResetComplete} />
-          )}
+    <div className="app-shell" style={{ background: isAdminView ? '#0A0F1A' : '#f0f2f5' }}>
+      {authStatus === 'logged-out' ? (
+        /* PATH 0: RESPONSIVE LOGIN (DETECTION HAPPENS INSIDE LOGINVIEW) */
+        <LoginView 
+          onLogin={handleLogin} 
+          onAdminAccess={() => setAuthStatus('admin-portal')} 
+        />
+      ) : (
+        /* PATH 1 & 2 DYNAMIC: RESPONSIVE PORTAL vs MOBILE APP */
+        <div className={isAdminView ? "admin-wrapper" : "mobile-wrapper"}>
+          <div className={isAdminView ? "" : "App"} style={{ 
+            background: isAdminView ? '#0A0F1A' : '#F7F8FA', 
+            minHeight: '100vh', 
+            display: 'flex', 
+            flexDirection: 'column',
+            width: '100%' 
+          }}>
+            
+            {/* ADMIN FLOWS */}
+            {authStatus === 'admin-portal' && (
+              <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
+            )}
+            
+            {(authStatus === 'logged-in' && view === 'admin-portal') && (
+              <AdminPortalView 
+                onLogout={handleLogout}
+                onBackToApp={() => {
+                  if (selectedType === 'organizador' && window.innerWidth > 1024) {
+                    setView('admin-portal');
+                  } else {
+                    setView('app');
+                  }
+                }}
+                userName={userName}
+                userCpf={currentUserCpf}
+              />
+            )}
 
-          {authStatus === 'select-type' && (
-            <UserTypeSelectionView onSelect={handleTypeSelect} />
-          )}
+            {/* USER FLOWS */}
+            {authStatus === 'reset-password' && (
+              <PasswordResetView onComplete={handlePasswordResetComplete} />
+            )}
 
-          {authStatus === 'questionnaire' && (
-            <QuestionnaireController userType={selectedType} onComplete={handleQuestionnaireComplete} />
-          )}
-          
-          {authStatus === 'logged-in' && view === 'app' && (
-            <DashboardView 
-              onLogout={handleLogout} 
-              userType={selectedType || 'congressista'} 
-              userName={userName || 'Visitante'} 
-              userCpf={currentUserCpf}
-              userAvatar={userAvatar}
-              onAvatarUpdate={setUserAvatar}
-              onOpenAdminPortal={() => setView('admin-portal')}
-            />
-          )}
+            {authStatus === 'select-type' && (
+              <UserTypeSelectionView onSelect={handleTypeSelect} />
+            )}
 
-          {authStatus === 'logged-in' && view === 'admin-portal' && (
-            <AdminPortalView 
-              onLogout={handleLogout}
-              onBackToApp={() => setView('app')}
-              userName={userName}
-              userCpf={currentUserCpf}
-            />
-          )}
-
-          {/* Fallback de Segurança */}
-          {![ 'loading', 'logged-out', 'admin-portal', 'reset-password', 'select-type', 'questionnaire', 'logged-in'].includes(authStatus) && (
-            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-               <p>Estado de sessão inválido. Redirecionando...</p>
-               <button onClick={() => setAuthStatus('logged-out')} className="btn-primary" style={{ width: 'auto', marginTop: '20px' }}>Voltar ao Login</button>
-            </div>
-          )}
+            {authStatus === 'questionnaire' && (
+              <QuestionnaireController userType={selectedType} onComplete={handleQuestionnaireComplete} />
+            )}
+            
+            {authStatus === 'logged-in' && view === 'app' && (
+              <div className={window.innerWidth > 1024 ? "app-content-wide" : ""}>
+                <DashboardView 
+                  onLogout={handleLogout} 
+                  userType={selectedType || 'congressista'} 
+                  userName={userName || 'Visitante'} 
+                  userCpf={currentUserCpf}
+                  userAvatar={userAvatar}
+                  onAvatarUpdate={setUserAvatar}
+                  onOpenAdminPortal={() => setView('admin-portal')}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         .app-shell {
@@ -297,21 +314,48 @@ function App() {
           min-height: 100vh;
           width: 100%;
           display: flex;
-          justify-content: center;
-          align-items: flex-start;
-        }
-        .mobile-wrapper {
-          width: 100%;
-          max-width: 430px;
-          background: white;
-          min-height: 100vh;
-          position: relative;
-          box-shadow: 0 0 40px rgba(0,0,0,0.1);
-          overflow-x: hidden;
-          display: flex;
           flex-direction: column;
-          touch-action: pan-y;
-          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Desktop Portal Structure */
+        @media (min-width: 1025px) {
+          .desktop-portal {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            background: #F4F7FE;
+          }
+          .mobile-wrapper {
+             /* No desktop, o mobile-wrapper vira um simulador opcional ou desaparece se quisermos full width */
+             width: 100%;
+             max-width: none; 
+             margin: 0;
+             box-shadow: none;
+             border-radius: 0;
+          }
+          .app-content-wide {
+             flex: 1;
+             width: 100%;
+             max-width: 1600px;
+             margin: 0 auto;
+             padding: 20px;
+          }
+        }
+
+        /* Mobile Wrapper (Phone Simulation on Small Screen or explicit) */
+        @media (max-width: 1024px) {
+          .mobile-wrapper {
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+          }
         }
         @media (max-width: 430px) {
           .mobile-wrapper {

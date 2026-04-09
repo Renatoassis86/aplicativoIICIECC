@@ -34,3 +34,60 @@ export const bulkImportMembers = async (membersArray) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Busca todos os membros cadastrados
+ */
+export const fetchAllMembers = async () => {
+    const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .order('name');
+    if (error) throw error;
+    return data;
+};
+
+/**
+ * Busca todos os perfis (onde mora o user_type)
+ */
+export const fetchAllProfiles = async () => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+    if (error) throw error;
+    return data;
+};
+
+/**
+ * Cria ou atualiza um usuário administrativo (organizador, staff, patrocinador)
+ */
+export const createOrUpdateAdminUser = async (userData) => {
+    const { cpf, name, email, user_type } = userData;
+    const cleanCpf = stripCPF(cpf);
+
+    // 1. Garantir que está na tabela de membros (Inscritos)
+    const { error: memberError } = await supabase
+        .from('members')
+        .upsert({ 
+            cpf: cleanCpf, 
+            name, 
+            email,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'cpf' });
+
+    if (memberError) throw memberError;
+
+    // 2. Garantir que tem perfil com o tipo correto
+    const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+            cpf: cleanCpf,
+            user_type: user_type,
+            onboarding_completed: true, // Bypass onboarding for admins/sponsors if needed
+            password_reset: false // Will require them to set password on first login
+        }, { onConflict: 'cpf' });
+
+    if (profileError) throw profileError;
+
+    return { success: true };
+};
