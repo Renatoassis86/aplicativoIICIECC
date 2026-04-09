@@ -104,7 +104,7 @@ class CMSService {
       }
       return data || [];
     } catch (error) {
-      console.error('[CMS] Erro fatal em getMedia:', error);
+      console.error('[CMS] Erro ao recuperar mídia:', error);
       return [];
     }
   }

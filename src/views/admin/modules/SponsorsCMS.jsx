@@ -181,83 +181,111 @@ export default function SponsorsCMS() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gap: '16px' }}>
+      <div style={{ display: 'grid', gap: '20px' }}>
+        <h4 style={{ fontWeight: '800', fontSize: '18px', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+          Patrocinadores Ativos
+        </h4>
         {sponsors.map(sponsor => (
           <div key={sponsor.id} className="white-bg" style={{ 
             backgroundColor: 'white', padding: '24px', borderRadius: '24px', 
-            display: 'flex', alignItems: 'center', gap: '24px', 
-            boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid #F1F5F9' 
+            display: 'flex', flexDirection: 'column', gap: '20px', 
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #F1F5F9' 
           }}>
-            <div style={{ width: '80px', height: '80px', backgroundColor: '#F8FAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', minWidth: '80px' }}>
-              {sponsor.logo_url ? (
-                <img src={sponsor.logo_url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-              ) : (
-                <ImageIcon size={32} color="#CBD5E1" />
-              )}
-            </div>
-
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 0.5fr', gap: '16px', alignItems: 'center' }}>
-              <div>
-                <label style={{ fontSize: '9px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Nome</label>
-                <input 
-                  value={sponsor.name}
-                  onChange={e => updateSponsor(sponsor.id, 'name', e.target.value)}
-                  style={{ fontSize: '15px', fontWeight: '800', border: '1px solid transparent', borderBottom: '1px solid #E2E8F0', background: 'none', width: '100%', color: '#1E293B', padding: '4px 0' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '9px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Cota</label>
-                <select 
-                  value={sponsor.tier}
-                  onChange={e => updateSponsor(sponsor.id, 'tier', e.target.value)}
-                  style={{ 
-                    width: '100%', padding: '6px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', 
-                    fontSize: '11px', fontWeight: '900', textTransform: 'uppercase',
-                    color: sponsor.tier === 'gold' ? '#B45309' : sponsor.tier === 'silver' ? '#4B5563' : '#78350F', 
-                    background: sponsor.tier === 'gold' ? '#FEF3C7' : sponsor.tier === 'silver' ? '#F3F4F6' : '#FFEDD5',
-                  }}
-                >
-                  <option value="gold">Cota Ouro</option>
-                  <option value="silver">Cota Prata</option>
-                  <option value="bronze">Cota Bronze</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '9px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Link do Site</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <input 
-                    value={sponsor.website_url || ''}
-                    placeholder="Sem link"
-                    onChange={e => updateSponsor(sponsor.id, 'website_url', e.target.value)}
-                    style={{ fontSize: '12px', border: '1px solid transparent', borderBottom: '1px solid #E2E8F0', background: 'none', width: '100%', color: '#64748B', padding: '4px 0' }}
-                  />
-                  <a href={sponsor.website_url} target="_blank" style={{ color: '#94A3B8' }}><ExternalLink size={14} /></a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', width: '100%' }}>
+              <div style={{ width: '100px', height: '100px', backgroundColor: '#F8FAFC', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: '1px solid #E2E8F0', position: 'relative' }}>
+                {sponsor.logo_url ? (
+                  <img src={sponsor.logo_url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <ImageIcon size={32} color="#CBD5E1" />
+                )}
+                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--primary)', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', border: '2px solid white' }}>
+                  #{sponsor.order_index}
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: '9px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Ordem</label>
-                <input 
-                  type="number"
-                  value={sponsor.order_index}
-                  onChange={e => updateSponsor(sponsor.id, 'order_index', parseInt(e.target.value))}
-                  style={{ fontSize: '13px', fontWeight: '800', border: '1px solid #E2E8F0', borderRadius: '6px', background: '#F8FAFC', width: '100%', color: '#1E293B', textAlign: 'center', padding: '4px' }}
-                />
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Nome do Patrocinador</label>
+                  <input 
+                    value={sponsor.name}
+                    onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, name: e.target.value } : s))}
+                    style={{ fontSize: '14px', fontWeight: '700', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', color: '#1E293B', background: '#F8FAFC' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>URL do Logo</label>
+                  <input 
+                    value={sponsor.logo_url || ''}
+                    onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, logo_url: e.target.value } : s))}
+                    style={{ fontSize: '12px', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', color: '#64748B', background: '#F8FAFC' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Website (Link)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      value={sponsor.website_url || ''}
+                      onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, website_url: e.target.value } : s))}
+                      style={{ fontSize: '12px', padding: '10px 35px 10px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', color: '#64748B', background: '#F8FAFC' }}
+                    />
+                    {sponsor.website_url && (
+                      <a href={sponsor.website_url.startsWith('http') ? sponsor.website_url : `https://${sponsor.website_url}`} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)' }}>
+                        <ExternalLink size={14} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                   <div style={{ flex: 1 }}>
+                     <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Cota</label>
+                     <select 
+                       value={sponsor.tier}
+                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, tier: e.target.value } : s))}
+                       style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '12px', fontWeight: '800', background: 'white' }}
+                     >
+                       <option value="gold">Ouro</option>
+                       <option value="silver">Prata</option>
+                       <option value="bronze">Bronze</option>
+                     </select>
+                   </div>
+                   <div style={{ width: '60px' }}>
+                     <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Ordem</label>
+                     <input 
+                        type="number"
+                        value={sponsor.order_index}
+                        onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, order_index: parseInt(e.target.value) } : s))}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '12px', fontWeight: '800', textAlign: 'center' }}
+                     />
+                   </div>
+                </div>
               </div>
             </div>
 
-            <button 
-              onClick={() => handleDelete(sponsor.id)}
-              style={{ padding: '12px', borderRadius: '12px', background: '#FFF1F2', color: '#E11D48', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseOver={e => e.currentTarget.style.background = '#FFE4E6'}
-              onMouseOut={e => e.currentTarget.style.background = '#FFF1F2'}
-            >
-              <Trash2 size={20} />
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '12px', borderTop: '1px solid #F1F5F9' }}>
+              <button 
+                onClick={() => handleDelete(sponsor.id)}
+                style={{ background: '#FFF1F2', color: '#E11D48', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Trash2 size={16} /> Excluir
+              </button>
+              <button 
+                onClick={async () => {
+                   const { error } = await supabase.from('sponsors').update(sponsor).eq('id', sponsor.id);
+                   if (!error) alert('Patrocinador atualizado com sucesso!');
+                   else alert('Erro ao salvar: ' + error.message);
+                }}
+                className="btn-primary"
+                style={{ padding: '10px 25px', fontSize: '13px' }}
+              >
+                <Save size={16} /> SALVAR ALTERAÇÕES
+              </button>
+            </div>
           </div>
         ))}
+        {sponsors.length === 0 && <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>Nenhum patrocinador encontrado.</p>}
       </div>
     </div>
   );

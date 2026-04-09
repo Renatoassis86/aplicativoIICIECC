@@ -134,7 +134,7 @@ function App() {
       }
 
       // 3. Validar Senha
-      if (!currentProfile.password_reset) {
+      if (currentProfile && !currentProfile.password_reset) {
         const expectedPassword = 'congresso2026';
 
         if (password === expectedPassword) {
@@ -149,7 +149,7 @@ function App() {
       }
 
       // 4. Validar Senha salva no perfil (Após reset)
-      if (password === currentProfile.current_password) {
+      if (currentProfile && password === currentProfile.current_password) {
         setCurrentUserCpf(cpf);
         localStorage.setItem('current_user_cpf', cpf);
         setUserName(member.name);
@@ -165,10 +165,11 @@ function App() {
           setSelectedType(type);
           setAuthStatus('questionnaire');
         } else {
+          setSelectedType('congressista');
           setAuthStatus('select-type');
         }
       } else {
-        alert('Senha incorreta.');
+        alert('Senha ou CPF incorretos.');
         setAuthStatus('logged-out');
       }
     } catch (_) {
