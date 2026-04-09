@@ -27,18 +27,17 @@ function App() {
       try {
         // 1. PRIORIDADE: Detecção de URL (Admin vs App)
         const urlParams = new URLSearchParams(window.location.search);
-        const isPathAdmin = window.location.pathname.includes('/admin');
+        const isPathAdmin = window.location.pathname.toLowerCase().includes('/admin');
         const isAdminForced = urlParams.get('admin') === 'true';
 
         if (isPathAdmin || isAdminForced) {
           console.log("[App] Rota Administrativa ativa via URL");
           setAuthStatus('admin-portal');
-          // Não retornar aqui se quisermos que ele tente logar o admin automaticamente
         }
 
         const savedCpf = localStorage.getItem('current_user_cpf');
         if (!savedCpf) {
-          console.log("[App] Nenhum CPF salvo. Aguardando login.");
+          console.log("[App] Nenhum CPF salvo. Login necessário.");
           if (!isPathAdmin && !isAdminForced) {
             setAuthStatus('logged-out');
           }
