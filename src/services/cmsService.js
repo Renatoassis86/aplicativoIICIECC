@@ -98,10 +98,13 @@ class CMSService {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.warn("[CMS] Erro ao buscar ativos de mídia:", error.message);
+        return [];
+      }
+      return data || [];
     } catch (error) {
-      console.error('Erro ao buscar mídias:', error);
+      console.error('[CMS] Erro fatal em getMedia:', error);
       return [];
     }
   }

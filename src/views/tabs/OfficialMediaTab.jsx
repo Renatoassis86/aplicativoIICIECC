@@ -124,7 +124,11 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
               {livePhotos.map((img, index) => (
                 <div 
                   key={img.id} 
-                  onClick={() => openGallery(index, 'live')} 
+                  onClick={() => onOpenMedia({
+                    type: 'image',
+                    url: img.url,
+                    title: img.label
+                  })} 
                   className="clickable" 
                   style={{ 
                     height: '100px', 

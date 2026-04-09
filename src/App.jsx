@@ -324,15 +324,22 @@ function App() {
             
             {authStatus === 'logged-in' && view === 'app' && (
               <div className={window.innerWidth > 1024 ? "app-content-wide" : ""}>
-                <DashboardView 
-                  onLogout={handleLogout} 
-                  userType={selectedType || 'congressista'} 
-                  userName={userName || 'Visitante'} 
-                  userCpf={currentUserCpf}
-                  userAvatar={userAvatar}
-                  onAvatarUpdate={setUserAvatar}
-                  onOpenAdminPortal={() => setView('admin-portal')}
-                />
+                {currentUserCpf ? (
+                  <DashboardView 
+                    onLogout={handleLogout} 
+                    userType={selectedType || 'congressista'} 
+                    userName={userName || 'Visitante'} 
+                    userCpf={currentUserCpf}
+                    userAvatar={userAvatar}
+                    onAvatarUpdate={setUserAvatar}
+                    onOpenAdminPortal={() => setView('admin-portal')}
+                  />
+                ) : (
+                  <div style={{ padding: 40, textAlign: 'center' }}>
+                    <p>Sua sessão experiou ou dados de perfil estão incompletos.</p>
+                    <button onClick={handleLogout} style={{ marginTop: 20 }}>Voltar ao Login</button>
+                  </div>
+                )}
               </div>
             )}
           </div>
