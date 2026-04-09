@@ -21,46 +21,59 @@ function App() {
 
   // Carregar estado inicial
   useEffect(() => {
-    console.log("[App] Iniciando verificação de autenticação...");
+    console.log("[App] Iniciando verificação de roteamento e autenticação...");
+    
     const checkPersistedAuth = async () => {
       try {
-        // 0. Detecção de URL Admin Direta (Query ou Pathname)
+        // 1. PRIORIDADE: Detecção de URL (Admin vs App)
         const urlParams = new URLSearchParams(window.location.search);
-        const isPathAdmin = window.location.pathname.endsWith('/admin');
-        
-        if (urlParams.get('admin') === 'true' || isPathAdmin) {
-          console.log("[App] Modo Admin Direto detectado via URL");
+        const isPathAdmin = window.location.pathname.includes('/admin');
+        const isAdminForced = urlParams.get('admin') === 'true';
+
+        if (isPathAdmin || isAdminForced) {
+          console.log("[App] Rota Administrativa ativa via URL");
           setAuthStatus('admin-portal');
-          return;
+          // Não retornar aqui se quisermos que ele tente logar o admin automaticamente
         }
 
         const savedCpf = localStorage.getItem('current_user_cpf');
         if (!savedCpf) {
-          console.log("[App] Nenhum CPF salvo. Indo para logged-out.");
-          setAuthStatus('logged-out');
+          console.log("[App] Nenhum CPF salvo. Aguardando login.");
+          if (!isPathAdmin && !isAdminForced) {
+            setAuthStatus('logged-out');
+          }
           return;
         }
 
         console.log("[App] CPF salvo encontrado:", savedCpf);
         setCurrentUserCpf(savedCpf);
         
-        const { data: member, error: memberErr } = await supabase.from('members').select('name').eq('cpf', savedCpf).single();
+        const { data: member } = await supabase.from('members').select('name').eq('cpf', savedCpf).single();
         if (member) setUserName(member.name);
-        if (memberErr) console.warn("[App] Erro ao buscar membro:", memberErr);
 
-        const { data: profile, error } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('cpf', savedCpf)
           .single();
 
-        if (error || !profile) {
-          console.log("[App] Perfil não encontrado ou erro. Indo para logged-out.");
-          setAuthStatus('logged-out');
+        if (!profile) {
+          if (!isPathAdmin && !isAdminForced) setAuthStatus('logged-out');
           return;
         }
 
-        console.log("[App] Perfil carregado:", profile.user_type);
+        // Se for admin/organizador e acessou via URL admin, força o portal
+        if (isPathAdmin || isAdminForced) {
+          if (['organizador', 'admin', 'staff'].includes(profile.user_type)) {
+            setView('admin-portal');
+            setAuthStatus('logged-in');
+            setSelectedType(profile.user_type);
+            setUserAvatar(profile.avatar_url);
+            return;
+          }
+        }
+
+        // Fluxo Normal (App Mobile)
         const canBypassInitial = profile.onboarding_completed || 
           ['organizador', 'admin', 'staff'].includes(profile.user_type) || 
           profile.user_type?.includes('patrocinador');
@@ -69,11 +82,6 @@ function App() {
           setSelectedType(profile.user_type || 'congressista');
           setUserAvatar(profile.avatar_url);
           setAuthStatus('logged-in');
-          
-          // Se for organizador e estiver no desktop, abre o portal
-          if (profile.user_type === 'organizador' && window.innerWidth > 1024) {
-            setView('admin-portal');
-          }
         } else if (profile.user_type) {
           setSelectedType(profile.user_type);
           setUserAvatar(profile.avatar_url);
@@ -85,7 +93,6 @@ function App() {
         }
       } catch (err) {
         console.error("[App] Erro fatal na inicialização:", err);
-        setErrorState(err.message);
         setAuthStatus('logged-out');
       }
     };
@@ -157,9 +164,17 @@ function App() {
 
         const type = currentProfile.user_type;
         const canBypassOnboarding = type === 'organizador' || type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
+        const isUrlAdmin = window.location.pathname.includes('/admin');
 
         if (currentProfile.onboarding_completed || canBypassOnboarding) {
           setSelectedType(type || 'congressista');
+          
+          if (canBypassOnboarding && isUrlAdmin) {
+            setView('admin-portal');
+          } else {
+            setView('app');
+          }
+          
           setAuthStatus('logged-in');
         } else if (type) {
           setSelectedType(type);
