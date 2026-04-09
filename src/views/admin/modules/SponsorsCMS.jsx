@@ -85,33 +85,42 @@ export default function SponsorsCMS() {
   return (
     <div className="sponsors-cms-container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       <div style={{ maxWidth: '1000px' }}>
-        <h3 style={{ fontWeight: '800', color: '#1E293B', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Plus size={24} color="var(--primary)" /> Adicionar Novo Patrocinador
+        <h3 style={{ fontWeight: '900', color: '#FFFFFF', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '24px' }}>
+          <Plus size={28} color="var(--gold)" /> Adicionar Novo Patrocinador
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-          <input 
-            placeholder="Nome da Empresa"
-            value={newSponsor.name}
-            onChange={e => setNewSponsor({...newSponsor, name: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
-          />
-          <select 
-            value={newSponsor.tier}
-            onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: '600' }}
-          >
-            <option value="gold">Cota Ouro</option>
-            <option value="silver">Cota Prata</option>
-            <option value="bronze">Cota Bronze</option>
-          </select>
-          <input 
-            type="number"
-            placeholder="Ordem"
-            value={newSponsor.order_index}
-            onChange={e => setNewSponsor({...newSponsor, order_index: parseInt(e.target.value)})}
-            style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
-          />
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Nome da Empresa</label>
+            <input 
+              placeholder="Ex: Empresa Ltda"
+              value={newSponsor.name}
+              onChange={e => setNewSponsor({...newSponsor, name: e.target.value})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Tipo de Cota</label>
+            <select 
+              value={newSponsor.tier}
+              onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#000000', fontWeight: '800' }}
+            >
+              <option value="gold">Cota Ouro</option>
+              <option value="silver">Cota Prata</option>
+              <option value="bronze">Cota Bronze</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Ordem (Rank)</label>
+            <input 
+              type="number"
+              placeholder="0"
+              value={newSponsor.order_index}
+              onChange={e => setNewSponsor({...newSponsor, order_index: parseInt(e.target.value)})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '800' }}
+            />
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
