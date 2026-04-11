@@ -8,14 +8,39 @@ import { stripCPF } from '../utils/cpfUtils';
  */
 export const bulkImportMembers = async (membersArray) => {
   try {
-    // Garantir que os dados mínimos constam e o CPF está sanitizado para o BD
+    // Mapa de ticket_type (texto da planilha) → user_type interno
+    const typeMap = {
+      'aluno da ficv': 'aluno_ficv',
+      'professor de escola de ensino básico': 'professor_basico',
+      'colaborador do sistema cidade viva': 'colaborador_cv',
+      'gestor de escola': 'gestor',
+      'diretor de escola': 'diretor',
+      'coordenador de escola': 'coordenador',
+      'mantenedor de escola': 'mantenedor',
+      'pai/mãe de escola parceira cidade viva education': 'pai_parceira',
+      'família educadora (homeschooling/afterschooling)': 'familia_educadora',
+      'acadêmico ou professor de outra instituição de ensino superior': 'academico',
+      'servo da rede kids/membro (igreja cidade viva)': 'servo_kids',
+      'líderes de escola bíblica e voluntários de ministério infantil (outras igrejas)': 'lider_infantil',
+    };
+
+    const resolveUserType = (ticketType) => {
+      if (!ticketType) return 'congressista';
+      const key = ticketType.toString().toLowerCase().trim();
+      return typeMap[key] || 'congressista';
+    };
+
+    // Sanitiza e prepara payload apenas com colunas que existem em 'members'
     const payload = membersArray.map(m => ({
-      ...m,
       cpf: stripCPF(m.cpf),
+      name: m.name,
+      email: m.email || null,
+      birth_date: m.birth_date || null,
+      ticket_type: m.ticket_type || null,
       created_at: m.created_at || new Date().toISOString()
     }));
 
-    // 1. Executa e insere lote de usuários na tabela de membros
+    // 1. Upsert na tabela members
     const { data: members, error: membersErr } = await supabase
       .from('members')
       .upsert(payload, { onConflict: 'cpf' })
@@ -23,13 +48,13 @@ export const bulkImportMembers = async (membersArray) => {
 
     if (membersErr) throw membersErr;
 
-    // 2. Garante que todos existam na tabela de perfis com a senha padrão 'congresso2026'
-    // e flag de password_reset: true (Exige troca na entrada)
+    // 2. Garante perfil com user_type derivado do ticket_type e senha padrão
+    // onboarding_completed = false: força o usuário a responder o questionário
     const profilesPayload = payload.map(m => ({
       cpf: m.cpf,
-      user_type: 'congressista',
-      onboarding_completed: true,
-      password_reset: true,      
+      user_type: resolveUserType(m.ticket_type),
+      onboarding_completed: false,
+      password_reset: false,
       current_password: 'congresso2026',
       updated_at: new Date().toISOString()
     }));
