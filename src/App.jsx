@@ -184,19 +184,14 @@ function App() {
 
         if (currentProfile.onboarding_completed || canBypassOnboarding) {
           setSelectedType(type || 'congressista');
-          
-          if (canBypassOnboarding && isUrlAdmin) {
-            setView('admin-portal');
-          } else {
-            setView('app');
-          }
-          
+          setView(canBypassOnboarding && isUrlAdmin ? 'admin-portal' : 'app');
           setAuthStatus('logged-in');
         } else if (type) {
           setSelectedType(type);
+          setView('app');
           setAuthStatus('questionnaire');
         } else {
-          setSelectedType('congressista');
+          setView('app');
           setAuthStatus('select-type');
         }
       } else {
@@ -263,13 +258,16 @@ function App() {
 
   const handleQuestionnaireComplete = async (answers) => {
     try {
-      // 1. Salvar as respostas literais
+      // selectedType é string (ex: 'aluno_ficv'), não objeto
+      const surveyType = typeof selectedType === 'object' ? selectedType?.id : selectedType;
+
+      // 1. Salvar as respostas (ignora erro de tabela inexistente silenciosamente)
       await supabase
         .from('survey_responses')
         .insert([{
           user_cpf: currentUserCpf,
-          survey_type: selectedType.id,
-          answers: answers
+          survey_type: surveyType || 'unknown',
+          answers: answers || {}
         }]);
 
       // 2. Marcar onboarding como concluído
@@ -278,9 +276,12 @@ function App() {
         .update({ onboarding_completed: true })
         .eq('cpf', currentUserCpf);
 
+      setView('app');
       setAuthStatus('logged-in');
     } catch (_) {
-      alert('Erro ao salvar respostas do questionário.');
+      // Mesmo com erro, leva para home para não prender o usuário
+      setView('app');
+      setAuthStatus('logged-in');
     }
   };
 
@@ -377,10 +378,24 @@ function App() {
                   />
                 ) : (
                   <div style={{ padding: 40, textAlign: 'center' }}>
-                    <p>Sua sessão experiou ou dados de perfil estão incompletos.</p>
+                    <p>Sua sessão expirou. Faça login novamente.</p>
                     <button onClick={handleLogout} style={{ marginTop: 20 }}>Voltar ao Login</button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Fallback: nunca deixar tela branca em estado inesperado */}
+            {authStatus !== 'loading' &&
+             authStatus !== 'logged-out' &&
+             authStatus !== 'admin-portal' &&
+             authStatus !== 'reset-password' &&
+             authStatus !== 'select-type' &&
+             authStatus !== 'questionnaire' &&
+             authStatus !== 'logged-in' && (
+              <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+                <p style={{ color: '#666' }}>Estado inesperado. Tente novamente.</p>
+                <button onClick={handleLogout} style={{ padding: '12px 24px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}>Voltar ao Login</button>
               </div>
             )}
           </div>
