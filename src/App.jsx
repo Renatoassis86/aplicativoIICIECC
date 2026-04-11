@@ -103,7 +103,8 @@ function App() {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
   }
 
-  const handleLogin = async (cpf, password) => {
+  const handleLogin = async (rawCpf, password) => {
+    const cpf = rawCpf.trim().toLowerCase();
     setAuthStatus('loading');
 
     try {
