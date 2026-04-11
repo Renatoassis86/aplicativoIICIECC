@@ -118,7 +118,6 @@ const BaseSurvey = ({ steps, onComplete, themeColor = 'var(--primary)' }) => {
               )}
 
               {q.type === 'checkbox' && (
-// ... (keep the rest)
                 <div style={{ display: 'grid', gap: '12px' }}>
                   {q.options.map(opt => (
                     <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'white' }}>
