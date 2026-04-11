@@ -28,7 +28,7 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
       <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
         <header style={{ 
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-          padding: 'env(safe-area-inset-top, 24px) 20px 20px', background: 'white', borderBottom: '1px solid var(--border)' 
+          padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 20px', background: 'white', borderBottom: '1px solid var(--border)' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ background: '#FDF2F2', padding: '8px', borderRadius: '50%' }}>
