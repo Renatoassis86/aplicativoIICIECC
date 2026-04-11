@@ -20,7 +20,12 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       setMediaList(data);
       setLoading(false);
     };
+
     loadMedia();
+
+    // Listener para atualizações em tempo real do painel admin
+    window.addEventListener('cms-updated', loadMedia);
+    return () => window.removeEventListener('cms-updated', loadMedia);
   }, [cms]);
 
   const getDriveUrl = (id) => `https://lh3.googleusercontent.com/d/${id}`;

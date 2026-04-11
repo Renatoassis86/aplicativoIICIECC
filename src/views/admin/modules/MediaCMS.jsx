@@ -181,26 +181,63 @@ const MediaCMS = () => {
         <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Mídias Cadastradas</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {mediaList.map(item => (
-            <div key={item.id} className="white-bg" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', border: '1px solid #F1F5F9', background: item.is_live_stream ? '#FEF2F2' : 'white' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-                {item.media_type === 'video' ? <Video size={20} /> : <Music size={20} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{item.title}</p>
-                  {item.is_live_stream && <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900' }}>LIVE</span>}
+          {mediaList.map(item => {
+            const isLive = item.is_live_stream;
+            return (
+              <div key={item.id} className="white-bg" style={{ 
+                display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', 
+                border: '1px solid #F1F5F9', background: isLive ? '#FEF2F2' : 'white',
+                boxShadow: isLive ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none'
+              }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                  {item.media_type === 'video' ? <Video size={20} /> : <Music size={20} />}
                 </div>
-                <p style={{ fontSize: '12px', color: '#475569' }}>{item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}{item.url_or_path}</p>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{item.title}</p>
+                    {isLive && <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900' }}>LIVE</span>}
+                  </div>
+                  
+                  {isLive ? (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        defaultValue={item.url_or_path}
+                        onBlur={async (e) => {
+                          if (e.target.value !== item.url_or_path) {
+                            try {
+                              setLoading(true);
+                              await cmsService.updateMedia(item.id, { url_or_path: e.target.value });
+                              alert('Link da transmissão atualizado!');
+                              loadMedia();
+                            } catch (err) {
+                              alert('Erro ao atualizar: ' + err.message);
+                              e.target.value = item.url_or_path;
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                        style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', flex: 1 }}
+                      />
+                      <Save size={16} color="#B91C1C" style={{ opacity: 0.5 }} />
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '12px', color: '#475569', wordBreak: 'break-all' }}>
+                      {item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}
+                      {item.url_or_path}
+                    </p>
+                  )}
+                </div>
+                <button 
+                  onClick={() => handleDelete(item.id)}
+                  style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#FEE2E2', color: '#B91C1C', cursor: 'pointer' }}
+                >
+                  <Trash2 size={18} />
+                </button>
               </div>
-              <button 
-                onClick={() => handleDelete(item.id)}
-                style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#FEE2E2', color: '#B91C1C', cursor: 'pointer' }}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
+            );
+          })}
           {mediaList.length === 0 && <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>Nenhuma mídia cadastrada ainda.</p>}
         </div>
       </div>

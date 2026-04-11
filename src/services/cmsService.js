@@ -156,6 +156,24 @@ class CMSService {
     }
   }
 
+  async updateMedia(id, updates) {
+    try {
+      const { data, error } = await supabase
+        .from('media_assets')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      window.dispatchEvent(new CustomEvent('cms-updated'));
+      return data;
+    } catch (error) {
+      console.error('Erro ao atualizar mídia:', error);
+      throw error;
+    }
+  }
+
   async addMediaLink(title, description, type, url, isLive = false) {
     try {
       const { data, error } = await supabase
