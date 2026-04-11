@@ -10,11 +10,11 @@ const UserTypeSelectionView = ({ onSelect }) => {
     { id: 'aluno_ficv', label: 'Aluno da FICV', icon: <GraduationCap size={24} />, category: 'general' },
     { id: 'pai_parceira', label: 'Pai/Mãe de Escola parceira Cidade Viva Education', icon: <Users size={24} />, category: 'general' },
     { id: 'colaborador_cv', label: 'Colaborador do Sistema Cidade Viva', icon: <Heart size={24} />, category: 'general' },
-    { id: 'familia_educadora', label: 'Família educadora (Homeschooling)', icon: <Users size={24} />, category: 'general' },
-    { id: 'academico', label: 'Acadêmico ou professor de outra IES', icon: <GraduationCap size={24} />, category: 'general' },
+    { id: 'familia_educadora', label: 'Família educadora (Homeschooling/Afterschooling)', icon: <Users size={24} />, category: 'general' },
+    { id: 'academico', label: 'Acadêmico ou professor de outra Instituição de Ensino Superior', icon: <GraduationCap size={24} />, category: 'general' },
     { id: 'professor_basico', label: 'Professor de Escola de Ensino Básico', icon: <Users size={24} />, category: 'general' },
     { id: 'servo_kids', label: 'Servo da Rede Kids/Membro (Igreja Cidade Viva)', icon: <Heart size={24} />, category: 'general' },
-    { id: 'lider_infantil', label: 'Líderes de Escola Bíblica / Ministério Infantil', icon: <Users size={24} />, category: 'general' },
+    { id: 'lider_infantil', label: 'Líderes de Escola Bíblica e Voluntários de ministério infantil (outras igrejas)', icon: <Users size={24} />, category: 'general' },
   ];
 
   return (
