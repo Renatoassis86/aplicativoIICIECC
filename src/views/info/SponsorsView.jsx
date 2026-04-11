@@ -1,81 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Award, Briefcase, ExternalLink, ArrowLeft, Info, ShieldCheck, Zap, Handshake } from 'lucide-react';
 import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
+import { supabase } from '../../lib/supabase';
 
 const SponsorsView = ({ onClose }) => {
   const [selectedSponsor, setSelectedSponsor] = useState(null);
+  const [sponsors, setSponsors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSponsors = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('sponsors')
+        .select('*')
+        .eq('active', true)
+        .order('order_index');
+      
+      if (data) {
+        setSponsors(data);
+      }
+      setLoading(false);
+    };
+    fetchSponsors();
+  }, []);
 
   const tiers = [
     {
       name: 'Master & Diamante',
       icon: <Zap size={20} color="var(--gold)" />,
       color: 'var(--gold)',
-      description: 'Autoridade de Influência. Parceiros de nível estratégico.',
-      sponsors: [
-        { 
-          id: 1, 
-          name: 'OIKOS', 
-          tierName: 'Patrocinador Master', 
-          tierColor: '#B9F2FF',
-          tagline: 'Líder em gestão académica clássica.',
-          bio: 'A OIKOS é a maior parceira tecnológica do movimento de educação clássica na América Latina. \n\nEspecializada em sistemas de gestão que respeitam as particularidades da pedagogia clássica, a OIKOS oferece ferramentas robustas para controle acadêmico, financeiro e pedagógico.',
-          logo: '/assets/sponsors/oikos.png',
-          website: 'https://oikos.com.br',
-          booth: 'Pavilhão Central • Estande 01'
-        },
-        { 
-          id: 2, 
-          name: 'PACTUM', 
-          tierName: 'Patrocinador Diamante', 
-          tierColor: '#B9F2FF',
-          tagline: 'Consultoria e Implantação.',
-          bio: 'A PACTUM atua no suporte estratégico e institucional a escolas clássicas em todo o Brasil. \n\nCom uma equipe de especialistas renomados, ajudamos instituições a transicionarem para o modelo clássico com segurança e excelência acadêmica.',
-          logo: '/assets/sponsors/pactum.png',
-          website: 'https://pactum.edu.br',
-          booth: 'Pavilhão Norte • Estande 12'
-        },
-        { 
-          id: 4, 
-          name: 'FICV', 
-          tierName: 'Parceiro Master', 
-          tierColor: '#B9F2FF',
-          tagline: 'Educação Superior Clássica.',
-          bio: 'A Faculdade Internacional Cidade Viva é o braço acadêmico do CIECC, oferecendo Pós-graduação e formação contínua de professores na tradição clássica cristã.',
-          logo: '/assets/sponsors/ficv.png',
-          website: 'https://ficv.edu.br',
-          booth: 'Hall de Entrada'
-        }
-      ]
+      sponsors: sponsors.filter(s => s.tier === 'Master' || s.tier === 'Diamante').map(s => ({
+          ...s,
+          logo: s.logo_url,
+          tierName: s.tier,
+          website: s.website_url,
+          tierColor: '#B9F2FF'
+      }))
     },
     {
       name: 'Cota Ouro',
       icon: <Award size={20} color="#FFD700" />,
       color: '#FFD700',
-      description: 'Autoridade Máxima. Destaque premium em todas as plataformas.',
-      sponsors: [
-        { 
-          id: 3, 
-          name: 'Editora Trinitas', 
-          tierName: 'Patrocinador Ouro', 
-          tierColor: '#FFD700',
-          tagline: 'Livros e Formação.',
-          bio: 'A Editora Trinitas é a maior editora especializada em conteúdos clássicos e cristãos do Brasil. \n\nNossa missão é resgatar a tradição das letras e da sabedoria cristã através de publicações de alta qualidade.',
-          logo: '/assets/sponsors/trinitas.png',
-          website: 'https://editoratrinitas.com.br',
-          booth: 'Lounge dos Autores'
-        },
-        { 
-          id: 6, 
-          name: 'Schola Classics', 
-          tierName: 'Patrocinador Ouro', 
-          tierColor: '#FFD700',
-          tagline: 'Ensino de Excelência.',
-          bio: 'A Schola Classics oferece uma plataforma de ensino completa voltada ao currículo clássico, com ferramentas digitais exclusivas para pais e professores.',
-          logo: '/assets/sponsors/schola.png',
-          website: 'https://schola.com.br',
-          booth: 'Auditório 2'
-        }
-      ]
+      sponsors: sponsors.filter(s => s.tier === 'Ouro').map(s => ({
+          ...s,
+          logo: s.logo_url,
+          tierName: s.tier,
+          website: s.website_url,
+          tierColor: '#FFD700'
+      }))
+    },
+    {
+      name: 'Cota Prata & Bronze',
+      icon: <Briefcase size={20} color="#C0C0C0" />,
+      color: '#C0C0C0',
+      sponsors: sponsors.filter(s => s.tier === 'Prata' || s.tier === 'Bronze').map(s => ({
+          ...s,
+          logo: s.logo_url,
+          tierName: s.tier,
+          website: s.website_url,
+          tierColor: '#C0C0C0'
+      }))
     }
   ];
 
@@ -118,35 +103,39 @@ const SponsorsView = ({ onClose }) => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gap: '40px' }}>
-            {tiers.map((tier, idx) => (
-              <section key={idx}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                   {tier.icon}
-                   <h4 style={{ fontSize: '13px', fontWeight: '900', color: tier.color, textTransform: 'uppercase' }}>{tier.name}</h4>
-                </div>
-                <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
-                  {tier.sponsors.map((s, si) => (
-                    <div 
-                      key={si} 
-                      onClick={() => setSelectedSponsor(s)}
-                      className="card clickable" 
-                      style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}
-                    >
-                       <div style={{ width: '56px', height: '56px', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden', background: 'white', padding: '4px' }}>
-                          <img src={s.logo} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                       </div>
-                       <div style={{ flex: 1 }}>
-                          <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</h5>
-                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.3' }}>{s.tagline}</p>
-                       </div>
-                       <ExternalLink size={16} color="var(--border)" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+          {loading ? (
+             <p style={{ textAlign: 'center', padding: '40px', color: '#666' }}>Carregando parceiros...</p>
+          ) : (
+            <div style={{ display: 'grid', gap: '40px' }}>
+              {tiers.map((tier, idx) => tier.sponsors.length > 0 && (
+                <section key={idx}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                     {tier.icon}
+                     <h4 style={{ fontSize: '13px', fontWeight: '900', color: tier.color, textTransform: 'uppercase' }}>{tier.name}</h4>
+                  </div>
+                  <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
+                    {tier.sponsors.map((s, si) => (
+                      <div 
+                        key={si} 
+                        onClick={() => setSelectedSponsor(s)}
+                        className="card clickable" 
+                        style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}
+                      >
+                         <div style={{ width: '56px', height: '56px', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden', background: 'white', padding: '4px' }}>
+                            <img src={s.logo} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                         </div>
+                         <div style={{ flex: 1 }}>
+                            <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</h5>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.3' }}>{s.tagline}</p>
+                         </div>
+                         <ExternalLink size={16} color="var(--border)" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
 
           <button 
             onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')} 

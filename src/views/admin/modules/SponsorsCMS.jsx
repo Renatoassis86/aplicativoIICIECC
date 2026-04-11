@@ -22,7 +22,10 @@ export default function SponsorsCMS() {
     logo_url: '',
     website_url: '',
     tier: 'gold',
-    order_index: 0
+    order_index: 0,
+    tagline: '',
+    bio: '',
+    booth: ''
   });
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function SponsorsCMS() {
 
     const { error } = await supabase.from('sponsors').insert([{ ...newSponsor, logo_url: finalLogoUrl }]);
     if (!error) {
-      setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length });
+      setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length, tagline: '', bio: '', booth: '' });
       setUploadFile(null);
       fetchSponsors();
     }
@@ -89,7 +92,7 @@ export default function SponsorsCMS() {
           <Plus size={28} color="var(--gold)" /> Adicionar Novo Patrocinador
         </h3>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 0.5fr', gap: '16px', marginBottom: '16px' }}>
           <div>
             <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Nome da Empresa</label>
             <input 
@@ -100,19 +103,29 @@ export default function SponsorsCMS() {
             />
           </div>
           <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Tagline (Frase Curta)</label>
+            <input 
+              placeholder="Ex: Líder em tecnologia"
+              value={newSponsor.tagline}
+              onChange={e => setNewSponsor({...newSponsor, tagline: e.target.value})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+            />
+          </div>
+          <div>
             <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Tipo de Cota</label>
             <select 
               value={newSponsor.tier}
               onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#000000', fontWeight: '800' }}
             >
+              <option value="diamond">Master & Diamante</option>
               <option value="gold">Cota Ouro</option>
               <option value="silver">Cota Prata</option>
               <option value="bronze">Cota Bronze</option>
             </select>
           </div>
           <div>
-            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Ordem (Rank)</label>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Ordem</label>
             <input 
               type="number"
               placeholder="0"
@@ -123,8 +136,29 @@ export default function SponsorsCMS() {
           </div>
         </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Biografia / Descrição Longa</label>
+            <textarea 
+              placeholder="Conte mais sobre a empresa..."
+              value={newSponsor.bio}
+              onChange={e => setNewSponsor({...newSponsor, bio: e.target.value})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', minHeight: '100px', resize: 'none' }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Estande (Local)</label>
+            <input 
+              placeholder="Ex: Pavilhão Sul"
+              value={newSponsor.booth}
+              onChange={e => setNewSponsor({...newSponsor, booth: e.target.value})}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+            />
+          </div>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Logo da Empresa</label>
+            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Logo e Website</label>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
                     <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo

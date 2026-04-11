@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ExternalLink, Globe, Instagram, Mail, MapPin, Share2 } from 'lucide-react';
+import { X, ExternalLink, Globe, Instagram, Mail, MapPin, Share2, Bookmark } from 'lucide-react';
 
 export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite }) {
   if (!sponsor) return null;

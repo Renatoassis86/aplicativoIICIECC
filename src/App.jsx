@@ -292,6 +292,37 @@ function App() {
     setCurrentUserCpf(null);
   };
 
+// ErrorBoundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', background: '#fff', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h2 style={{ color: '#6B141A', marginBottom: '20px' }}>Ocorreu um erro no Hub</h2>
+          <p style={{ color: '#666', marginBottom: '30px' }}>{this.state.error?.message || 'Erro de renderização'}</p>
+          <button 
+            onClick={() => { localStorage.clear(); window.location.reload(); }}
+            style={{ padding: '12px 24px', background: '#6B141A', color: '#fff', border: 'none', borderRadius: '8px' }}
+          >
+            Resetar App e Recarregar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
   if (authStatus === 'loading') {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
@@ -313,6 +344,8 @@ function App() {
         />
       ) : (
         /* PATH 1 & 2 DYNAMIC: RESPONSIVE PORTAL vs MOBILE APP */
+      <main>
+      <ErrorBoundary>
         <div className={isAdminView ? "admin-wrapper" : "mobile-wrapper"}>
           <div className={isAdminView ? "" : "App"} style={{ 
             background: isAdminView ? '#0A0F1A' : '#F7F8FA', 
@@ -400,6 +433,8 @@ function App() {
             )}
           </div>
         </div>
+      </ErrorBoundary>
+    </main>
       )}
 
     </div>
