@@ -223,12 +223,16 @@ function App() {
       
       const type = updatedProfile?.user_type;
       const onboardingDone = updatedProfile?.onboarding_completed;
-      const isStaffOrSponsor = type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
+      const isStaffOrSponsor = type === 'organizador' || type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
 
       if (isStaffOrSponsor || onboardingDone) {
-        // Já completou tudo → vai direto para a home
+        // Já completou tudo → vai direto para a home (ou portal se for admin)
         setSelectedType(type || 'congressista');
         setUserAvatar(updatedProfile?.avatar_url || null);
+        const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
+        if (isStaffOrSponsor && isUrlAdmin) {
+          setView('admin-portal');
+        }
         setAuthStatus('logged-in');
       } else if (type) {
         // Tem tipo mas ainda não fez o questionário → vai para o questionário
