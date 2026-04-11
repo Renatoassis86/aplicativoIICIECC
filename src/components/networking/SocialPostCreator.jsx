@@ -13,23 +13,40 @@ import { supabase } from '../../lib/supabase';
  * inputs criados programaticamente dentro de Promises/async. 
  * SOLUÇÃO: inputs HTML estáticos com refs, ativados diretamente pelo clique.
  */
-const SocialPostCreator = ({
-  onClose, onSuccess,
-  sponsorName, sponsorRole, sponsorTier = 1,
-  userId
-}) => {
+const SocialPostCreator = (props) => {
+  const {
+   onClose, onSuccess,
+   sponsorName, sponsorRole, sponsorTier = 1,
+   userId
+  } = props;
+
   const [caption, setCaption] = useState('');
   const [mediaFiles, setMediaFiles] = useState([]);   // [{ file, url, type }]
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);                // 1: Seleção  2: Detalhes  3: Tagging
 
-  // Tagging
   const [allUsers, setAllUsers] = useState([]);
   const [tagQuery, setTagQuery] = useState('');
   const [taggedUsers, setTaggedUsers] = useState([]);  // [{ id: cpf, name }]
 
+  // Modo Edição
+  const [isEdit, setIsEdit] = useState(props.isEdit || false);
+
   // Localização
   const [location, setLocation] = useState('');
+
+  useEffect(() => {
+    if (props.isEdit && props.initialPost) {
+      setCaption(props.initialPost.caption || '');
+      setTaggedUsers(props.initialPost.taggedUsers?.map((name, i) => ({ 
+        id: props.initialPost.tagged_user_ids?.[i] || name, 
+        name: name 
+      })) || []);
+      // Note: the original media is usually handled differently in edit, 
+      // but here we allow editing the details of existing media.
+      setStep(2);
+    }
+  }, [props.isEdit, props.initialPost]);
 
   // Refs para os DOIS inputs estáticos
   const galleryRef = useRef(null);
@@ -84,54 +101,58 @@ const SocialPostCreator = ({
 
   // ─── PUBLICAR ────────────────────────────────────────────────────────────
 
-  const handlePost = async () => {
-    if (!caption.trim() && mediaFiles.length === 0) return;
+   const handlePost = async () => {
+    if (!caption.trim() && mediaFiles.length === 0 && !isEdit) return;
     setLoading(true);
 
     try {
-      const uploadedUrls = [];
+      if (isEdit) {
+        // MODO EDIÇÃO
+        await updatePostApi(props.initialPost.id, {
+          caption: location ? `${caption}\n\n📍 ${location}` : caption,
+          taggedUserIds: taggedUsers.map(u => u.id)
+        });
+      } else {
+        // MODO CRIAÇÃO (Original)
+        const uploadedUrls = [];
+        for (const m of mediaFiles) {
+          const ext      = m.file.name?.split('.').pop() || 'jpg';
+          const path     = `posts/${userId || 'anon'}_${Date.now()}.${ext}`;
+          const { error } = await supabase.storage
+            .from('posts_media')
+            .upload(path, m.file, { contentType: m.file.type || 'image/jpeg', upsert: true });
 
-      for (const m of mediaFiles) {
-        const ext      = m.file.name?.split('.').pop() || 'jpg';
-        const path     = `posts/${userId || 'anon'}_${Date.now()}.${ext}`;
-        const { error } = await supabase.storage
-          .from('posts_media')
-          .upload(path, m.file, { contentType: m.file.type || 'image/jpeg', upsert: true });
-
-        if (error) {
-          console.warn('Upload error, usando base64 fallback:', error);
-          // base64 fallback
-          const base64 = await new Promise((res) => {
-            const reader = new FileReader();
-            reader.onload = () => res(reader.result);
-            reader.readAsDataURL(m.file);
-          });
-          uploadedUrls.push(base64);
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('posts_media').getPublicUrl(path);
-          uploadedUrls.push(publicUrl);
+          if (error) {
+            const base64 = await new Promise((res) => {
+              const reader = new FileReader();
+              reader.onload = () => res(reader.result);
+              reader.readAsDataURL(m.file);
+            });
+            uploadedUrls.push(base64);
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('posts_media').getPublicUrl(path);
+            uploadedUrls.push(publicUrl);
+          }
         }
+
+        const finalCaption = location ? `${caption}\n\n📍 ${location}` : caption;
+
+        await createPost(
+          sponsorName || 'Congressista',
+          sponsorRole || 'Participante',
+          sponsorTier,
+          mediaFiles[0]?.type || 'image',
+          uploadedUrls,
+          finalCaption,
+          userId || 'CIECC',
+          taggedUsers.map(u => u.id)
+        );
       }
-
-      const finalCaption = location
-        ? `${caption}\n\n📍 ${location}`
-        : caption;
-
-      await createPost(
-        sponsorName || 'Congressista',
-        sponsorRole || 'Participante',
-        sponsorTier,
-        mediaFiles[0]?.type || 'image',
-        uploadedUrls,
-        finalCaption,
-        userId || 'CIECC',
-        taggedUsers.map(u => u.id)
-      );
 
       onSuccess();
     } catch (err) {
-      alert(`Erro ao publicar: ${err.message}`);
+      alert(`Erro ao salvar: ${err.message}`);
     } finally {
       setLoading(false);
     }

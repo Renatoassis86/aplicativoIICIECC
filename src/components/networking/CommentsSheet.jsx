@@ -12,11 +12,11 @@ const CommentItem = ({ comment, depth = 0, onReply, onDelete, onLike, canDelete 
   
   return (
     <div style={{ 
-      marginLeft: depth > 0 ? '12px' : '0', 
-      padding: '12px 0 4px', 
-      borderLeft: depth > 0 ? '2px solid #F1F1F1' : 'none',
-      background: depth % 2 !== 0 ? 'rgba(0,0,0,0.01)' : 'transparent',
-      borderRadius: '8px'
+      marginLeft: depth > 0 ? '24px' : '0', 
+      marginTop: '8px',
+      paddingBottom: '8px',
+      borderLeft: depth > 0 ? '1px solid #EAEAEA' : 'none',
+      position: 'relative'
     }}>
       <div style={{ display: 'flex', gap: '12px', padding: depth > 0 ? '0 12px' : '0' }}>
         <div style={{ 
@@ -49,7 +49,7 @@ const CommentItem = ({ comment, depth = 0, onReply, onDelete, onLike, canDelete 
         </button>
       </div>
       {comment.replies && comment.replies.length > 0 && (
-        <div style={{ marginTop: '8px' }}>
+        <div style={{ marginTop: '4px' }}>
           {comment.replies.map(r => (
             <CommentItem key={r.id} comment={r} depth={depth + 1} onReply={onReply} onDelete={onDelete} onLike={onLike} canDelete={canDelete} />
           ))}

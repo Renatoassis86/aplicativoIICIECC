@@ -19,6 +19,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [viewingSaved, setViewingSaved] = useState(false);
   const [activeOptionsPost, setActiveOptionsPost] = useState(null);
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [hiddenPosts, setHiddenPosts] = useState([]);
 
   // Determina metadados do autor para postagem
   const getAuthorMetaData = (type) => {
@@ -66,6 +68,16 @@ export default function MediaTab({ userType, userName, userCpf }) {
     } catch (e) {
       console.error("[handlePinPost]", e);
     }
+  };
+
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setActiveOptionsPost(null);
+  };
+
+  const handleHidePost = (postId) => {
+    setHiddenPosts(prev => [...prev, postId]);
+    setActiveOptionsPost(null);
   };
 
   const handleLike = async (postId, currentState) => {
@@ -126,11 +138,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
     await deletePostApi(postId);
   };
 
-  const handleHidePost = (postId) => {
-    setPosts(prev => prev.filter(p => p.id !== postId));
-  };
-
-  const visiblePosts = viewingSaved ? posts.filter(p => p.savedByMe) : posts;
+  const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
+    .filter(p => !hiddenPosts.includes(p.id));
 
   // Renderiza a mídia baseada no tipo (Image, Carousel, Reel)
   const [muted, setMuted] = useState(true);
@@ -340,14 +349,16 @@ export default function MediaTab({ userType, userName, userCpf }) {
       </section>
 
       {/* MODAL DE CRIAÇÃO (EXCLUSIVO PARA PATROCINADORES) */}
-      {showCreator && (
+      {(showCreator || editingPost) && (
         <SocialPostCreator 
+          isEdit={!!editingPost}
+          initialPost={editingPost}
           sponsorName={userName || 'Expositor'} 
           sponsorRole={authorMeta.role}
           sponsorTier={authorMeta.tier}
           userId={userCpf}
-          onClose={() => setShowCreator(false)} 
-          onSuccess={() => { setShowCreator(false); loadPosts(); }} 
+          onClose={() => { setShowCreator(false); setEditingPost(null); }} 
+          onSuccess={() => { setShowCreator(false); setEditingPost(null); loadPosts(); }} 
         />
       )}
 
@@ -361,6 +372,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
            onDelete={handleDeletePost}
            onHide={handleHidePost}
            onPin={handlePinPost}
+           onEdit={handleEditPost}
         />
       )}
 

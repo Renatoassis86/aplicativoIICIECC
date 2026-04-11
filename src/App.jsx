@@ -344,7 +344,6 @@ class ErrorBoundary extends React.Component {
         />
       ) : (
         /* PATH 1 & 2 DYNAMIC: RESPONSIVE PORTAL vs MOBILE APP */
-      <main>
       <ErrorBoundary>
         <div className={isAdminView ? "admin-wrapper" : "mobile-wrapper"}>
           <div className={isAdminView ? "" : "App"} style={{ 
@@ -434,7 +433,6 @@ class ErrorBoundary extends React.Component {
           </div>
         </div>
       </ErrorBoundary>
-    </main>
       )}
 
     </div>

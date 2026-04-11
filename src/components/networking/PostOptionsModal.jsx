@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, EyeOff, Trash2, Link, AlertTriangle, Pin } from 'lucide-react';
+import { Edit2, EyeOff, Trash2, Link, AlertTriangle, Pin, Users } from 'lucide-react';
 
 /**
  * Menu de Opções da Postagem (Botão de 3 pontinhos)
@@ -39,13 +39,17 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide,
                   <span>{post.isPinned ? 'Desafixar do topo' : 'Fixar no topo'}</span>
                 </button>
               )}
-              <button className="option-btn">
+              <button className="option-btn" onClick={() => { onEdit(post); onClose(); }}>
                 <Edit2 size={20} color="var(--text-main)" />
                 <span>Editar publicação</span>
               </button>
-              <button className="option-btn">
+              <button className="option-btn" onClick={() => { onEdit(post, 3); onClose(); }}>
+                <Users size={20} color="var(--text-main)" />
+                <span>Marcar mais pessoas</span>
+              </button>
+              <button className="option-btn" onClick={() => { onHide(post.id); onClose(); }}>
                 <EyeOff size={20} color="var(--text-main)" />
-                <span>Ocultar contagem de curtidas</span>
+                <span>Ocultar postagem</span>
               </button>
               <button className="option-btn" style={{ color: '#E53E3E' }} onClick={() => { onDelete(post.id); onClose(); }}>
                 <Trash2 size={20} color="#E53E3E" />

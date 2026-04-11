@@ -177,8 +177,28 @@ export const searchUsers = async (query) => {
 };
 
 export const deletePostApi = async (postId) => {
+  // 1. Opcional: deletar engajamentos e comentários vinculados (ou confiar em ON DELETE CASCADE)
+  await supabase.from('social_comments').delete().eq('post_id', postId);
+  await supabase.from('social_engagements').delete().eq('post_id', postId);
+  
+  // 2. Deletar o post
   await supabase.from('social_posts').delete().eq('id', postId);
   return true;
+};
+
+export const updatePostApi = async (postId, updates) => {
+  const { data, error } = await supabase
+    .from('social_posts')
+    .update({
+      caption: updates.caption,
+      tagged_user_ids: updates.taggedUserIds
+    })
+    .eq('id', postId)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
 };
 
 export const toggleLikePost = async (postId, currentState, userId) => {
