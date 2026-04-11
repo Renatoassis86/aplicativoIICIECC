@@ -109,15 +109,31 @@ function App() {
 
     try {
       // 1. Verificar se o membro existe
-      const { data: member, error: memberError } = await supabase
+      const { data: member } = await supabase
         .from('members')
         .select('*')
         .eq('cpf', cpf)
         .single();
 
-      if (memberError || !member) {
-        alert('CPF não encontrado na base de inscritos.');
-        setAuthStatus('logged-out');
+      // Membro não cadastrado: cria on-the-fly e pede tipo de inscrição
+      if (!member) {
+        const expectedPassword = 'congresso2026';
+        if (password !== expectedPassword) {
+          alert('CPF não encontrado. No primeiro acesso, use a senha padrão: congresso2026');
+          setAuthStatus('logged-out');
+          return;
+        }
+
+        // Cria registro básico do membro
+        await supabase.from('members').insert([{ cpf, name: cpf }]);
+
+        // Cria perfil sem tipo
+        await supabase.from('profiles').insert([{ cpf, password_reset: false }]);
+
+        setCurrentUserCpf(cpf);
+        localStorage.setItem('current_user_cpf', cpf);
+        // Vai para reset de senha → depois escolha de tipo
+        setAuthStatus('reset-password');
         return;
       }
 
