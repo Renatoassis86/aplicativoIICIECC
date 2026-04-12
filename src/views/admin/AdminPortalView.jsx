@@ -54,7 +54,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [stats, setStats] = useState({ attendees: 0, posts: 0, notifications: 0 });
   const [loading, setLoading] = useState(true);
   const [emergencyText, setEmergencyText] = useState('');
-  
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastAudience, setBroadcastAudience] = useState('all');
   // Materials state
   const [selectedSessionForMaterials, setSelectedSessionForMaterials] = useState(null);
   const [sessionMaterials, setSessionMaterials] = useState([]);
@@ -180,38 +181,81 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
              </div>
              
              <div className="card-alert">
-                <div style={{ position: 'relative', zIndex: 10 }}>
-                  <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px' }}>Broadcast de Emergência</h4>
-                  <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '24px' }}>Envie um comunicado para todos os dispositivos logados agora.</p>
-                  <textarea 
-                    placeholder="Digite o alerta aqui..."
-                    value={emergencyText}
-                    onChange={(e) => setEmergencyText(e.target.value)}
-                    className="alert-textarea"
-                    rows={4}
-                  />
-                  <button 
-                    onClick={async () => {
-                      if(!emergencyText) return;
-                      const { error } = await supabase.from('system_notifications').insert({
-                        title: 'INFORMAÇÃO IMPORTANTE',
-                        message: emergencyText,
-                        type: 'alert',
-                        target_role: 'all'
-                      });
-                      if (error) alert('Erro ao disparar: ' + error.message);
-                      else {
-                        alert('Alerta disparado com sucesso!');
-                        setEmergencyText('');
-                        loadData();
-                      }
-                    }}
-                    className="alert-btn">
-                    <Send size={18} /> DISPARAR ALERTA
-                  </button>
-                </div>
-                <Activity style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', opacity: 0.05 }} />
-             </div>
+                 <div style={{ position: 'relative', zIndex: 10 }}>
+                   <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px' }}>Broadcast de Emergência</h4>
+                   <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '24px' }}>Envie um comunicado oficial segmentado agora.</p>
+                   
+                   <div style={{ marginBottom: '16px' }}>
+                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Título do Alerta</label>
+                     <input 
+                       placeholder="Ex: Mudança de Sala..."
+                       value={broadcastTitle}
+                       onChange={(e) => setBroadcastTitle(e.target.value)}
+                       style={{ width: '100%', background: '#fff', border: 'none', borderRadius: '10px', padding: '12px 16px', color: '#000', fontWeight: '700', fontSize: '14px' }}
+                     />
+                   </div>
+
+                   <div style={{ marginBottom: '16px' }}>
+                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Público Alvo</label>
+                     <div style={{ display: 'flex', gap: '8px' }}>
+                       {[
+                         { id: 'all', label: 'Todos' },
+                         { id: 'staff', label: 'Equipe/Staff' },
+                         { id: 'sponsors', label: 'Patrocinadores' }
+                       ].map(opt => (
+                         <button 
+                           key={opt.id}
+                           onClick={() => setBroadcastAudience(opt.id)}
+                           style={{ 
+                             flex: 1, padding: '10px 4px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', border: '1px solid rgba(255,255,255,0.2)',
+                             background: broadcastAudience === opt.id ? 'var(--gold)' : 'rgba(0,0,0,0.2)',
+                             color: broadcastAudience === opt.id ? '#000' : '#fff'
+                           }}
+                         >
+                           {opt.label}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+
+                   <div style={{ marginBottom: '24px' }}>
+                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Conteúdo da Mensagem</label>
+                     <textarea 
+                       placeholder="Digite o alerta aqui..."
+                       value={emergencyText}
+                       onChange={(e) => setEmergencyText(e.target.value)}
+                       className="alert-textarea"
+                       rows={3}
+                       style={{ marginBottom: 0 }}
+                     />
+                   </div>
+
+                   <button 
+                     onClick={async () => {
+                       if(!emergencyText || !broadcastTitle) {
+                         alert('Por favor, preencha o título e o conteúdo.');
+                         return;
+                       }
+                       const { error } = await supabase.from('system_notifications').insert({
+                         title: broadcastTitle,
+                         message: emergencyText,
+                         type: 'alert',
+                         target_role: broadcastAudience
+                       });
+                       if (error) alert('Erro ao disparar: ' + error.message);
+                       else {
+                         alert('Alerta disparado com sucesso!');
+                         setEmergencyText('');
+                         setBroadcastTitle('');
+                         loadData();
+                       }
+                     }}
+                     className="alert-btn">
+                     <Send size={18} /> DISPARAR ALERTA
+                   </button>
+                 </div>
+                 <Activity style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', opacity: 0.05 }} />
+              </div>
           </div>
         </div>
       );
