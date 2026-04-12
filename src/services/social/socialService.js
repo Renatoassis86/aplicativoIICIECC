@@ -79,8 +79,8 @@ const processPostsResponse = async (rawPosts, userId) => {
           });
       };
 
-      const pLikes = (engagements || []).filter(e => e.type === 'like' && e.post_id === post.id);
-      const pSaves = (engagements || []).filter(e => e.type === 'save' && e.post_id === post.id);
+      const pLikes = (engagements || []).filter(e => e.type === 'post_like' && e.post_id === post.id);
+      const pSaves = (engagements || []).filter(e => e.type === 'post_save' && e.post_id === post.id);
 
       // Hydrate Tagged Users (busca nomes dos CPFs)
       let taggedUsersNames = [];
@@ -99,6 +99,7 @@ const processPostsResponse = async (rawPosts, userId) => {
         mediaUrls: post.media_urls || [],
         caption: post.caption,
         isPinned: post.is_pinned || false,
+        isArchived: post.is_archived || false,
         isSponsor: true, 
         comments: buildTree(null),
         likes: pLikes.length,
@@ -114,6 +115,11 @@ const processPostsResponse = async (rawPosts, userId) => {
 
 export const togglePinPost = async (postId, currentState) => {
   await supabase.from('social_posts').update({ is_pinned: !currentState }).eq('id', postId);
+  return !currentState;
+};
+
+export const toggleArchivePost = async (postId, currentState) => {
+  await supabase.from('social_posts').update({ is_archived: !currentState }).eq('id', postId);
   return !currentState;
 };
 
@@ -203,9 +209,9 @@ export const updatePostApi = async (postId, updates) => {
 
 export const toggleLikePost = async (postId, currentState, userId) => {
   if (currentState) {
-    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'like', post_id: postId});
+    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'post_like', post_id: postId});
   } else {
-    await supabase.from('social_engagements').insert({ user_id: userId, type: 'like', post_id: postId});
+    await supabase.from('social_engagements').insert({ user_id: userId, type: 'post_like', post_id: postId});
   }
   return !currentState;
 };
@@ -239,9 +245,9 @@ export const postComment = async (postId, text, authorName, authorId, parentId =
 
 export const toggleSavePost = async (postId, currentState, userId) => {
   if (currentState) {
-    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'save', post_id: postId});
+    await supabase.from('social_engagements').delete().match({ user_id: userId, type: 'post_save', post_id: postId});
   } else {
-    await supabase.from('social_engagements').insert({ user_id: userId, type: 'save', post_id: postId});
+    await supabase.from('social_engagements').insert({ user_id: userId, type: 'post_save', post_id: postId});
   }
   return !currentState;
 };

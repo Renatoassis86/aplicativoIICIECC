@@ -24,8 +24,8 @@ const GTsView = ({ onClose }) => {
           boxShadow: 'var(--shadow-lg)',
           zIndex: 10
         }}>
-           <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '12px', display: 'flex' }}>
-             <ArrowLeft size={24} color="white" />
+           <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', display: 'flex' }}>
+             <ArrowLeft size={22} color="white" style={{ opacity: 0.8 }} />
            </button>
            <div>
              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800' }}>Revista e GTs</h2>

@@ -1,13 +1,7 @@
 import React from 'react';
-import { Edit2, EyeOff, Trash2, Link, AlertTriangle, Pin, Users } from 'lucide-react';
+import { Edit2, EyeOff, Trash2, Link, AlertTriangle, Pin, Users, Archive, Bookmark } from 'lucide-react';
 
-/**
- * Menu de Opções da Postagem (Botão de 3 pontinhos)
- * Dinâmico: O próprio dono ou Staff possui controles absolutos (Instagram-like).
- * Usuário comum apenas denuncia ou oculta.
- */
-const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide, onPin }) => {
-  // Simplificação de propriedade: 'staff', 'admin', 'organizador' ou o próprio autor tem direitos plenos.
+const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide, onPin, onArchive, onSave, onEdit }) => {
   const role = (userType || 'congressista').toLowerCase();
   const isAdmin = ['admin', 'organizador', 'staff'].some(r => role.includes(r));
   const isAuthor = post.sponsorName === userName;
@@ -26,12 +20,16 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide,
         animation: 'slideUp 0.3s ease-out'
       }}>
         
-        {/* Puxador */}
         <div style={{ width: '40px', height: '4px', background: 'rgba(0,0,0,0.1)', borderRadius: '2px', margin: '0 auto 24px' }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           
-          {isPrivileged ? (
+          <button className="option-btn" onClick={() => { onSave(post.id, post.savedByMe); onClose(); }}>
+            <Bookmark size={20} color={post.savedByMe ? "var(--primary)" : "var(--text-main)"} fill={post.savedByMe ? "var(--primary)" : "none"} />
+            <span>{post.savedByMe ? 'Remover dos itens salvos' : 'Favoritar / Salvar'}</span>
+          </button>
+
+          {isPrivileged && (
             <>
               {isAdmin && (
                 <button className="option-btn" onClick={() => { onPin(post.id, post.isPinned); onClose(); }}>
@@ -39,24 +37,22 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide,
                   <span>{post.isPinned ? 'Desafixar do topo' : 'Fixar no topo'}</span>
                 </button>
               )}
+              <button className="option-btn" onClick={() => { onArchive(post.id, post.isArchived); onClose(); }}>
+                <Archive size={20} color="var(--text-main)" />
+                <span>{post.isArchived ? 'Desarquivar publicação' : 'Arquivar publicação'}</span>
+              </button>
               <button className="option-btn" onClick={() => { onEdit(post); onClose(); }}>
                 <Edit2 size={20} color="var(--text-main)" />
-                <span>Editar publicação</span>
-              </button>
-              <button className="option-btn" onClick={() => { onEdit(post, 3); onClose(); }}>
-                <Users size={20} color="var(--text-main)" />
-                <span>Marcar mais pessoas</span>
-              </button>
-              <button className="option-btn" onClick={() => { onHide(post.id); onClose(); }}>
-                <EyeOff size={20} color="var(--text-main)" />
-                <span>Ocultar postagem</span>
+                <span>Editar legenda</span>
               </button>
               <button className="option-btn" style={{ color: '#E53E3E' }} onClick={() => { onDelete(post.id); onClose(); }}>
                 <Trash2 size={20} color="#E53E3E" />
-                <span>Excluir</span>
+                <span>Excluir permanentemente</span>
               </button>
             </>
-          ) : (
+          )}
+
+          {!isPrivileged && (
             <>
               <button className="option-btn" onClick={() => { onHide(post.id); onClose(); }}>
                 <EyeOff size={20} color="var(--text-main)" />
@@ -72,7 +68,6 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide,
               </button>
             </>
           )}
-
         </div>
 
         <button onClick={onClose} style={{ 
@@ -88,7 +83,7 @@ const PostOptionsModal = ({ post, userType, userName, onClose, onDelete, onHide,
             padding: 16px; background: none; border: none; border-radius: 12px;
             font-size: 16px; font-weight: 600; color: var(--text-main); transition: background 0.2s;
           }
-          .option-btn:active { background: rgba(0,0,0,0.05); }
+          @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         `}} />
       </div>
     </>

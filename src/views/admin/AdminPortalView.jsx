@@ -194,7 +194,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                     onClick={async () => {
                       if(!emergencyText) return;
                       const { error } = await supabase.from('system_notifications').insert({
-                        title: 'ALERTA DASHBOARD',
+                        title: 'INFORMAÇÃO IMPORTANTE',
                         message: emergencyText,
                         type: 'alert',
                         target_role: 'all'

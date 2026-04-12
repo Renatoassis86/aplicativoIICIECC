@@ -47,8 +47,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
   };
 
   const authorMeta = getAuthorMetaData(userType);
-  const allowedRoles = ['congressista', 'participante', 'expositor', 'parceiro', 'palestrante', 'staff', 'admin', 'organizador', 'patrocinador', 'master', 'sponsor', 'mantenedor'];
-  const canPost = true; // No "Instagram", todos podem postar para gerar conexões. Somente patrocinadores/staff tem selos especiais.
+  const privilegedRoles = ['organizador', 'admin', 'staff', 'master', 'patrocinador', 'sponsor', 'mantenedor', 'expositor', 'parceiro'];
+  const canPost = privilegedRoles.some(r => (userType || '').toLowerCase().includes(r));
 
   const loadPosts = async () => {
     setLoading(true);
@@ -67,6 +67,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
       loadPosts(); 
     } catch (e) {
       console.error("[handlePinPost]", e);
+    }
+  };
+
+  const handleArchivePost = async (postId, currentArchiveState) => {
+    try {
+      await toggleArchivePost(postId, currentArchiveState);
+      loadPosts(); 
+    } catch (e) {
+      console.error("[handleArchivePost]", e);
     }
   };
 
@@ -139,7 +148,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
   };
 
   const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
-    .filter(p => !hiddenPosts.includes(p.id));
+    .filter(p => !hiddenPosts.includes(p.id))
+    .filter(p => !p.isArchived || viewingSaved); // Archived only shows if saved or in a special view (simplified as hidden here)
 
   // Renderiza a mídia baseada no tipo (Image, Carousel, Reel)
   const [muted, setMuted] = useState(true);
@@ -218,7 +228,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
           <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
-            {viewingSaved ? 'Itens Salvos' : 'CONEXÕES'}
+            {viewingSaved ? 'Itens Salvos' : 'CONECTAR'}
           </h1>
         </div>
 
@@ -372,6 +382,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
            onDelete={handleDeletePost}
            onHide={handleHidePost}
            onPin={handlePinPost}
+           onArchive={handleArchivePost}
+           onSave={handleSave}
            onEdit={handleEditPost}
         />
       )}

@@ -32,8 +32,8 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
           background: 'var(--primary)', color: 'white', borderBottom: '1px solid var(--border)',
           boxShadow: 'var(--shadow-md)', zIndex: 10
         }}>
-          <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px', border: 'none', display: 'flex' }}>
-            <ArrowLeft size={24} color="white" />
+          <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', display: 'flex' }}>
+            <ArrowLeft size={22} color="white" style={{ opacity: 0.8 }} />
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '6px', borderRadius: '50%' }}>
@@ -75,7 +75,7 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h4 style={{ fontSize: '15px', fontWeight: n.isRead ? '600' : '800', color: n.isRead ? 'var(--text-muted)' : 'var(--secondary)', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>{n.title}</h4>
-                  <p style={{ fontSize: '14px', color: n.isRead ? 'var(--text-muted)' : 'var(--text-main)', lineHeight: '1.4' }}>{n.body}</p>
+                  <p style={{ fontSize: '14px', color: n.isRead ? 'var(--text-muted)' : 'var(--text-main)', lineHeight: '1.4' }}>{n.message}</p>
                 </div>
               </div>
             ))

@@ -33,7 +33,7 @@ import MediaDetailView from './media/MediaDetailView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 
-const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate }) => {
+const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate, isAdminView }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [currentPage, setCurrentPage] = useState(null); // 'ticket', 'notifications', 'faq', 'sponsors', 'map', 'gts', 'profile', 'scanner', 'broadcast', 'mediaDetail'
   const [unreadCount, setUnreadCount] = useState(0);
@@ -50,10 +50,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
     syncInbox();
   }, [userCpf]);
 
-  // Auditoria de Navegação (Para diagnosticar pulos inesperados no Feed)
   useEffect(() => {
-    console.log(`[Navigation Audit] Tab changed to: ${activeTab.toUpperCase()} at ${new Date().toLocaleTimeString()}`);
-  }, [activeTab]);
+    window.scrollTo(0, 0);
+  }, [activeTab, currentPage]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -112,13 +111,11 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
          className="clickable"
          style={{ 
            position: 'fixed', top: 'calc(env(safe-area-inset-top, 24px) + 12px)', left: '16px', 
-           zIndex: 1000000, background: 'white', padding: '10px', borderRadius: '50%',
-           boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: 'none', display: 'flex'
+           zIndex: 1000000, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
+           padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.3)', display: 'flex'
          }}
       >
-        <Menu size={20} color="var(--primary)" style={{ transform: 'rotate(180deg)', visibility: 'hidden' }} />
-        {/* Usando um ícone de voltar real */}
-        <div style={{ transform: 'rotate(180deg)' }}><ArrowRight size={20} color="var(--primary)" /></div>
+        <div style={{ transform: 'rotate(180deg)', display: 'flex', opacity: 0.7 }}><ArrowRight size={20} color="white" /></div>
       </button>
     );
 
@@ -175,42 +172,42 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
 
       {renderCurrentPage()}
 
-      {/* FIXED BOTTOM NAV */}
+      {/* FIXED BOTTOM NAV (ULTRA ADAPTIVE) */}
       <nav className="bottom-nav">
         <button 
           onClick={() => { setActiveTab('home'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
         >
-          <Home size={22} />
+          <Home size={20} />
           <span>INÍCIO</span>
         </button>
         <button 
           onClick={() => { setActiveTab('agenda'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'agenda' ? 'active' : ''}`}
         >
-          <Calendar size={22} />
+          <Calendar size={20} />
           <span>AGENDA</span>
         </button>
         <button 
           onClick={() => { setActiveTab('media'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'media' ? 'active' : ''}`}
         >
-          <Video size={22} />
+          <Video size={20} />
           <span>MÍDIA</span>
         </button>
         <button 
           onClick={() => { setActiveTab('feed'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}
         >
-          <Image size={22} />
+          <Image size={20} />
           <span>CONECTAR</span>
         </button>
         <button 
           onClick={() => { setActiveTab('speakers'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`}
         >
-          <Users size={22} />
-          <span>PALESTRANTES</span>
+          <Users size={20} />
+          <span>PALESTRAS</span>
         </button>
       </nav>
     </div>

@@ -68,8 +68,8 @@ const FAQView = ({ onClose }) => {
           zIndex: 10,
           boxShadow: 'var(--shadow-md)'
         }}>
-          <button onClick={onClose} className="clickable" style={{ padding: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex' }}>
-            <ArrowLeft size={24} color="white" />
+          <button onClick={onClose} className="clickable" style={{ padding: '10px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', display: 'flex' }}>
+            <ArrowLeft size={22} color="white" style={{ opacity: 0.8 }} />
           </button>
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)' }}>FAQ & Suporte</h2>

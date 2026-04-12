@@ -21,6 +21,7 @@ function App() {
 
   // Carregar estado inicial
   useEffect(() => {
+    window.scrollTo(0, 0);
     console.log("[App] Iniciando verificação de roteamento e autenticação...");
     
     const checkPersistedAuth = async () => {
@@ -63,7 +64,7 @@ function App() {
 
         // Se for admin/organizador e acessou via URL admin, força o portal
         if (isPathAdmin || isAdminForced) {
-          if (['organizador', 'admin', 'staff'].includes(profile.user_type)) {
+          if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
             setView('admin-portal');
             setAuthStatus('logged-in');
             setSelectedType(profile.user_type);
@@ -97,7 +98,7 @@ function App() {
     };
 
     checkPersistedAuth();
-  }, []);
+  }, [authStatus, view]);
 
   if (errorState) {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
@@ -115,25 +116,10 @@ function App() {
         .eq('cpf', cpf)
         .single();
 
-      // Membro não cadastrado: cria on-the-fly e pede tipo de inscrição
+      // Membro não cadastrado: bloqueia acesso
       if (!member) {
-        const expectedPassword = 'congresso2026';
-        if (password !== expectedPassword) {
-          alert('CPF não encontrado. No primeiro acesso, use a senha padrão: congresso2026');
-          setAuthStatus('logged-out');
-          return;
-        }
-
-        // Cria registro básico do membro
-        await supabase.from('members').insert([{ cpf, name: cpf }]);
-
-        // Cria perfil sem tipo
-        await supabase.from('profiles').insert([{ cpf, password_reset: false }]);
-
-        setCurrentUserCpf(cpf);
-        localStorage.setItem('current_user_cpf', cpf);
-        // Vai para reset de senha → depois escolha de tipo
-        setAuthStatus('reset-password');
+        alert('CPF não localizado na lista de inscritos. Verifique se digitou corretamente ou entre em contato com o suporte do evento.');
+        setAuthStatus('logged-out');
         return;
       }
 
@@ -179,7 +165,7 @@ function App() {
         setUserAvatar(currentProfile.avatar_url);
 
         const type = currentProfile.user_type;
-        const canBypassOnboarding = type === 'organizador' || type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
+        const canBypassOnboarding = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || type?.includes('patrocinador');
         const isUrlAdmin = window.location.pathname.includes('/admin');
 
         if (currentProfile.onboarding_completed || canBypassOnboarding) {
@@ -218,7 +204,7 @@ function App() {
       
       const type = updatedProfile?.user_type;
       const onboardingDone = updatedProfile?.onboarding_completed;
-      const isStaffOrSponsor = type === 'organizador' || type === 'admin' || type === 'staff' || type === 'palestrante' || type?.includes('patrocinador');
+      const isStaffOrSponsor = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || type?.includes('patrocinador');
 
       if (isStaffOrSponsor || onboardingDone) {
         // Já completou tudo → vai direto para a home (ou portal se for admin)
@@ -407,6 +393,7 @@ class ErrorBoundary extends React.Component {
                     userAvatar={userAvatar}
                     onAvatarUpdate={setUserAvatar}
                     onOpenAdminPortal={() => setView('admin-portal')}
+                    isAdminView={isAdminView}
                   />
                 ) : (
                   <div style={{ padding: 40, textAlign: 'center' }}>

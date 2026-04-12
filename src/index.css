@@ -58,9 +58,9 @@ body {
     font-weight: 800 !important;
 }
 
-/* Enfatizar Labels e Textos em Fundos Brancos - Sem afetar botões */
-.white-bg *:not(button):not(button *), 
-.card *:not(button):not(button *), 
+/* Enfatizar Labels e Textos em Fundos Brancos - Sem afetar botões ou áreas propositalmente escuras */
+.white-bg *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]), 
+.card:not([style*="background"]):not([style*="linear-gradient"]) *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]), 
 [style*="background: white"] *:not(button):not(button *), 
 [style*="background-color: white"] *:not(button):not(button *) {
     color: #1A202C !important; /* Quase preto para corpo */
@@ -203,10 +203,10 @@ input, select, textarea {
 }
 
 .nav-item span {
-  font-size: 9px;
+  font-size: 8px; /* Slightly smaller for long labels */
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

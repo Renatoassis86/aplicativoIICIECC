@@ -99,7 +99,7 @@ export const initPushNotifications = async (userId) => {
 
     PushNotifications.addListener('pushNotificationReceived', (notification) => {
       console.log('Push received na cara do gol: ', notification);
-      alert('Nova Mensagem: ' + notification.title + '\n' + notification.body);
+      alert('Nova Mensagem: ' + notification.title + '\n' + (notification.body || notification.message || ''));
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {

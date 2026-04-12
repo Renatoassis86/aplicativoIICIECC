@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Lock, ArrowRight } from 'lucide-react';
+import { useContent } from '../hooks/useContent';
 
 const LoginView = ({ onLogin, onAdminAccess }) => {
   const [loginCpf, setLoginCpf] = useState('');
@@ -87,8 +88,8 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
               className="desktop-logo"
             />
             <div className="hero-text">
-              <h1 className="hero-title">Educação que permanece.</h1>
-              <p className="hero-subtitle">II Congresso Internacional de Educação Cristã Clássica</p>
+              <h1 className="hero-title">{useContent('home', 'home_title').content || 'Educação que permanece.'}</h1>
+              <p className="hero-subtitle">{useContent('home', 'home_subtitle').content || 'II Congresso Internacional de Educação Cristã Clássica'}</p>
             </div>
             
             <div className="hero-footer">
@@ -108,7 +109,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
             <header style={{ marginBottom: '32px' }}>
               <h2 className="form-title">Bem-vindo,</h2>
-              <p className="form-subtitle">Acesse o Hub Digital do Congresso</p>
+              <p className="form-subtitle">{useContent('home', 'home_subtitle').content || 'Acesse o Hub Digital do Congresso'}</p>
             </header>
 
             <form onSubmit={handleSubmit}>
