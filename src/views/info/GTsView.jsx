@@ -10,8 +10,8 @@ const GTsView = ({ onClose }) => {
   const { content: premiacoes } = useContent('gts', 'gts_premiacoes');
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
+      <div style={{ background: '#F7F8FA' }}>
         
         {/* Header - Burgundy */}
         <header style={{ 
@@ -33,7 +33,7 @@ const GTsView = ({ onClose }) => {
            </div>
         </header>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 60px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 100px' }}>
           
           {/* Logo CIECC */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>

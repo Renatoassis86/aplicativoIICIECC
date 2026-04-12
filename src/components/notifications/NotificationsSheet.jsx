@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bell, CheckCircle, RefreshCcw, BellRing } from 'lucide-react';
+import { ArrowLeft, Bell, CheckCircle, RefreshCcw, BellRing } from 'lucide-react';
 import { fetchInbox, markAsRead } from '../../services/notifications/notificationService';
 
 const NotificationsSheet = ({ userId, userRole, onClose }) => {
@@ -24,26 +24,28 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
   };
 
   return (
-    <div className="fixed-modal-overlay">
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
+      <div style={{ background: '#F7F8FA' }}>
         <header style={{ 
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-          padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 20px', background: 'white', borderBottom: '1px solid var(--border)' 
+          display: 'flex', alignItems: 'center', gap: '16px',
+          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
+          background: 'var(--primary)', color: 'white', borderBottom: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-md)', zIndex: 10
         }}>
+          <button onClick={onClose} className="clickable" style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px', border: 'none', display: 'flex' }}>
+            <ArrowLeft size={24} color="white" />
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: '#FDF2F2', padding: '8px', borderRadius: '50%' }}>
-              <BellRing size={20} color="var(--primary)" />
+            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '6px', borderRadius: '50%' }}>
+              <BellRing size={18} color="white" />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>
-              Avisos do Congresso
+            <h3 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)' }}>
+              Avisos
             </h3>
           </div>
-          <button onClick={onClose} className="clickable" style={{ background: '#F8F9FA', padding: '10px', borderRadius: '50%', border: 'none' }}>
-            <X size={24} color="var(--primary)" />
-          </button>
         </header>
 
-        <div style={{ flex: 1, overflowY: 'auto', background: '#F8F9FA' }}>
+        <div style={{ flex: 1, overflowY: 'auto', background: '#F8F9FA', paddingBottom: '100px' }}>
           {loading ? (
             <div style={{ padding: '60px 0', textAlign: 'center', opacity: 0.6 }}>
               <RefreshCcw size={32} color="var(--primary)" className="spin" style={{ margin: '0 auto 16px' }} />

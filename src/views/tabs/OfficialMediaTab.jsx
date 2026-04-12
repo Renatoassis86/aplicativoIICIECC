@@ -10,6 +10,24 @@ import { useCMS } from '../../hooks/useCMS';
 import { supabase } from '../../lib/supabase';
 
 const OfficialMediaTab = ({ onOpenMedia }) => {
+  const CarouselSection = ({ title, items, renderItem }) => (
+    <div style={{ marginBottom: '40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 20px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>{title}</h3>
+      </div>
+      <div style={{ 
+        display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
+        scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
+        scrollSnapType: 'x mandatory' 
+      }} className="no-scrollbar">
+        {items.map((item, idx) => (
+          <div key={idx} style={{ scrollSnapAlign: 'start' }}>
+            {renderItem(item, idx)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
   const { cms } = useCMS();
   const [mediaList, setMediaList] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -119,95 +137,77 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 2. FLASHES DO II CIECC 2026 (CARROSSEL) */}
-        <div style={{ marginBottom: '50px' }}>
-           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-             <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>Flashes do Momento</h3>
-           </div>
-           
-           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
-              {livePhotos.map((img, index) => (
-                <div 
-                  key={img.id} 
-                  onClick={() => onOpenMedia({
-                    type: 'image',
-                    url: img.url,
-                    title: img.label
-                  })} 
-                  className="clickable" 
-                  style={{ 
-                    height: '100px', 
-                    borderRadius: '8px', 
-                    overflow: 'hidden', 
-                    flexShrink: 0,
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <img 
-                    src={img.url} 
-                    alt="" 
-                    style={{ 
-                      height: '100%', 
-                      width: 'auto', 
-                      display: 'block' 
-                    }} 
-                  />
-                </div>
-              ))}
-           </div>
-        </div>
+        {/* 2. FLASHES DO II CIECC 2026 (CARROSSEL FOTOS) */}
+        <CarouselSection 
+          title="Flashes 2026"
+          items={livePhotos}
+          renderItem={(img) => (
+            <div 
+              onClick={() => onOpenMedia({ type: 'image', url: img.url, title: img.label })}
+              style={{ 
+                width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',
+                boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.05)'
+              }}>
+              <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          )}
+        />
 
-        {/* 3. ENTREVISTAS (CARROSSEL BOLINHAS) */}
-        <div style={{ marginBottom: '40px' }}>
-           <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>Entrevistas Exclusivas</h3>
-           <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
-              {interviews.length > 0 ? interviews.map(item => (
-                <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
-                  <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--gold)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
-                      <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+        {/* 3. ENTREVISTAS (CARROSSEL) */}
+        <CarouselSection 
+          title="Entrevistas Exclusivas"
+          items={interviews}
+          renderItem={(item) => (
+            <div onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', width: '100px' }}>
+              <div style={{ 
+                width: '80px', height: '80px', borderRadius: '50%', padding: '3px', 
+                background: 'var(--gold)', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
+                  <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 </div>
-              )) : (
-                <p style={{ fontSize: '12px', color: '#999' }}>Nenhuma entrevista disponível.</p>
-              )}
-           </div>
-        </div>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+            </div>
+          )}
+        />
 
-        {/* 4. PODCASTS (CARROSSEL BOLINHAS) */}
-        <div style={{ marginBottom: '40px' }}>
-           <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '16px' }}>CIECC Podcasts</h3>
-           <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '10px' }}>
-              {podcasts.length > 0 ? podcasts.map(item => (
-                <div key={item.id} onClick={() => onOpenMedia(item)} className="clickable" style={{ textAlign: 'center', minWidth: '95px', flexShrink: 0 }}>
-                  <div style={{ width: '85px', height: '85px', borderRadius: '50%', padding: '3px', background: 'var(--secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
-                      <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+        {/* 4. PODCASTS (CARROSSEL) */}
+        <CarouselSection 
+          title="CIECC Podcasts"
+          items={podcasts}
+          renderItem={(item) => (
+            <div onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', width: '100px' }}>
+              <div style={{ 
+                width: '80px', height: '80px', borderRadius: '50%', padding: '3px', 
+                background: 'var(--secondary)', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '2px' }}>
+                  <img src={item.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 </div>
-              )) : (
-                <p style={{ fontSize: '12px', color: '#999' }}>Nenhum podcast disponível.</p>
-              )}
-           </div>
-        </div>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+            </div>
+          )}
+        />
 
-        {/* 5. MEMÓRIAS I CIECC 2025 (CARROSSEL INFINITO) */}
-        <div style={{ marginTop: '50px', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '10px' }}>
-           <MemoriesMarquee 
-             photos={memories2025} 
-             onOpenMedia={(media, index) => onOpenMedia({
-               ...media,
-               type: 'gallery',
-               photos: memories2025,
-               startIndex: index,
-               title: 'I CIECC • Memórias 2025'
-             })}
-           />
-        </div>
+        {/* 5. MEMÓRIAS I CIECC 2025 (CARROSSEL) */}
+        <CarouselSection 
+          title="Memórias 2025"
+          items={memories2025}
+          renderItem={(img, index) => (
+            <div 
+              onClick={() => onOpenMedia({ 
+                ...img, type: 'gallery', photos: memories2025, startIndex: index, title: 'I CIECC • Memórias 2025' 
+              })}
+              style={{ 
+                width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',
+                boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.05)'
+              }}>
+              <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          )}
+        />
       </div>
 
     </div>

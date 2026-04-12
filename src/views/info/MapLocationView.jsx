@@ -6,8 +6,8 @@ const MapLocationView = ({ onClose }) => {
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
+      <div style={{ background: '#F7F8FA' }}>
         <header style={{ 
           padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 

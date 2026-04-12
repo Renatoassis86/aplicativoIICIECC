@@ -44,6 +44,7 @@ const HomeTab = ({
   const { content: homeCountdownDate } = useContent('home', 'home_countdown_date');
   
   const [sponsors, setSponsors] = React.useState([]);
+  const [workshops, setWorkshops] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
@@ -52,8 +53,33 @@ const HomeTab = ({
       const { data } = await supabase.from('sponsors').select('*').eq('active', true).order('order_index');
       if (data) setSponsors(data);
     }
+    async function fetchWorkshops() {
+      const { data } = await supabase.from('agenda').select('*').eq('category', 'Oficina').limit(10);
+      if (data) setWorkshops(data);
+    }
     fetchSponsors();
+    fetchWorkshops();
   }, []);
+
+  const CarouselSection = ({ title, items, renderItem }) => (
+    <section style={{ padding: '24px 0' }}>
+      <div style={{ padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>{title}</h4>
+        <div style={{ width: '32px', height: '2px', background: 'var(--gold)' }}></div>
+      </div>
+      <div style={{ 
+        display: 'flex', gap: '16px', overflowX: 'auto', padding: '0 20px 10px',
+        scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
+        scrollSnapType: 'x mandatory' 
+      }} className="no-scrollbar">
+        {items.map((item, idx) => (
+          <div key={idx} style={{ scrollSnapAlign: 'start' }}>
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 
   const firstName = userName ? userName.split(' ')[0] : 'Congressista';
   const initial = (userName && typeof userName === 'string') ? userName.charAt(0) : 'C';
@@ -274,44 +300,30 @@ const HomeTab = ({
         )}
       </section>
 
-      {/* PARTICIPANTES CONFIRMADOS - AUTO MARQUEE */}
-      <section style={{ padding: '32px 0 0 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
-          <h4 className="section-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '20px' }}>
-            Participantes Confirmados
-          </h4>
-        </div>
-        
-        <div className="marquee-container" style={{ background: 'transparent', border: 'none', padding: '0' }}>
-          <div className="marquee-content" style={{ animationDuration: '25s', gap: '20px' }}>
-            {confirmedSpeakers.map((p, idx) => (
-              <div key={`${p.name}-${idx}`}
-                onClick={() => setSelectedSpeaker(p)}
-                style={{ 
-                  minWidth: '150px', 
-                  textAlign: 'center',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}>
-                <div style={{ 
-                  width: '90px', height: '90px', 
-                  borderRadius: '50%', 
-                  border: '3px solid var(--gold)',
-                  padding: '4px',
-                  marginBottom: '12px',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
-                }}>
-                  <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                </div>
-                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2', marginBottom: '4px' }}>{p.name}</p>
-                <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2' }}>{p.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* PALESTRANTES CONFIRMADOS - CARROSSEL */}
+      <CarouselSection 
+         title="Palestras de Peso"
+         items={confirmedSpeakers}
+         renderItem={(p) => (
+           <div 
+             onClick={() => setSelectedSpeaker(p)}
+             style={{ 
+               width: '140px', textAlign: 'center',
+               background: 'white', padding: '16px 12px', borderRadius: '24px',
+               boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.03)'
+             }}>
+             <div style={{ 
+               width: '80px', height: '80px', 
+               borderRadius: '50%', border: '2px solid var(--gold)',
+               padding: '4px', margin: '0 auto 12px'
+             }}>
+               <img src={p.img} alt={p.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+             </div>
+             <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</p>
+             <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{p.desc}</p>
+           </div>
+         )}
+       />
 
       {/* 4. Acessos Rápidos */}
       <section style={{ padding: '24px 20px' }}>
@@ -341,72 +353,45 @@ const HomeTab = ({
         </div>
       </section>
 
-      {/* Seção Acontecendo Agora removida por solicitação */}
+      {/* PATROCINADORES - CARROSSEL */}
+      <CarouselSection 
+         title="Patrocinadores Master"
+         items={sponsors}
+         renderItem={(s) => (
+           <div 
+             onClick={() => setSelectedSponsor(s)}
+             style={{ 
+               width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
+               borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+               boxShadow: 'var(--shadow-sm)'
+             }}>
+             <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+           </div>
+         )}
+       />
 
-      {/* 6. Carrossel de Patrocinadores Master - FULL WIDTH & FAST */}
-      <section style={{ padding: '0 20px' }}>
-        <div style={{ 
-          background: 'white', 
-          borderRadius: 'var(--radius-lg)', 
-          padding: '24px 0',
-          border: '2px solid var(--gold)',
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          boxShadow: 'var(--shadow-lg)'
-        }}>
-          <p style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', textAlign: 'center', marginBottom: '20px' }}>
-             NOSSOS PATROCINADORES MASTER
-          </p>
-          
-          <div className="marquee-container" style={{ height: '140px' }}>
-             <div className="marquee-content" style={{ animationDuration: '20s' }}>
-                 {[...sponsors, ...sponsors, ...sponsors].map((s, idx) => (
-                   <div 
-                     key={`${s.id}-${idx}`} 
-                     onClick={() => setSelectedSponsor(s)}
-                     className="marquee-item"
-                     style={{ 
-                       cursor: 'pointer', 
-                       display: 'flex', 
-                       flexDirection: 'column', 
-                       alignItems: 'center',
-                       gap: '8px',
-                       minWidth: '150px'
-                     }}
-                   >
-                     <div style={{
-                       width: '100px', height: '100px', 
-                       background: 'white', borderRadius: '16px',
-                       padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                       boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-                       border: '1px solid #f0f0f0'
-                     }}>
-                        <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                     </div>
-                     <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>{s.name}</span>
-                   </div>
-                 ))}
+       {/* OFICINAS - CARROSSEL */}
+       {workshops.length > 0 && (
+         <CarouselSection 
+           title="Oficinas & Workshops"
+           items={workshops}
+           renderItem={(w) => (
+             <div style={{ 
+               width: '240px', background: 'white', borderRadius: '20px', overflow: 'hidden',
+               border: '1px solid rgba(0,0,0,0.05)', boxShadow: 'var(--shadow-sm)'
+             }}>
+               <div style={{ height: '80px', background: 'var(--primary)', padding: '16px', color: 'white' }}>
+                 <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--gold)', marginBottom: '4px' }}>{w.time}</p>
+                 <p style={{ fontSize: '13px', fontWeight: '800', lineHeight: '1.2' }}>{w.title}</p>
+               </div>
+               <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                 <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{w.location}</p>
+                 <ArrowRight size={14} color="var(--primary)" />
+               </div>
              </div>
-          </div>
-
-          <div style={{ textAlign: 'center', marginTop: '16px', padding: '0 20px' }}>
-             <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '16px' }}>TOQUE PARA VER DETALHES</p>
-             <button 
-               onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')}
-               style={{ 
-                 width: '100%', padding: '14px', borderRadius: '12px', 
-                 background: 'var(--primary)', color: 'white', border: '1px solid var(--gold)',
-                 fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-               }}
-             >
-               QUERO SER UM PATROCINADOR <ExternalLink size={16} />
-             </button>
-          </div>
-        </div>
-      </section>
+           )}
+         />
+       )}
 
       {/* 7. Seção de Favoritos Personalizada */}
       <section style={{ padding: '24px 20px' }}>

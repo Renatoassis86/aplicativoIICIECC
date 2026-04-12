@@ -35,16 +35,7 @@ import { Video } from 'lucide-react';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate }) => {
   const [activeTab, setActiveTab] = useState('home');
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [showBroadcast, setShowBroadcast] = useState(false);
-  const [showFAQ, setShowFAQ] = useState(false);
-  const [showSponsors, setShowSponsors] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [showGTs, setShowGTs] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [mediaDetail, setMediaDetail] = useState(null);
+  const [currentPage, setCurrentPage] = useState(null); // 'ticket', 'notifications', 'faq', 'sponsors', 'map', 'gts', 'profile', 'scanner', 'broadcast', 'mediaDetail'
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -72,23 +63,23 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           userType={userType} 
           userAvatar={userAvatar} 
           unreadCount={unreadCount} 
-          onOpenNotifications={() => setShowNotifications(true)} 
-          onOpenTicket={() => setShowTicketModal(true)} 
-          onOpenScanner={() => setShowScanner(true)} 
-          onOpenBroadcast={() => setShowBroadcast(true)}
+          onOpenNotifications={() => setCurrentPage('notifications')} 
+          onOpenTicket={() => setCurrentPage('ticket')} 
+          onOpenScanner={() => setCurrentPage('scanner')} 
+          onOpenBroadcast={() => setCurrentPage('broadcast')}
           onNavigate={(tab) => setActiveTab(tab)}
-          onOpenFAQ={() => setShowFAQ(true)}
-          onOpenSponsors={() => setShowSponsors(true)}
-          onOpenMap={() => setShowMap(true)}
-          onOpenProfile={() => setShowProfile(true)}
-          onOpenMedia={(media) => setMediaDetail(media)}
+          onOpenFAQ={() => setCurrentPage('faq')}
+          onOpenSponsors={() => setCurrentPage('sponsors')}
+          onOpenMap={() => setCurrentPage('map')}
+          onOpenProfile={() => setCurrentPage('profile')}
+          onOpenMedia={(media) => setCurrentPage('mediaDetail')}
         />
       );
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return (
         <OfficialMediaTab 
-          onOpenMedia={(media) => setMediaDetail(media)}
+          onOpenMedia={(media) => setCurrentPage('mediaDetail')}
           userCpf={userCpf}
           userName={userName}
         />
@@ -98,149 +89,130 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
       case 'more': return (
         <MoreTab 
           onLogout={onLogout} 
-          userName={userName} 
-          userType={userType} 
-          userCpf={userCpf} 
-          userAvatar={userAvatar} 
-          onAvatarUpdate={onAvatarUpdate}
-          onOpenProfile={() => setShowProfile(true)}
-          onOpenScanner={() => setShowScanner(true)} 
-          onOpenBroadcast={() => setShowBroadcast(true)} 
-          onNavigate={(tab) => setActiveTab(tab)}
-          onOpenFAQ={() => setShowFAQ(true)}
-          onOpenSponsors={() => setShowSponsors(true)}
-          onOpenMap={() => setShowMap(true)}
-          onOpenGTs={() => setShowGTs(true)}
-          onOpenTicket={() => setShowTicketModal(true)}
+          onOpenScanner={() => setCurrentPage('scanner')}
+          onOpenBroadcast={() => setCurrentPage('broadcast')}
+          onOpenFAQ={() => setCurrentPage('faq')}
+          onOpenSponsors={() => setCurrentPage('sponsors')}
+          onOpenMap={() => setCurrentPage('map')}
+          onOpenGTs={() => setCurrentPage('gts')}
+          onOpenProfile={() => setCurrentPage('profile')}
+          userType={userType}
         />
       );
-      default: return <HomeTab />;
+      default: return null;
     }
   };
 
-  const getTabTitle = () => {
-    switch (activeTab) {
-      case 'home': return ''; // Home tem seu próprio header visual
-      case 'agenda': return 'Agenda Geral';
-      case 'network': return 'Networking';
-      case 'media': return 'CIECC Mídia';
-      case 'feed': return 'Conectar';
-      case 'more': return 'Ajustes e Mais';
-      default: return '';
-    }
+  const renderCurrentPage = () => {
+    if (!currentPage) return null;
+
+    const BackButton = () => (
+      <button 
+         onClick={() => setCurrentPage(null)}
+         className="clickable"
+         style={{ 
+           position: 'fixed', top: 'calc(env(safe-area-inset-top, 24px) + 12px)', left: '16px', 
+           zIndex: 1000000, background: 'white', padding: '10px', borderRadius: '50%',
+           boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: 'none', display: 'flex'
+         }}
+      >
+        <Menu size={20} color="var(--primary)" style={{ transform: 'rotate(180deg)', visibility: 'hidden' }} />
+        {/* Usando um ícone de voltar real */}
+        <div style={{ transform: 'rotate(180deg)' }}><ArrowRight size={20} color="var(--primary)" /></div>
+      </button>
+    );
+
+    return (
+      <div className="tab-content fade-in" style={{ 
+        position: 'fixed', inset: 0, zIndex: 99999, background: '#F7F8FA', 
+        overflowY: 'auto', paddingBottom: '20px' 
+      }}>
+        {currentPage === 'ticket' && <MyTicketModal userCpf={userCpf} onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'notifications' && (
+          <NotificationsSheet 
+            userId={userCpf} 
+            userRole={userType} 
+            onClose={() => {
+              setCurrentPage(null);
+              fetchInbox(userCpf, userType).then(r => setUnreadCount(r.unreadCount || 0));
+            }} 
+          />
+        )}
+        {currentPage === 'faq' && <FAQView onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'sponsors' && <SponsorsView onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'map' && <MapLocationView onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'gts' && <GTsView onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'profile' && (
+          <ProfileView 
+            userCpf={userCpf} 
+            userName={userName} 
+            userAvatar={userAvatar}
+            onAvatarUpdate={onAvatarUpdate}
+            onClose={() => setCurrentPage(null)} 
+          />
+        )}
+        {currentPage === 'scanner' && <ScannerStaffView onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'broadcast' && <AdminBroadcastModal onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'mediaDetail' && mediaDetail && (
+          <MediaDetailView 
+            media={mediaDetail} 
+            onClose={() => setCurrentPage(null)} 
+            userCpf={userCpf} 
+            userName={userName} 
+          />
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className="tab-layout" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '90px' }}>
+    <div className={isAdminView ? "admin-wrapper" : "mobile-wrapper"}>
+      <div className={isAdminView ? "" : "App"} style={{ 
+        paddingBottom: (activeTab === 'home' || activeTab === 'agenda' || activeTab === 'network' || activeTab === 'feed' || activeTab === 'more') ? '90px' : '0' 
+      }}>
         {renderContent()}
-      </main>
+      </div>
 
-      {/* Improved Bottom Navigation */}
+      {renderCurrentPage()}
+
+      {/* FIXED BOTTOM NAV */}
       <nav className="bottom-nav">
         <button 
-          className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('home')}
+          onClick={() => { setActiveTab('home'); setCurrentPage(null); }} 
+          className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
         >
           <Home size={22} />
-          <span>Início</span>
+          <span>INÍCIO</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'agenda' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('agenda')}
+          onClick={() => { setActiveTab('agenda'); setCurrentPage(null); }} 
+          className={`nav-item ${activeTab === 'agenda' ? 'active' : ''}`}
         >
           <Calendar size={22} />
-          <span>Agenda</span>
+          <span>AGENDA</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'media' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('media')}
+          onClick={() => { setActiveTab('media'); setCurrentPage(null); }} 
+          className={`nav-item ${activeTab === 'media' ? 'active' : ''}`}
         >
           <Video size={22} />
           <span>MÍDIA</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('feed')}
+          onClick={() => { setActiveTab('feed'); setCurrentPage(null); }} 
+          className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}
         >
           <Image size={22} />
-          <span>Conectar</span>
+          <span>CONECTAR</span>
         </button>
         <button 
-          className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('speakers')}
+          onClick={() => { setActiveTab('speakers'); setCurrentPage(null); }} 
+          className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`}
         >
           <Users size={22} />
-          <span>Palestrantes</span>
+          <span>PALESTRANTES</span>
         </button>
       </nav>
-
-      {/* Ticket Modal Overlay */}
-      {showTicketModal && (
-        <MyTicketModal 
-          onClose={() => setShowTicketModal(false)} 
-          userName={userName}
-          userCpf={userCpf}
-        />
-      )}
-
-      {/* Notifications Inbox (In-App Push) */}
-      {showNotifications && (
-        <NotificationsSheet 
-          userId={userCpf}
-          userRole={userType}
-          onClose={() => {
-            setShowNotifications(false);
-            fetchInbox(userCpf, userType).then(r => setUnreadCount(r.unreadCount || 0));
-          }}
-        />
-      )}
-
-      {/* Staff QR Scanner */}
-      {showScanner && (userType === 'staff' || userType === 'admin') && (
-        <ScannerStaffView 
-          staffCpf={userCpf} 
-          onClose={() => setShowScanner(false)} 
-        />
-      )}
-
-      {showBroadcast && (userType === 'staff' || userType === 'admin' || userType === 'organizador' || userType?.includes('patrocinador')) && (
-        <AdminBroadcastModal 
-          staffCpf={userCpf} 
-          userName={userName}
-          onClose={() => setShowBroadcast(false)} 
-        />
-      )}
-
-      {showProfile && (
-        <ProfileView 
-          onClose={() => {
-            setShowProfile(false);
-            setActiveTab('more');
-          }}
-          userName={userName}
-          userCpf={userCpf}
-          userType={userType}
-          userAvatar={userAvatar}
-          onAvatarUpdate={onAvatarUpdate}
-        />
-      )}
-
-      {/* Modais de Informação Adicional */}
-      {showFAQ && <FAQView onClose={() => setShowFAQ(false)} />}
-      {showSponsors && <SponsorsView onClose={() => setShowSponsors(false)} />}
-      {showMap && <MapLocationView onClose={() => setShowMap(false)} />}
-      {showGTs && <GTsView onClose={() => setShowGTs(false)} />}
-
-      {mediaDetail && (
-        <MediaDetailView 
-          media={mediaDetail} 
-          onClose={() => setMediaDetail(null)} 
-          userCpf={userCpf} 
-          userName={userName} 
-        />
-      )}
     </div>
   );
 };

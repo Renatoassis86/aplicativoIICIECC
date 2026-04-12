@@ -1,49 +1,58 @@
 import { supabase } from '../../lib/supabase';
 
 /**
- * Serviço de Networking
- * Responsável por buscar os dados mascarados e públicos dos congressistas.
- * Em produção real, usaria uma VIEW do Supabase que faz JOIN entre:
- * profiles (user_type) + members (name) + survey_responses (cargo, instituicao)
+ * Serviço de Networking Real
+ * Busca dados das tabelas profiles e members.
  */
 
 export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') => {
   try {
-    // PREPARAÇÃO FUTURA SUPABASE:
-    // let query = supabase.from('public_profiles_view').select('*');
-    // if (filterType !== 'all') query = query.eq('user_type', filterType);
-    // if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
-    // const { data, error } = await query;
+    // 1. Buscar perfis base com joins ou em paralelo
+    let query = supabase
+      .from('profiles')
+      .select('cpf, user_type, name')
+      .order('name');
 
-    // MOCK REALISTA TEMPORÁRIO PARA DESENVOLVIMENTO
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    let mockData = [
-      { id: '1', name: 'Dr. Thiago Dutra', role: 'Palestrante', institution: 'Schola Classics', type: 'palestrante', linkedin: 'thiagodutra', verified: true },
-      { id: '2', name: 'Maurício Fonseca', role: 'Staff Oficial', institution: 'II CIECC', type: 'staff', verified: true },
-      { id: '4', name: 'Elmer Pires', role: 'Congressista VIP', institution: 'Editora Trinitas', type: 'parceiro', verified: true },
-      { id: '5', name: 'João Silva', role: 'Professor', institution: 'Escola Clássica XPTO', type: 'congressista', verified: false },
-      { id: '6', name: 'Ana Souza', role: 'Diretora Escolar', institution: 'Colégio Veritas', type: 'congressista', verified: false },
-      { id: '7', name: 'Igreja Presbiteriana Central', role: 'Expositor Master', institution: '', type: 'expositor', verified: true },
-    ];
-
-    // Aplicação de busca e filtro no front-end por enquanto
     if (filterType !== 'all') {
-      mockData = mockData.filter(user => user.type === filterType);
+      // Mapeamento de filtros para user_type do banco
+      const typeMap = {
+        'palestrante': 'palestrante',
+        'congressista': 'congressista',
+        'expositor': 'expositor',
+        'parceiro': 'parceiro',
+        'staff': 'organizador' // 'staff' na UI é 'organizador' no banco
+      };
+      query = query.eq('user_type', typeMap[filterType] || filterType);
     }
 
     if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      mockData = mockData.filter(user => 
-        user.name.toLowerCase().includes(lower) || 
-        user.institution.toLowerCase().includes(lower) ||
-        user.role.toLowerCase().includes(lower)
-      );
+      query = query.ilike('name', `%${searchTerm}%`);
     }
 
-    return mockData;
+    const { data: profiles, error } = await query;
+    if (error) throw error;
+
+    // 2. Buscar detalhes adicionais na tabela members (como instituição/cargo)
+    const cpfs = profiles.map(p => p.cpf);
+    const { data: members } = await supabase
+      .from('members')
+      .select('cpf, institution, position')
+      .in('cpf', cpfs);
+
+    // 3. Mesclar dados
+    return profiles.map(p => {
+      const memberInfo = (members || []).find(m => m.cpf === p.cpf);
+      return {
+        id: p.cpf,
+        name: p.name || 'Participante',
+        role: memberInfo?.position || (p.user_type === 'palestrante' ? 'Palestrante' : 'Congressista'),
+        institution: memberInfo?.institution || '',
+        type: p.user_type === 'organizador' ? 'staff' : p.user_type,
+        verified: p.user_type === 'palestrante' || p.user_type === 'organizador'
+      };
+    });
   } catch (error) {
-    console.error("Erro ao buscar a rede de contatos:", error);
+    console.error("Erro ao buscar a rede de contatos real:", error);
     return [];
   }
 };

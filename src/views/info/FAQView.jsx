@@ -54,8 +54,8 @@ const FAQView = ({ onClose }) => {
   );
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
+      <div style={{ background: '#F7F8FA' }}>
         {/* Header */}
         <div style={{ 
           padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
@@ -77,8 +77,7 @@ const FAQView = ({ onClose }) => {
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {/* ... resto do conteúdo ... */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 100px' }}>
           {/* Search Bar */}
           <div style={{ position: 'relative', marginBottom: '24px' }}>
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />

@@ -83,9 +83,9 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
   };
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
       <input type="file" ref={fileInputRef} onChange={onFileChange} accept="image/*" capture="user" style={{ display: 'none' }} />
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+      <div style={{ background: '#F7F8FA' }}>
         <header style={{ 
           padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 
@@ -104,7 +104,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', flex: 1 }}>Meu Perfil</h2>
         </header>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 60px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 100px' }}>
            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <div onClick={handleUpdateAvatar} className="clickable" style={{ 
                   width: '110px', height: '110px', borderRadius: '32px', 

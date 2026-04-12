@@ -58,11 +58,11 @@ body {
     font-weight: 800 !important;
 }
 
-/* Enfatizar Labels e Textos em Fundos Brancos */
-.white-bg *, .white-bg label, .white-bg span, .white-bg p,
-.card *, .card label, .card span, .card p,
-[style*="background: white"] *, 
-[style*="background-color: white"] * {
+/* Enfatizar Labels e Textos em Fundos Brancos - Sem afetar botões */
+.white-bg *:not(button):not(button *), 
+.card *:not(button):not(button *), 
+[style*="background: white"] *:not(button):not(button *), 
+[style*="background-color: white"] *:not(button):not(button *) {
     color: #1A202C !important; /* Quase preto para corpo */
 }
 
@@ -186,7 +186,8 @@ input, select, textarea {
   outline: none !important;
   box-shadow: none !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 10px;
+  padding: 8px 4px;
+  min-width: 64px;
   flex: 1;
   position: relative;
   cursor: pointer;
@@ -202,10 +203,15 @@ input, select, textarea {
 }
 
 .nav-item span {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
 }
 
 /* Marquee dos Palestrantes */

@@ -138,12 +138,8 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
         </button>
         <button 
           onClick={() => window.open(sponsor.website, '_blank')}
-          style={{ 
-            width: '100%', padding: '18px', background: 'var(--primary)', 
-            color: 'white', border: 'none', borderRadius: '16px', 
-            fontWeight: '900', fontSize: '15px', display: 'flex', 
-            alignItems: 'center', justifyContent: 'center', gap: '12px'
-          }}
+          className="btn-primary"
+          style={{ width: '100%', padding: '18px', fontSize: '15px' }}
         >
           ACESSAR SOLUÇÕES <ExternalLink size={18} />
         </button>

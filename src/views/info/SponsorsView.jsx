@@ -65,8 +65,8 @@ const SponsorsView = ({ onClose }) => {
   ];
 
   return (
-    <div className="fixed-modal-overlay" style={{ background: '#F7F8FA' }}>
-      <div className="modal-wrapper" style={{ background: '#F7F8FA' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
+      <div style={{ background: '#F7F8FA' }}>
         <header style={{ 
           padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
           background: 'var(--primary)', 
@@ -140,7 +140,7 @@ const SponsorsView = ({ onClose }) => {
           <button 
             onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')} 
             className="btn-primary" 
-            style={{ marginTop: '40px', background: 'var(--gold)', color: 'var(--primary)', fontWeight: '900' }}
+            style={{ marginTop: '40px', width: '100%' }}
           >
              QUERO SER UM PATROCINADOR
           </button>
