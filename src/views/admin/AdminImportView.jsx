@@ -64,22 +64,42 @@ const AdminImportView = ({ onBackToApp }) => {
 
   // Tenta acelerar a vida do administrador conectando colunas prováveis
   const autoMapColumns = (headers) => {
-    let initialMap = { cpf: '', name: '', ticket_type: '' };
+    let initialMap = { cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: '' };
     headers.forEach(h => {
-      const lower = h.toString().toLowerCase();
-      if (lower.includes('cpf')) initialMap.cpf = h;
+      const lower = h.toString().toLowerCase().trim();
+      if (lower === 'cpf') initialMap.cpf = h;
+      else if (lower === 'cnpj' && !initialMap.cpf) initialMap.cpf = h; // Fallback CNPJ se não houver CPF
       else if (lower.includes('nome') || lower.includes('name')) initialMap.name = h;
       else if (lower.includes('email') || lower.includes('e-mail')) initialMap.email = h;
-      else if (lower.includes('nasc') || lower.includes('birth')) initialMap.birth_date = h;
+      else if (lower.includes('telefone') || lower.includes('phone') || lower.includes('celular')) initialMap.phone = h;
+      else if (lower.includes('escola') || lower.includes('instituicao')) initialMap.institution = h;
+      else if (lower.includes('cidade') || lower.includes('city')) initialMap.city = h;
+      else if (lower.includes('uf') || lower.includes('estado')) initialMap.state = h;
       else if (lower.includes('tipo') || lower.includes('ticket')) initialMap.ticket_type = h;
     });
-    setMapping(initialMap);
+    setMapping(prev => ({ ...prev, ...initialMap }));
+  };
+
+  const applyForumPreset = () => {
+    // Mapeamento baseado no print do usuário: Data,Nome,Email,Telefone,Cargo,Escola,CNPJ,Cidade,UF,Qtd Alunos,Tipo
+    let forumMap = { 
+        cpf: columns.find(c => c.toLowerCase().trim() === 'cnpj' || c.toLowerCase().includes('cpf')),
+        name: columns.find(c => c.toLowerCase().includes('nome')),
+        email: columns.find(c => c.toLowerCase().includes('email')),
+        phone: columns.find(c => c.toLowerCase().includes('telefone')),
+        institution: columns.find(c => c.toLowerCase().includes('escola')),
+        city: columns.find(c => c.toLowerCase().includes('cidade')),
+        state: columns.find(c => c.toLowerCase().trim() === 'uf'),
+        ticket_type: columns.find(c => c.toLowerCase().trim() === 'tipo')
+    };
+    setMapping(forumMap);
+    alert('Layout "Fórum/Moodle" aplicado! Verifique se o CNPJ está mapeado como identificador principal (CPF).');
   };
 
   // 2. Etapa de Validação
   const handleValidation = () => {
     if (!mapping.cpf || !mapping.name) {
-      alert("Por favor, mapeie ao menos CPF e Nome.");
+      alert("Por favor, mapeie ao menos CPF (ou CNPJ) e Nome.");
       return;
     }
 
@@ -90,23 +110,29 @@ const AdminImportView = ({ onBackToApp }) => {
       const rawCpf = row[mapping.cpf];
       const rawName = row[mapping.name];
       
-      const cleanCpf = stripCPF(rawCpf || '');
+      const cleanId = stripCPF(rawCpf || '');
       
-      // Valida CPF real
-      if (cleanCpf && isValidCPF(cleanCpf) && rawName) {
+      // Valida Identificador (CPF real ou CNPJ/Id de Fórum)
+      // Se tiver 11 caracteres tentamos validar como CPF, se tiver 14 como CNPJ, senão apenas checamos presença
+      const idIsValid = cleanId.length >= 10; // Critério flexível para aceitar CNPJ e CPF
+
+      if (cleanId && idIsValid && rawName) {
         valids.push({
-          cpf: cleanCpf,
+          cpf: cleanId,
           name: rawName,
           email: mapping.email ? row[mapping.email] : null,
-          birth_date: mapping.birth_date ? row[mapping.birth_date] : null,
-          ticket_type: mapping.ticket_type ? row[mapping.ticket_type] : 'Presencial Padrão',
+          phone: mapping.phone ? row[mapping.phone] : null,
+          institution: mapping.institution ? row[mapping.institution] : null,
+          city: mapping.city ? row[mapping.city] : null,
+          state: mapping.state ? row[mapping.state] : null,
+          ticket_type: mapping.ticket_type ? row[mapping.ticket_type] : 'Fórum/Prover',
           originalRow: index + 2
         });
       } else {
         invalids.push({
           cpf: rawCpf,
           name: rawName,
-          reason: !isValidCPF(cleanCpf) ? 'CPF Inválido ou Ausente' : 'Nome Ausente',
+          reason: !idIsValid ? 'ID (CPF/CNPJ) Inválido ou Curto' : 'Nome Ausente',
           originalRow: index + 2
         });
       }
@@ -124,6 +150,11 @@ const AdminImportView = ({ onBackToApp }) => {
     const payload = validRows.map(r => ({
       cpf: r.cpf,
       name: r.name,
+      email: r.email,
+      phone: r.phone,
+      institution: r.institution,
+      city: r.city,
+      state: r.state,
       ticket_type: r.ticket_type
     }));
 
@@ -240,16 +271,28 @@ const AdminImportView = ({ onBackToApp }) => {
         {/* === STEP 2: MAPEAMENTO === */}
         {step === 2 && (
           <div className="card fade-in">
-            <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--primary)', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-              Mapeamento de Colunas
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
+                Mapeamento de Colunas
+                </h3>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                        onClick={() => autoMapColumns(columns)}
+                        style={{ fontSize: '11px', fontWeight: '800', background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
+                    >Autodetectar</button>
+                    <button 
+                        onClick={applyForumPreset}
+                        style={{ fontSize: '11px', fontWeight: '800', background: 'var(--gold)', color: '#000', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
+                    >Layout Fórum/Moodle</button>
+                </div>
+            </div>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>
-              Identificamos <strong>{rawData.length} registros</strong>. O sistema precisa saber qual coluna representa o CPF e o Nome no seu arquivo.
+              Identificamos <strong>{rawData.length} registros</strong>. O sistema precisa saber qual coluna representa o CPF/CNPJ e o Nome no seu arquivo.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
               <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">Coluna de CPF (Obrigatório)</label>
+                <label className="input-label">Coluna de CPF/CNPJ (Obrigatório)</label>
                 <select 
                   className="input-field" 
                   value={mapping.cpf} 
@@ -273,7 +316,7 @@ const AdminImportView = ({ onBackToApp }) => {
               </div>
 
               <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">E-mail (Opcional)</label>
+                <label className="input-label">E-mail (Recomendado)</label>
                 <select 
                   className="input-field" 
                   value={mapping.email} 
@@ -284,16 +327,56 @@ const AdminImportView = ({ onBackToApp }) => {
                 </select>
               </div>
 
-              <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">Data de Nascimento (Opcional)</label>
-                <select 
-                  className="input-field" 
-                  value={mapping.birth_date} 
-                  onChange={(e) => setMapping({...mapping, birth_date: e.target.value})}
-                >
-                  <option value="">Ignorar ou selecione...</option>
-                  {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="input-group" style={{ margin: 0 }}>
+                    <label className="input-label">Telefone / Whats</label>
+                    <select 
+                    className="input-field" 
+                    value={mapping.phone} 
+                    onChange={(e) => setMapping({...mapping, phone: e.target.value})}
+                    >
+                    <option value="">Ignorar...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                </div>
+
+                <div className="input-group" style={{ margin: 0 }}>
+                    <label className="input-label">Escola / Instituição</label>
+                    <select 
+                    className="input-field" 
+                    value={mapping.institution} 
+                    onChange={(e) => setMapping({...mapping, institution: e.target.value})}
+                    >
+                    <option value="">Ignorar...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="input-group" style={{ margin: 0 }}>
+                    <label className="input-label">Cidade</label>
+                    <select 
+                    className="input-field" 
+                    value={mapping.city} 
+                    onChange={(e) => setMapping({...mapping, city: e.target.value})}
+                    >
+                    <option value="">Ignorar...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                </div>
+
+                <div className="input-group" style={{ margin: 0 }}>
+                    <label className="input-label">UF</label>
+                    <select 
+                    className="input-field" 
+                    value={mapping.state} 
+                    onChange={(e) => setMapping({...mapping, state: e.target.value})}
+                    >
+                    <option value="">Ignorar...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                </div>
               </div>
 
               <div className="input-group" style={{ margin: 0 }}>

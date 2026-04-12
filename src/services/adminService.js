@@ -35,6 +35,10 @@ export const bulkImportMembers = async (membersArray) => {
       cpf: stripCPF(m.cpf),
       name: m.name,
       email: m.email || null,
+      phone: m.phone || null,
+      institution: m.institution || null,
+      city: m.city || null,
+      state: m.state || null,
       birth_date: m.birth_date || null,
       ticket_type: m.ticket_type || null,
       created_at: m.created_at || new Date().toISOString()
