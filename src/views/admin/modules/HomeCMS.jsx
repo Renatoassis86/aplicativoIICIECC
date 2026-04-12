@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, Eye } from 'lucide-react';
+import { Save, RefreshCw } from 'lucide-react';
 import { cmsService } from '../../../services/cmsService';
 
 const HomeCMS = () => {
@@ -49,13 +49,13 @@ const HomeCMS = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#1E293B' }}>Textos da Página Inicial</h3>
+          <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#FFFFFF' }}>Textos da Página Inicial</h3>
           <button 
             disabled={loading}
             onClick={loadContent}
-            style={{ background: 'none', border: 'none', color: '#6366F1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
+            style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Recarregar Atual
           </button>
@@ -101,8 +101,8 @@ const HomeCMS = () => {
         </div>
       </div>
 
-      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Vídeo de Destaque</h3>
+      <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
+        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Vídeo de Destaque</h3>
         <InputGroup 
           label="URL do Embed do YouTube" 
           value={content.home_video_url} 
@@ -110,7 +110,7 @@ const HomeCMS = () => {
           placeholder="https://www.youtube.com/embed/XXXXX"
           fullWidth
         />
-        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '8px' }}>
+        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>
           * Certifique-se de usar o link de **Embed** (ex: youtube.com/embed/ID) para que funcione corretamente no App.
         </p>
       </div>
@@ -121,9 +121,9 @@ const HomeCMS = () => {
           disabled={loading}
           style={{ 
             flex: 1, background: 'var(--primary)', color: 'white', border: 'none', 
-            padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer',
+            padding: '20px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-            boxShadow: '0 4px 15px rgba(107, 20, 26, 0.2)'
+            boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
           }}
         >
           <Save size={20} /> SALVAR ALTERAÇÕES NA HOME
@@ -135,19 +135,25 @@ const HomeCMS = () => {
 
 const InputGroup = ({ label, value, onChange, placeholder, fullWidth = false }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', gridColumn: fullWidth ? '1 / span 2' : 'auto' }}>
-    <label style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>{label}</label>
+    <label style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>{label}</label>
     <input 
       type="text" 
       value={value} 
       onChange={(e) => onChange(e.target.value)} 
       placeholder={placeholder}
       style={{ 
-        padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0',
-        fontSize: '14px', outline: 'none', transition: 'border-color 0.2s',
-        color: '#1E293B', background: 'white'
+        padding: '14px 16px', borderRadius: '12px', border: '1px solid var(--border-color)',
+        fontSize: '14px', outline: 'none', transition: 'all 0.2s',
+        color: '#FFFFFF', background: 'rgba(255,255,255,0.05)'
       }}
-      onFocus={(e) => e.target.style.borderColor = '#6366F1'}
-      onBlur={(e) => e.target.style.borderColor = '#E2E8F0'}
+      onFocus={(e) => {
+        e.target.style.borderColor = 'var(--gold)';
+        e.target.style.background = 'rgba(255,255,255,0.1)';
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = 'var(--border-color)';
+        e.target.style.background = 'rgba(255,255,255,0.05)';
+      }}
     />
   </div>
 );

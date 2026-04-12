@@ -8,8 +8,11 @@ import { memories2025 } from '../../data/memories2025';
 import MemoriesMarquee from '../../components/media/MemoriesMarquee';
 import { useCMS } from '../../hooks/useCMS';
 import { supabase } from '../../lib/supabase';
+import { useContent } from '../../hooks/useContent';
 
 const OfficialMediaTab = ({ onOpenMedia }) => {
+  const { content: mediaTitle } = useContent('titles', 'page_media');
+  const { content: mediaSubtitle } = useContent('titles', 'page_media_subtitle');
   const CarouselSection = ({ title, items, renderItem }) => (
     <div style={{ marginBottom: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 20px' }}>
@@ -105,9 +108,9 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <img src="/logo.png" alt="" style={{ height: '30px', filter: 'brightness(0) invert(1)' }} />
-          <h2 style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>MÍDIA</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>{mediaTitle || 'MÍDIA'}</h2>
         </div>
-        <p style={{ fontSize: '13px', opacity: 0.7 }}>Acompanhe tudo do II CIECC em tempo real.</p>
+        <p style={{ fontSize: '13px', opacity: 0.7 }}>{mediaSubtitle || 'Acompanhe tudo do II CIECC em tempo real.'}</p>
       </header>
 
       <div style={{ padding: '0 20px' }}>

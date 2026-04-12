@@ -99,7 +99,7 @@ export default function SponsorsCMS() {
               placeholder="Ex: Empresa Ltda"
               value={newSponsor.name}
               onChange={e => setNewSponsor({...newSponsor, name: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', fontWeight: '600', outline: 'none' }}
             />
           </div>
           <div>
@@ -116,7 +116,7 @@ export default function SponsorsCMS() {
             <select 
               value={newSponsor.tier}
               onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#000000', fontWeight: '800' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#FFFFFF', fontWeight: '800', outline: 'none' }}
             >
               <option value="diamond">Master & Diamante</option>
               <option value="gold">Cota Ouro</option>
@@ -143,7 +143,7 @@ export default function SponsorsCMS() {
               placeholder="Conte mais sobre a empresa..."
               value={newSponsor.bio}
               onChange={e => setNewSponsor({...newSponsor, bio: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', minHeight: '100px', resize: 'none' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', minHeight: '100px', resize: 'none', outline: 'none' }}
             />
           </div>
           <div>
@@ -160,10 +160,10 @@ export default function SponsorsCMS() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
             <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Logo e Website</label>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                     <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                     <input type="radio" checked={photoSource === 'upload'} onChange={() => setPhotoSource('upload')} /> Upload PC
                 </label>
             </div>
@@ -174,13 +174,13 @@ export default function SponsorsCMS() {
                     placeholder="URL do Logo"
                     value={newSponsor.logo_url}
                     onChange={e => setNewSponsor({...newSponsor, logo_url: e.target.value})}
-                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
                   />
                   <input 
                     placeholder="URL do Site"
                     value={newSponsor.website_url}
                     onChange={e => setNewSponsor({...newSponsor, website_url: e.target.value})}
-                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                    style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
                   />
                 </div>
             ) : (
@@ -220,13 +220,13 @@ export default function SponsorsCMS() {
           Patrocinadores Ativos
         </h4>
         {sponsors.map(sponsor => (
-          <div key={sponsor.id} className="white-bg" style={{ 
-            backgroundColor: 'white', padding: '24px', borderRadius: '24px', 
+          <div key={sponsor.id} style={{ 
+            background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', 
             display: 'flex', flexDirection: 'column', gap: '20px', 
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #F1F5F9' 
+            border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px', width: '100%' }}>
-              <div style={{ width: '100px', height: '100px', backgroundColor: '#F8FAFC', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: '1px solid #E2E8F0', position: 'relative' }}>
+              <div style={{ width: '100px', height: '100px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
                 {sponsor.logo_url ? (
                   <img src={sponsor.logo_url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 ) : (
@@ -259,11 +259,11 @@ export default function SponsorsCMS() {
                 <div>
                   <label style={{ fontSize: '10px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>Website (Link)</label>
                   <div style={{ position: 'relative' }}>
-                    <input 
-                      value={sponsor.website_url || ''}
-                      onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, website_url: e.target.value } : s))}
-                      style={{ fontSize: '12px', padding: '10px 35px 10px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', color: '#64748B', background: '#F8FAFC' }}
-                    />
+                  <input 
+                    value={sponsor.website_url || ''}
+                    onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, website_url: e.target.value } : s))}
+                    style={{ fontSize: '12px', padding: '10px 35px 10px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', width: '100%', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
+                  />
                     {sponsor.website_url && (
                       <a href={sponsor.website_url.startsWith('http') ? sponsor.website_url : `https://${sponsor.website_url}`} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)' }}>
                         <ExternalLink size={14} />

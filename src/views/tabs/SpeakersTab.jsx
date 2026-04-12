@@ -14,8 +14,11 @@ import {
 } from 'lucide-react';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import { supabase } from '../../lib/supabase';
+import { useContent } from '../../hooks/useContent';
 
 const SpeakersTab = ({ onNavigate }) => {
+  const { content: speakersTitle } = useContent('titles', 'page_speakers');
+  const { content: speakersSubtitle } = useContent('titles', 'page_speakers_subtitle');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpeaker, setSelectedSpeaker] = useState(null);
   const [speakersList, setSpeakersList] = useState([]);
@@ -60,8 +63,8 @@ const SpeakersTab = ({ onNavigate }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
            <div>
-              <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>Palestrantes</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Conheça as mentes por trás do II CIECC</p>
+              <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>{speakersTitle || 'Palestrantes'}</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{speakersSubtitle || 'Conheça as mentes por trás do II CIECC'}</p>
            </div>
            <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
               <Users size={24} />

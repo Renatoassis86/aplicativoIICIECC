@@ -7,8 +7,10 @@ import {
 } from 'lucide-react';
 import SessionDetailModal from '../../components/agenda/SessionDetailModal';
 import { supabase } from '../../lib/supabase';
+import { useContent } from '../../hooks/useContent';
 
 const AgendaTab = () => {
+  const { content: agendaTitle } = useContent('titles', 'page_agenda');
   const [selectedDay, setSelectedDay] = useState('01/05');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -84,7 +86,7 @@ const AgendaTab = () => {
         borderBottomRightRadius: '24px'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>Agenda Oficial</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>{agendaTitle || 'Agenda Oficial'}</h2>
           <button 
             onClick={() => setOnlyFavorites(!onlyFavorites)}
             style={{

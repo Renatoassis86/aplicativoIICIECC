@@ -98,7 +98,7 @@ function App() {
     };
 
     checkPersistedAuth();
-  }, [authStatus, view]);
+  }, []); // Alterado para [] para evitar loop infinito de re-renderização
 
   if (errorState) {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;

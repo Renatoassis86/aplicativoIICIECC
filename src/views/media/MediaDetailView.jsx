@@ -13,7 +13,9 @@ import {
   Volume2,
   Send,
   Video,
-  Mic
+  Mic,
+  FastForward,
+  Info
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -25,22 +27,27 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(media.startIndex || 0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   
   const commentInputRef = useRef(null);
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (media) {
-      fetchEngagements();
+      if (media.id) fetchEngagements();
       document.body.style.overflow = 'hidden';
       // Reset scroll for the portal container
-      const container = document.querySelector('.media-detail-fixed');
+      const container = document.querySelector('.fixed-page-portal');
       if (container) container.scrollTop = 0;
     }
     return () => { document.body.style.overflow = 'auto'; };
   }, [media]);
 
   const fetchEngagements = async () => {
+    if (!media.id) return;
     setIsLoading(true);
     try {
       // Fetch likes
@@ -71,6 +78,7 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
   };
 
   const handleLike = async () => {
+    if (!media.id) return;
     try {
       if (isLiked) {
         await supabase
@@ -99,7 +107,7 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !media.id) return;
     try {
       const { data, error } = await supabase
         .from('media_comments')
@@ -120,231 +128,216 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
     }
   };
 
-  const focusCommentInput = () => {
-    commentInputRef.current?.scrollIntoView({ behavior: 'smooth' });
-    commentInputRef.current?.focus();
-  };
-
   const isPodcast = media.type === 'podcast';
   const isGallery = media.type === 'gallery';
   const isPhoto = media.type === 'photo';
-  const isVideo = (media.type === 'story' || media.type === 'video') && media.videoUrl;
-  const isYouTube = isVideo && (media.videoUrl.includes('youtube.com') || media.videoUrl.includes('youtu.be'));
+  const isVideo = (media.type === 'story' || media.type === 'video' || media.type === 'youtube');
+  const videoUrl = media.videoUrl || (isVideo ? media.url : null);
+  const isYouTube = videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
 
-  const handleNextPhoto = () => {
-    if (media.photos) {
-      setActiveGalleryIndex((prev) => (prev + 1) % media.photos.length);
-    }
+  const formatTime = (time) => {
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const handlePrevPhoto = () => {
-    if (media.photos) {
-      setActiveGalleryIndex((prev) => (prev - 1 + media.photos.length) % media.photos.length);
+  const togglePlayback = () => {
+    const player = isPodcast ? audioRef.current : videoRef.current;
+    if (!player) return;
+    
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSpeedChange = () => {
+    const speeds = [1, 1.25, 1.5, 2, 0.75];
+    const currentIndex = speeds.indexOf(playbackSpeed);
+    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
+    setPlaybackSpeed(nextSpeed);
+    if (audioRef.current) audioRef.current.playbackRate = nextSpeed;
+    if (videoRef.current) videoRef.current.playbackRate = nextSpeed;
+  };
+
+  const handleTimeUpdate = () => {
+    const player = isPodcast ? audioRef.current : videoRef.current;
+    if (player) {
+      setCurrentTime(player.currentTime);
+      setDuration(player.duration || 0);
     }
   };
 
   return createPortal(
-    <div className="fixed-page-portal">
+    <div className="fixed-page-portal" style={{ 
+      position: 'fixed', inset: 0, zIndex: 999999, background: '#111', overflowY: 'auto' 
+    }}>
       <style dangerouslySetInnerHTML={{__html: `
-        .fixed-page-portal { scrollbar-width: none; }
+        .fixed-page-portal { scrollbar-width: none; background: #000; }
         .fixed-page-portal::-webkit-scrollbar { display: none; }
         .pulse-aura { animation: pulseAura 2s ease-out infinite; }
         @keyframes pulseAura { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
+        .glass-player { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
       `}} />
 
-      {/* Hero Header / Video Player */}
-      <div style={{ position: 'relative', width: '100%', height: isPodcast || isVideo ? '100dvh' : '70vh', flexShrink: 0, background: '#000' }}>
+      {/* Hero Header / Player Section */}
+      <div style={{ position: 'relative', width: '100%', minHeight: isPodcast || isVideo ? '90vh' : '70vh', flexShrink: 0, background: '#000', display: 'flex', flexDirection: 'column' }}>
         
-        {isVideo ? (
-          isYouTube ? (
+        {/* PLAYER AREA */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {isYouTube ? (
             <iframe 
               width="100%" 
               height="100%" 
-              src={`${media.videoUrl.replace('watch?v=', 'embed/')}${media.videoUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0`} 
+              src={`${videoUrl.replace('watch?v=', 'embed/')}${videoUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0`} 
               title={media.title} 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowFullScreen
+              style={{ position: 'absolute', inset: 0 }}
             ></iframe>
-          ) : (
+          ) : isVideo ? (
             <video 
               ref={videoRef}
-              src={media.videoUrl} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              src={videoUrl} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
               autoPlay 
-              loop 
-              controls
+              onTimeUpdate={handleTimeUpdate}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
             />
-          )
-        ) : isGallery ? (
-          <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <img 
-               src={media.photos[activeGalleryIndex]?.url} 
-               alt="gallery-active" 
-               style={{ width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }} 
-             />
-             <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', color: 'white', fontSize: '12px', fontWeight: '800', zIndex: 2 }}>
-               {activeGalleryIndex + 1} / {media.photos.length}
-             </div>
-             <button onClick={handlePrevPhoto} style={{ position: 'absolute', left: '16px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white', zIndex: 2 }}>
-               <ChevronLeft size={24} />
-             </button>
-             <button onClick={handleNextPhoto} style={{ position: 'absolute', right: '16px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white', zIndex: 2 }}>
-               <ChevronLeft size={24} style={{ transform: 'rotate(180deg)' }} />
-             </button>
-          </div>
-        ) : isPhoto ? (
-          <img src={media.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        ) : (
-          <div style={{ 
-            width: '100%', 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            background: isPodcast ? 'linear-gradient(135deg, #4A101D 0%, #1a237e 100%)' : 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)', 
-            position: 'relative',
-            padding: '40px 20px' 
-          }}>
-             <img src={media.url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.2, filter: 'blur(30px)' }} />
-             
-             {/* Animated Mic Ring */}
-             <div style={{ 
-               width: '180px', height: '180px', borderRadius: '50%', 
-               background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
-               border: '1px solid rgba(255,255,255,0.2)',
-               display: 'flex', alignItems: 'center', justifyContent: 'center',
-               position: 'relative', zIndex: 1,
-               boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-               marginBottom: '40px'
-             }}>
-               <Mic size={90} color="var(--gold)" />
-               {isPlaying && (
-                 <div className="pulse-aura" style={{ position: 'absolute', inset: '-10px', borderRadius: '50%', border: '2px solid var(--gold)', opacity: 0.3 }}></div>
-               )}
-             </div>
-
-             {isPodcast && (
-               <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', width: '100%', maxWidth: '320px' }}>
-                  <h2 style={{ color: 'white', fontSize: '32px', fontWeight: '900', fontFamily: 'var(--font-serif)', marginBottom: '12px', textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>{media.title}</h2>
-                  <p style={{ color: 'var(--gold)', fontWeight: '800', fontSize: '13px', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '40px' }}>CIECC PODCAST PLAYER</p>
-                  
-                  {/* Embedded Player Inside Hero */}
-                  <div style={{ width: '100%', marginBottom: '40px' }}>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', position: 'relative', marginBottom: '16px' }}>
-                      <div style={{ width: '42%', height: '100%', background: 'var(--gold)', borderRadius: '3px' }}></div>
-                      <div style={{ position: 'absolute', left: '42%', top: '50%', transform: 'translate(-50%, -50%)', width: '16px', height: '16px', background: 'white', borderRadius: '50%', boxShadow: '0 0 10px var(--gold)' }}></div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontWeight: '900' }}>
-                      <span>08:42</span>
-                      <span>35:00</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px' }}>
-                    <SkipBack size={32} color="white" />
-                    <button 
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      style={{ 
-                        width: '85px', height: '85px', borderRadius: '50%', background: 'white', border: 'none', 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 15px 30px rgba(0,0,0,0.4)', transition: 'transform 0.2s'
-                      }}
-                      onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
-                      onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                    >
-                      {isPlaying ? <Pause size={40} color="var(--primary)" fill="var(--primary)" /> : <Play size={40} color="var(--primary)" fill="var(--primary)" style={{ marginLeft: '8px' }} />}
-                    </button>
-                    <SkipForward size={32} color="white" />
-                  </div>
+          ) : isPodcast ? (
+            <div style={{ 
+              width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              background: 'radial-gradient(circle at center, #2d1b42 0%, #000 100%)', padding: '60px 20px'
+            }}>
+               <audio 
+                 ref={audioRef} 
+                 src={media.audioUrl || media.videoUrl} 
+                 onTimeUpdate={handleTimeUpdate}
+                 onPlay={() => setIsPlaying(true)}
+                 onPause={() => setIsPlaying(false)}
+               />
+               
+               <div style={{ width: '220px', height: '220px', borderRadius: '32px', position: 'relative', marginBottom: '40px', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }}>
+                 <img src={media.url} alt="" style={{ width: '100%', height: '100%', borderRadius: '32px', objectFit: 'cover' }} />
+                 {isPlaying && <div className="pulse-aura" style={{ position: 'absolute', inset: '-10px', borderRadius: '40px', border: '3px solid var(--gold)', opacity: 0.2 }}></div>}
                </div>
-             )}
-          </div>
-        )}
 
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top, 24px) + 20px)', left: '20px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', padding: '10px', color: 'white', zIndex: 10 }}
-        >
-          <ChevronLeft size={28} />
+               <div style={{ textAlign: 'center', maxWidth: '300px', marginBottom: '40px' }}>
+                 <h2 style={{ color: 'white', fontSize: '28px', fontWeight: '900', marginBottom: '8px' }}>{media.title}</h2>
+                 <p style={{ color: 'var(--gold)', fontWeight: '700', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>CIECC PODCAST PLAYER</p>
+               </div>
+
+               {/* Spotify Style Controls */}
+               <div style={{ width: '100%', maxWidth: '340px' }}>
+                 <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', position: 'relative', marginBottom: '12px', cursor: 'pointer' }} onClick={(e) => {
+                   const rect = e.currentTarget.getBoundingClientRect();
+                   const pct = (e.clientX - rect.left) / rect.width;
+                   if (audioRef.current) audioRef.current.currentTime = pct * audioRef.current.duration;
+                 }}>
+                   <div style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--gold)', borderRadius: '3px' }}></div>
+                   <div style={{ position: 'absolute', left: `${(currentTime / (duration || 1)) * 100}%`, top: '50%', transform: 'translate(-50%, -50%)', width: '14px', height: '14px', background: 'white', borderRadius: '50%', boxShadow: '0 0 10px rgba(0,0,0,0.5)' }}></div>
+                 </div>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', fontSize: '11px', fontWeight: '800' }}>
+                   <span>{formatTime(currentTime)}</span>
+                   <span>{formatTime(duration)}</span>
+                 </div>
+
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '32px' }}>
+                   <button onClick={handleSpeedChange} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--gold)', fontSize: '12px', fontWeight: '900', padding: '6px 12px', borderRadius: '12px', width: '50px' }}>
+                     {playbackSpeed}x
+                   </button>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                     <SkipBack size={28} color="white" fill="white" onClick={() => { if(audioRef.current) audioRef.current.currentTime -= 15 }} />
+                     <button onClick={togglePlayback} style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       {isPlaying ? <Pause size={32} color="black" fill="black" /> : <Play size={32} color="black" fill="black" style={{ marginLeft: '4px' }} />}
+                     </button>
+                     <SkipForward size={28} color="white" fill="white" onClick={() => { if(audioRef.current) audioRef.current.currentTime += 15 }} />
+                   </div>
+                   <Volume2 size={24} color="#666" />
+                 </div>
+               </div>
+            </div>
+          ) : isGallery ? (
+            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <img src={media.photos[activeGalleryIndex]?.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+               <div style={{ position: 'absolute', bottom: '20px', background: 'rgba(0,0,0,0.5)', padding: '6px 16px', borderRadius: '20px', color: 'white', fontSize: '13px', fontWeight: '800' }}>
+                 {activeGalleryIndex + 1} / {media.photos.length}
+               </div>
+               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev - 1 + media.photos.length) % media.photos.length); }} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ChevronLeft size={24} /></button>
+               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev + 1) % media.photos.length); }} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ChevronLeft size={24} style={{ transform: 'rotate(180deg)' }} /></button>
+            </div>
+          ) : (
+            <img src={media.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          )}
+        </div>
+
+        {/* OVERLAY ACTIONS */}
+        <button onClick={onClose} style={{ position: 'absolute', top: '16px', left: '16px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', padding: '10px', color: 'white', zIndex: 10 }}>
+          <X size={24} />
         </button>
-
-        <button 
-          style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top, 24px) + 20px)', right: '20px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', padding: '10px', color: 'white', zIndex: 10 }}
-        >
-          <Share2 size={24} />
+        <button style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', padding: '10px', color: 'white', zIndex: 10 }}>
+          <Share2 size={20} />
         </button>
       </div>
 
-      {/* Content Body */}
-      <div style={{ flex: 1, padding: '32px 24px', position: 'relative', color: 'white' }}>
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-serif)' }}>{media.title}</h1>
-            <div style={{ display: 'flex', gap: '20px' }}>
-              <button onClick={handleLike} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <Heart size={28} color={isLiked ? "#FF0000" : "white"} fill={isLiked ? "#FF0000" : "none"} />
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '800' }}>{likesCount}</span>
-              </button>
-              <button onClick={focusCommentInput} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <MessageCircle size={28} color="white" />
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '800' }}>{comments.length}</span>
-              </button>
+      {/* CONTENT BODY */}
+      <div style={{ padding: '32px 24px 120px', background: 'linear-gradient(to bottom, #000, #111)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>{media.title}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '11px', fontWeight: '900', background: 'var(--gold)', color: 'black', padding: '4px 8px', borderRadius: '6px' }}>{media.type?.toUpperCase()}</span>
+              <span style={{ fontSize: '13px', color: '#666', fontWeight: '700' }}>Cobertura Oficial II CIECC</span>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', opacity: 0.6 }}>
-             <span style={{ fontSize: '12px', fontWeight: '900', background: 'var(--gold)', color: 'var(--secondary)', padding: '4px 8px', borderRadius: '6px' }}>
-                {isGallery ? 'GALERIA' : isPodcast ? 'PODCAST' : isPhoto ? 'FOTO' : 'ENTREVISTA'}
-             </span>
-             <span style={{ fontSize: '12px' }}>II CIECC VIP • Cobertura Exclusiva</span>
+          <div style={{ display: 'flex', gap: '16px' }}>
+             <button onClick={handleLike} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+               <Heart size={28} color={isLiked ? "#FF4D4D" : "white"} fill={isLiked ? "#FF4D4D" : "none"} />
+               <span style={{ fontSize: '12px', color: '#666', fontWeight: '800' }}>{likesCount}</span>
+             </button>
           </div>
         </div>
 
-        {/* Podcast Player Section removed from body as it is now in the Hero */}
+        {/* Social Discussion */}
+        <div style={{ marginTop: '48px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+            <MessageCircle size={24} color="var(--gold)" />
+            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Conversa da Comunidade</h3>
+          </div>
 
-        {/* Comments Section */}
-        <div>
-          <h3 style={{ color: 'white', fontSize: '22px', fontWeight: '900', marginBottom: '24px' }}>Discussão da Comunidade</h3>
-          
-          <div style={{ 
-            background: 'rgba(255,255,255,0.05)', 
-            padding: '24px', 
-            borderRadius: '24px', 
-            border: '1px solid rgba(255,255,255,0.1)',
-            marginBottom: '40px'
-          }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px', marginBottom: '40px' }}>
             <textarea 
-              ref={commentInputRef}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Sua percepção sobre este conteúdo..."
-              style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', minHeight: '80px', resize: 'none', fontSize: '15px' }}
+              placeholder="O que você achou deste conteúdo?"
+              style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', minHeight: '80px', fontSize: '15px', resize: 'none' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
               <button 
                 onClick={handleAddComment}
-                style={{ background: 'var(--gold)', color: 'var(--secondary)', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: '900', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                style={{ background: 'var(--gold)', color: 'black', border: 'none', padding: '12px 24px', borderRadius: '16px', fontWeight: '900', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                <Send size={16} /> ENVIAR COMENTÁRIO
+                <Send size={16} /> POSTAR COMENTÁRIO
               </button>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {comments.map(c => (
-              <div key={c.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--gold)', fontWeight: '900', fontSize: '13px' }}>{c.user_name}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px' }}>{new Date(c.created_at).toLocaleDateString()}</span>
+              <div key={c.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontWeight: '900', color: 'var(--gold)', fontSize: '13px' }}>{c.user_name}</span>
+                  <span style={{ color: '#444', fontSize: '11px' }}>{new Date(c.created_at).toLocaleDateString()}</span>
                 </div>
-                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: '1.6' }}>{c.comment}</p>
+                <p style={{ color: '#AAA', fontSize: '15px', lineHeight: '1.6' }}>{c.comment}</p>
               </div>
             ))}
           </div>
         </div>
-
-        <div style={{ height: '80px' }}></div>
       </div>
     </div>,
     document.body

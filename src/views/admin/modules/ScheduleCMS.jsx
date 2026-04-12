@@ -118,7 +118,7 @@ const ScheduleCMS = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                         {sessions.map(s => (
-                            <div key={s.id} className="white-bg" style={cardStyle}>
+                            <div key={s.id} style={cardStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <span style={badgeStyle}>{s.category || 'Palestra'}</span>
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -126,10 +126,10 @@ const ScheduleCMS = () => {
                                         <button onClick={() => deleteItem('agenda_sessions', s.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
                                     </div>
                                 </div>
-                                <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#1E293B', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
-                                <div style={metaStyle}><Clock size={14} color="#64748B" /> {s.start_time} - {s.end_time}</div>
-                                <div style={metaStyle}><MapPin size={14} color="#64748B" /> {s.room || 'Auditório Principal'}</div>
-                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: '#6B141A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#FFFFFF', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
+                                <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
+                                <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
+                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <span style={{ opacity: 0.7 }}>🎤</span> {s.speakers.name}
                                 </div>}
                             </div>
@@ -149,15 +149,15 @@ const ScheduleCMS = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
                         {speakers.map(sp => (
-                            <div key={sp.id} className="white-bg" style={cardStyle}>
+                            <div key={sp.id} style={cardStyle}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                                     <button onClick={() => setEditingSpeaker(sp)} style={iconBtnStyle}><Edit2 size={14} /></button>
                                     <button onClick={() => deleteItem('speakers', sp.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <img src={sp.photo_url || 'https://via.placeholder.com/150'} alt="" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 12px' }} />
-                                    <h4 style={{ fontWeight: '800', margin: '0 0 4px', color: '#1E293B' }}>{sp.name}</h4>
-                                    <p style={{ fontSize: '12px', color: '#64748B' }}>{sp.institution}</p>
+                                    <img src={sp.photo_url || 'https://via.placeholder.com/150'} alt="" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto 12px', border: '2px solid var(--border-color)' }} />
+                                    <h4 style={{ fontWeight: '800', margin: '0 0 4px', color: '#FFFFFF' }}>{sp.name}</h4>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{sp.institution}</p>
                                 </div>
                             </div>
                         ))}
@@ -262,18 +262,18 @@ const ScheduleCMS = () => {
     );
 };
 
-const tabStyle = { padding: '12px 24px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#1E293B' };
+const tabStyle = { padding: '12px 24px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' };
 const activeTabStyle = { ...tabStyle, background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' };
-const btnPlusStyle = { padding: '10px 18px', borderRadius: '10px', background: 'var(--secondary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' };
-const cardStyle = { backgroundColor: 'white', padding: '24px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #F1F5F9' };
-const badgeStyle = { fontSize: '10px', fontWeight: '900', color: '#6366F1', background: '#EEF2FF', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
-const iconBtnStyle = { width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#445569', background: 'white' };
-const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: '#FEE2E2' };
-const metaStyle = { fontSize: '13px', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '700' };
-const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
-const modalStyle = { backgroundColor: 'white', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', color: '#1E293B' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none', color: '#1E293B', backgroundColor: 'white' };
-const labelStyle = { fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px', display: 'block' };
+const btnPlusStyle = { padding: '10px 18px', borderRadius: '10px', background: 'var(--secondary)', color: '#000', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' };
+const cardStyle = { background: 'var(--card-bg)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' };
+const badgeStyle = { fontSize: '10px', fontWeight: '900', color: 'var(--gold)', background: 'rgba(212, 175, 55, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
+const iconBtnStyle = { width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', background: 'rgba(255,255,255,0.05)' };
+const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.2)' };
+const metaStyle = { fontSize: '13px', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '700' };
+const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
+const modalStyle = { background: '#0F172A', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', color: '#FFFFFF', border: '1px solid var(--border-color)' };
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.05)' };
+const labelStyle = { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', display: 'block' };
 const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px' };
 
 export default ScheduleCMS;

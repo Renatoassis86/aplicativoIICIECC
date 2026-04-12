@@ -67,11 +67,11 @@ const UserManagementCMS = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
             {/* CRIAR USUÁRIO */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#1E293B' }}>
-                        <UserPlus size={20} color="var(--primary)" /> Configurar Acesso
+                <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
+                    <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
+                        <UserPlus size={20} color="var(--gold)" /> Configurar Acesso
                     </h3>
-                    <p style={{ fontSize: '12px', color: '#475569', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div style={inputGroupStyle}>
@@ -137,10 +137,10 @@ const UserManagementCMS = () => {
             </div>
 
             {/* LISTAGEM */}
-            <div style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+            <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#1E293B' }}>Gerenciamento de Usuários</h3>
-                    <button onClick={loadData} style={{ background: 'none', border: 'none', color: '#6366F1', cursor: 'pointer' }}>
+                    <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#FFFFFF' }}>Gerenciamento de Usuários</h3>
+                    <button onClick={loadData} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer' }}>
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                 </div>
@@ -158,28 +158,28 @@ const UserManagementCMS = () => {
 
                 <div style={{ maxHeight: '600px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {filteredUsers.map(u => (
-                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
+                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
                             <div style={{ 
                                 width: '40px', height: '40px', borderRadius: '10px', 
-                                background: u.user_type === 'admin' ? '#EEF2FF' : '#F8FAFC',
+                                background: u.user_type === 'admin' ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: u.user_type === 'admin' ? '#6366F1' : '#94A3B8'
+                                color: u.user_type === 'admin' ? 'var(--gold)' : '#94A3B8'
                             }}>
                                 {u.user_type === 'admin' ? <Shield size={20} /> : <Briefcase size={20} />}
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{u.name}</p>
+                                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
                                     <span style={{ 
                                         padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900',
-                                        background: u.user_type === 'admin' ? '#E0E7FF' : '#F1F5F9',
-                                        color: u.user_type === 'admin' ? '#4338CA' : '#64748B',
+                                        background: u.user_type === 'admin' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.1)',
+                                        color: u.user_type === 'admin' ? 'var(--gold)' : '#CBD5E1',
                                         textTransform: 'uppercase'
                                     }}>
                                         {u.user_type}
                                     </span>
                                 </div>
-                                <p style={{ fontSize: '12px', color: '#475569' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
+                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
                             </div>
                         </div>
                     ))}
@@ -196,7 +196,7 @@ const UserManagementCMS = () => {
 };
 
 const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '8px' };
-const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#1E293B' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '14px', outline: 'none', color: '#1E293B', background: 'white' };
+const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#FFFFFF' };
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)' };
 
 export default UserManagementCMS;

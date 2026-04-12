@@ -32,11 +32,20 @@ import ProfileView from './ProfileView';
 import MediaDetailView from './media/MediaDetailView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
+import { useContent } from '../hooks/useContent';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate, isAdminView }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [currentPage, setCurrentPage] = useState(null); // 'ticket', 'notifications', 'faq', 'sponsors', 'map', 'gts', 'profile', 'scanner', 'broadcast', 'mediaDetail'
+  const [mediaDetail, setMediaDetail] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Labels dinâmicos do CMS
+  const { content: menuHome } = useContent('nav', 'menu_home');
+  const { content: menuAgenda } = useContent('nav', 'menu_agenda');
+  const { content: menuMedia } = useContent('nav', 'menu_media');
+  const { content: menuFeed } = useContent('nav', 'menu_feed');
+  const { content: menuSpeakers } = useContent('nav', 'menu_speakers');
 
   useEffect(() => {
     // 1. Inicializa Motores de Push Nativo (Para App Stores)
@@ -71,14 +80,20 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenSponsors={() => setCurrentPage('sponsors')}
           onOpenMap={() => setCurrentPage('map')}
           onOpenProfile={() => setCurrentPage('profile')}
-          onOpenMedia={(media) => setCurrentPage('mediaDetail')}
+          onOpenMedia={(media) => {
+            setMediaDetail(media);
+            setCurrentPage('mediaDetail');
+          }}
         />
       );
       case 'agenda': return <AgendaTab />;
       case 'network': return <NetworkTab />;
       case 'media': return (
         <OfficialMediaTab 
-          onOpenMedia={(media) => setCurrentPage('mediaDetail')}
+          onOpenMedia={(media) => {
+            setMediaDetail(media);
+            setCurrentPage('mediaDetail');
+          }}
           userCpf={userCpf}
           userName={userName}
         />
@@ -179,35 +194,35 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
         >
           <Home size={20} />
-          <span>INÍCIO</span>
+          <span>{menuHome || 'INÍCIO'}</span>
         </button>
         <button 
           onClick={() => { setActiveTab('agenda'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'agenda' ? 'active' : ''}`}
         >
           <Calendar size={20} />
-          <span>AGENDA</span>
+          <span>{menuAgenda || 'AGENDA'}</span>
         </button>
         <button 
           onClick={() => { setActiveTab('media'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'media' ? 'active' : ''}`}
         >
           <Video size={20} />
-          <span>MÍDIA</span>
+          <span>{menuMedia || 'MÍDIA'}</span>
         </button>
         <button 
           onClick={() => { setActiveTab('feed'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}
         >
           <Image size={20} />
-          <span>CONECTAR</span>
+          <span>{menuFeed || 'CONECTAR'}</span>
         </button>
         <button 
           onClick={() => { setActiveTab('speakers'); setCurrentPage(null); }} 
           className={`nav-item ${activeTab === 'speakers' ? 'active' : ''}`}
         >
           <Users size={20} />
-          <span>PALESTRAS</span>
+          <span>{menuSpeakers || 'PALESTRAS'}</span>
         </button>
       </nav>
     </div>

@@ -5,12 +5,15 @@ import SocialPostCreator from '../../components/networking/SocialPostCreator';
 import PostOptionsModal from '../../components/networking/PostOptionsModal';
 import CommentsSheet from '../../components/networking/CommentsSheet';
 
+import { useContent } from '../../hooks/useContent';
+
 /**
  * SOCIAL / MEDIA TAB
  * Feed Institucional estilo Instagram com Algoritmo de Patrocínios.
  * Suporta Carrossel, Imagem Única e Reels.
  */
 export default function MediaTab({ userType, userName, userCpf }) {
+  const { content: mediaTitle } = useContent('titles', 'page_media');
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -228,7 +231,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
           <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
-            {viewingSaved ? 'Itens Salvos' : 'CONECTAR'}
+            {viewingSaved ? 'Itens Salvos' : (mediaTitle || 'CONECTAR')}
           </h1>
         </div>
 

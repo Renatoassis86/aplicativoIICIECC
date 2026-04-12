@@ -323,11 +323,14 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       <style dangerouslySetInnerHTML={{__html: `
         :root {
           --sidebar-width: 280px;
-          --primary: #4A101D;
+          --primary: #6B141A;
+          --primary-light: #8E1C24;
+          --secondary: #D4AF37;
           --gold: #D4AF37;
           --bg-dark: #0A0F1A;
-          --card-bg: rgba(255, 255, 255, 0.05);
-          --border-color: rgba(255, 255, 255, 0.1);
+          --card-bg: rgba(255, 255, 255, 0.03);
+          --card-hover: rgba(255, 255, 255, 0.06);
+          --border-color: rgba(255, 255, 255, 0.08);
           --font-serif: 'Playfair Display', serif;
         }
 
@@ -409,12 +412,18 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           gap: 24px;
         }
 
-        .card-main { background: var(--card-bg); border-radius: 24px; padding: 32px; border: 1px solid var(--border-color); }
+        .card-main { 
+          background: var(--card-bg); 
+          border-radius: 24px; 
+          padding: 32px; 
+          border: 1px solid var(--border-color);
+          backdrop-filter: blur(10px);
+        }
         .card-alert { 
           background: linear-gradient(135deg, var(--primary) 0%, #2A080F 100%); 
           border-radius: 24px; padding: 32px; color: white; position: relative; overflow: hidden; 
           border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
         .link-btn { color: var(--gold); border: none; background: none; font-size: 13px; fontWeight: 700; cursor: pointer; }
@@ -480,10 +489,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
-        /* Global Contrast Fix for Light Containers */
-        .white-bg, .card-main, [style*="background: white"], [style*="background-color: white"] {
-          background-color: #FFFFFF !important;
-          color: #1A202C !important;
+        /* Global Theme Consistency */
+        .white-bg, .card-main {
+          background-color: var(--card-bg) !important;
+          color: #FFFFFF !important;
+          border: 1px solid var(--border-color) !important;
         }
 
         .white-bg h1, .white-bg h2, .white-bg h3, .white-bg h4, .card-main h1, .card-main h2, .card-main h3, .card-main h4 {
