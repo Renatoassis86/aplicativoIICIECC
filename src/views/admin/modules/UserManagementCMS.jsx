@@ -168,16 +168,32 @@ const UserManagementCMS = () => {
                                 {u.user_type === 'admin' ? <Shield size={20} /> : <Briefcase size={20} />}
                             </div>
                             <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
-                                    <span style={{ 
-                                        padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900',
-                                        background: u.user_type === 'admin' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.1)',
-                                        color: u.user_type === 'admin' ? 'var(--gold)' : '#CBD5E1',
-                                        textTransform: 'uppercase'
-                                    }}>
-                                        {u.user_type}
-                                    </span>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
+                                        <span style={{ 
+                                            padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900',
+                                            background: u.user_type === 'admin' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.1)',
+                                            color: u.user_type === 'admin' ? 'var(--gold)' : '#CBD5E1',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {u.user_type}
+                                        </span>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            setNewUser({
+                                                name: u.name || '',
+                                                cpf: u.cpf || '',
+                                                email: u.email || '',
+                                                user_type: u.user_type || 'congressista'
+                                            });
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}
+                                    >
+                                        EDITAR UX
+                                    </button>
                                 </div>
                                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
                             </div>
