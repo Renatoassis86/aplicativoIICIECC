@@ -19,7 +19,7 @@ const FAQView = ({ onClose }) => {
     {
       id: 3,
       question: "Quem são os palestrantes confirmados?",
-      answer: "O evento contará com nomes como Dr. Chris Schlect, Dr. Keith Nix, Ms. Thiago Dutra, Esp. Maurício Fonseca, Ms. Elmer Pires, Esp. Matheus Macedo e Rosely Garcia."
+      answer: "O evento contará com um seleto grupo de especialistas internacionais e nacionais. Você pode conferir a lista completa e as biografias atualizadas de cada um na aba 'Palestrantes' dentro do menu 'Mais' do aplicativo."
     },
     {
       id: 4,

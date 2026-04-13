@@ -1,14 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, Play, Pause, SkipBack, SkipForward, Volume2, Maximize, Youtube } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Play, Pause, SkipBack, SkipForward, AlertCircle } from 'lucide-react';
+import ReactPlayer from 'react-player';
 
 const MediaPlayerModal = ({ media, onClose }) => {
   if (!media) return null;
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [error, setError] = useState(null);
+  
   const videoRef = useRef(null);
-  const audioRef = useRef(null);
 
   // Normalizar a URL independente da origem (OfficialMediaTab vs MediaTab)
   const mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
@@ -17,44 +19,14 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video' || media.type === 'video';
   const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast' || media.media_type === 'podcast';
 
-  const getYoutubeId = (url) => {
-    if (!url) return '';
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
-
-  const youtubeId = isYoutube ? getYoutubeId(mediaUrl) : null;
-
-  useEffect(() => {
-    if (isPlaying) {
-      const interval = setInterval(() => {
-        const ref = videoRef.current || audioRef.current;
-        if (ref) {
-          setProgress(ref.currentTime);
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying]);
-
   const togglePlay = () => {
-    const ref = videoRef.current || audioRef.current;
-    if (ref) {
-      if (isPlaying) ref.pause();
-      else {
-        ref.play().catch(e => console.error("Playback error:", e));
-      }
-      setIsPlaying(!isPlaying);
-    }
+    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (e) => {
     const time = parseFloat(e.target.value);
-    const ref = videoRef.current || audioRef.current;
-    if (ref) {
-      ref.currentTime = time;
-      setProgress(time);
+    if (videoRef.current) {
+       videoRef.current.seekTo(time, 'seconds');
     }
   };
 
@@ -67,7 +39,7 @@ const MediaPlayerModal = ({ media, onClose }) => {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)',
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.98)',
       zIndex: 2000, display: 'flex', flexDirection: 'column',
       padding: 'env(safe-area-inset-top, 20px) 0 env(safe-area-inset-bottom, 20px)'
     }} className="fade-in">
@@ -84,30 +56,40 @@ const MediaPlayerModal = ({ media, onClose }) => {
       </div>
 
       {/* Content Area */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative' }}>
         
-        {isYoutube && youtubeId ? (
-          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
-            <iframe 
-              width="100%" height="100%" 
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`} 
-              title={media.title}
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen
-            ></iframe>
+        {error ? (
+          <div style={{ textAlign: 'center', color: 'white', padding: '20px' }}>
+            <AlertCircle size={48} color="#EF4444" style={{ marginBottom: '16px' }} />
+            <h4 style={{ fontWeight: '800', marginBottom: '8px' }}>Erro ao reproduzir vídeo</h4>
+            <p style={{ fontSize: '14px', opacity: 0.7, marginBottom: '24px' }}>{error}</p>
+            <button 
+              onClick={() => window.open(mediaUrl, '_blank')}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: '800' }}
+            >
+              ABRIR NO NAVEGADOR
+            </button>
           </div>
-        ) : isVideoFile && !isAudioFile ? (
-          <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-            <video 
+        ) : isYoutube || isVideoFile ? (
+          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', background: '#000', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+            <ReactPlayer
               ref={videoRef}
-              src={mediaUrl} 
-              style={{ width: '100%', maxHeight: '70vh' }}
-              onLoadedMetadata={() => setDuration(videoRef.current.duration)}
-              onPause={() => setIsPlaying(false)}
-              onPlay={() => setIsPlaying(true)}
-              playsInline
-              autoPlay
+              url={mediaUrl}
+              playing={isPlaying}
+              controls={true}
+              width="100%"
+              height="100%"
+              onError={(e) => {
+                console.error("ReactPlayer Error:", e);
+                setError("O link pode estar quebrado ou indisponível para este dispositivo.");
+              }}
+              onProgress={(p) => setProgress(p.playedSeconds)}
+              onDuration={(d) => setDuration(d)}
+              config={{
+                youtube: {
+                  playerVars: { showinfo: 1, modestbranding: 1, rel: 0 }
+                }
+              }}
             />
           </div>
         ) : (
@@ -125,13 +107,14 @@ const MediaPlayerModal = ({ media, onClose }) => {
                </div>
             </div>
 
-            <audio 
-              ref={audioRef}
-              src={mediaUrl}
-              onLoadedMetadata={() => setDuration(audioRef.current.duration)}
-              onPause={() => setIsPlaying(false)}
-              onPlay={() => setIsPlaying(true)}
-              autoPlay
+            <ReactPlayer
+              url={mediaUrl}
+              playing={isPlaying}
+              width="0"
+              height="0"
+              onProgress={(p) => setProgress(p.playedSeconds)}
+              onDuration={(d) => setDuration(d)}
+              onError={() => setError("Erro ao carregar o áudio.")}
             />
 
             {/* Audio Controls */}

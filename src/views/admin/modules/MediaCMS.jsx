@@ -1,269 +1,196 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Music, Video, Youtube, Upload, Trash2, Link as LinkIcon, Radio } from 'lucide-react';
-import { cmsService } from '../../../services/cmsService';
+import { Video, Music, Plus, Trash2, Edit2, Save, X, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
+import SuccessMessage from '../../../components/admin/SuccessMessage';
 
 const MediaCMS = () => {
-  const [loading, setLoading] = useState(false);
-  const [mediaList, setMediaList] = useState([]);
-  const [uploadFile, setUploadFile] = useState(null);
-  const [newMedia, setNewMedia] = useState({
-    title: '',
-    description: '',
-    type: 'video',
-    source: 'link',
-    url: '',
-    isLive: false
-  });
+    const [mediaItems, setMediaItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
 
-  useEffect(() => {
-    loadMedia();
-  }, []);
+    useEffect(() => {
+        loadMedia();
+    }, []);
 
-  const loadMedia = async () => {
-    setLoading(true);
-    const data = await cmsService.getMedia();
-    setMediaList(data);
-    setLoading(false);
-  };
-
-  const handleAddMedia = async () => {
-    if (!newMedia.title) return alert('Título é obrigatório');
-    
-    setLoading(true);
-    try {
-      if (newMedia.source === 'upload' && uploadFile) {
-        await cmsService.uploadMedia(uploadFile, newMedia.title, newMedia.description, newMedia.type);
-      } else if (newMedia.source === 'link') {
-        if (!newMedia.url) throw new Error('URL é obrigatória para links');
-        await cmsService.addMediaLink(
-          newMedia.title, 
-          newMedia.description, 
-          newMedia.type, 
-          newMedia.url,
-          newMedia.isLive
-        );
-      }
-      
-      alert('Mídia adicionada com sucesso!');
-      setNewMedia({
-        title: '',
-        description: '',
-        type: 'video',
-        source: 'link',
-        url: '',
-        isLive: false
-      });
-      setUploadFile(null);
-      loadMedia();
-    } catch (e) {
-      alert('Erro ao adicionar: ' + e.message);
-    }
-    setLoading(false);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Excluir esta mídia permanentemente?')) return;
-    try {
-      const { error } = await cmsService.deleteMedia(id); 
-      if (error) throw error;
-      loadMedia();
-    } catch (e) {
-      alert('Erro ao excluir: ' + e.message);
-    }
-  };
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
-      {/* FORMULÁRIO */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)' }}>
-          <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Adicionar Novo Conteúdo</h3>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-               <ModeButton 
-                active={newMedia.type === 'video'} 
-                onClick={() => setNewMedia(prev => ({ ...prev, type: 'video' }))}
-                icon={<Video size={16} />}
-                label="Vídeo"
-               />
-               <ModeButton 
-                active={newMedia.type === 'audio'} 
-                onClick={() => setNewMedia(prev => ({ ...prev, type: 'audio' }))}
-                icon={<Music size={16} />}
-                label="Áudio/Pod"
-               />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>Título</label>
-              <input 
-                type="text" 
-                value={newMedia.title} 
-                onChange={(e) => setNewMedia(prev => ({ ...prev, title: e.target.value }))}
-                style={inputStyle}
-                placeholder="Ex: Entrevista com Dr. Schlect"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>Descrição (Opcional)</label>
-              <textarea 
-                value={newMedia.description} 
-                onChange={(e) => setNewMedia(prev => ({ ...prev, description: e.target.value }))}
-                style={{ ...inputStyle, minHeight: '80px', resize: 'none' }}
-                placeholder="Breve resumo do conteúdo..."
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
-               <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8' }}>Origem do Arquivo</label>
-               <div style={{ display: 'flex', gap: '12px' }}>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
-                   <input type="radio" checked={newMedia.source === 'link'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'link' }))} /> Link Externo
-                 </label>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
-                   <input type="radio" checked={newMedia.source === 'upload'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'upload' }))} /> Upload Direto
-                 </label>
-               </div>
-
-               {newMedia.source === 'link' ? (
-                 <input 
-                  type="text" 
-                  placeholder="URL (YouTube, Spotify, etc)" 
-                  value={newMedia.url}
-                  onChange={(e) => setNewMedia(prev => ({ ...prev, url: e.target.value }))}
-                  style={inputStyle}
-                 />
-               ) : (
-                 <div style={{ border: '2px dashed var(--border-color)', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                   <input 
-                    type="file" 
-                    onChange={(e) => setUploadFile(e.target.files[0])}
-                    id="file-upload"
-                    style={{ display: 'none' }}
-                   />
-                   <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                     <Upload size={24} color="#64748B" />
-                     <span style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>{uploadFile ? uploadFile.name : 'Clique para selecionar arquivo'}</span>
-                   </label>
-                 </div>
-               )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: newMedia.isLive ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (newMedia.isLive ? '#EF4444' : 'var(--border-color)') }}>
-               <input 
-                type="checkbox" 
-                checked={newMedia.isLive} 
-                onChange={(e) => setNewMedia(prev => ({ ...prev, isLive: e.target.checked }))}
-                id="is-live"
-               />
-               <label htmlFor="is-live" style={{ fontSize: '13px', fontWeight: '700', color: newMedia.isLive ? '#F87171' : '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                 <Radio size={16} /> Marcar como Transmissão Ao Vivo (Link Principal)
-               </label>
-            </div>
-
-            <button 
-              onClick={handleAddMedia}
-              disabled={loading}
-              className="btn-primary"
-              style={{ padding: '16px', borderRadius: '12px', width: '100%', cursor: 'pointer', marginTop: '8px' }}
-            >
-              {loading ? 'Processando...' : 'ADICIONAR MÍDIA'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* LISTAGEM */}
-      <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', maxHeight: '800px', overflowY: 'auto' }}>
-        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Mídias Cadastradas</h3>
+    const loadMedia = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('media_assets')
+            .select('*')
+            .order('created_at', { ascending: false });
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {mediaList.map(item => {
-            const isLive = item.is_live_stream;
-            return (
-              <div key={item.id} style={{ 
-                display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', 
-                border: '1px solid var(--border-color)', background: isLive ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.03)',
-                boxShadow: isLive ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none'
-              }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
-                  {item.media_type === 'video' ? <Video size={20} /> : <Music size={20} />}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#F1F5F9' }}>{item.title}</p>
-                    {isLive && <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900' }}>LIVE</span>}
-                  </div>
-                  
-                  {isLive ? (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
-                      <input 
-                        type="text" 
-                        defaultValue={item.url_or_path}
-                        id={`live-url-${item.id}`}
-                        style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', flex: 1 }}
-                      />
-                      <button 
-                        onClick={async () => {
-                          const val = document.getElementById(`live-url-${item.id}`).value;
-                          try {
-                            setLoading(true);
-                            await cmsService.updateMedia(item.id, { url_or_path: val });
-                            alert('Link da transmissão atualizado com sucesso!');
-                            loadMedia();
-                          } catch (err) {
-                            alert('Erro ao atualizar: ' + err.message);
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        style={{ background: 'var(--gold)', color: '#000', border: 'none', padding: '6px 20px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      >
-                        SALVAR LINK
-                      </button>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: '12px', color: '#94A3B8', wordBreak: 'break-all' }}>
-                      {item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}
-                      {item.url_or_path}
-                    </p>
-                  )}
+        if (data) setMediaItems(data);
+        setLoading(false);
+    };
+
+    const triggerSuccess = (msg) => {
+        setSuccessMsg(msg);
+        setShowSuccess(true);
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        setLoading(true);
+        const { error } = await supabase.from('media_assets').upsert({
+            id: editingItem?.id || undefined,
+            title: data.title,
+            description: data.description,
+            url: data.url,
+            media_type: data.media_type,
+            category: data.category,
+            updated_at: new Date().toISOString()
+        });
+
+        if (!error) {
+            setEditingItem(null);
+            loadMedia();
+            triggerSuccess('Conteúdo de mídia atualizado com sucesso!');
+        } else {
+            alert('Erro ao salvar: ' + error.message);
+        }
+        setLoading(false);
+    };
+
+    const deleteItem = async (id) => {
+        if (!window.confirm('Excluir este item permanentemente?')) return;
+        setLoading(true);
+        const { error } = await supabase.from('media_assets').delete().eq('id', id);
+        if (!error) {
+            loadMedia();
+            triggerSuccess('Item removido do acervo.');
+        }
+        setLoading(false);
+    };
+
+    return (
+        <div style={{ paddingBottom: '40px' }}>
+            {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <div>
+                    <h3 style={{ fontWeight: '900', fontSize: '24px', color: 'white' }}>Auditório Digital</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Vídeos do YouTube, Podcasts e Aulas</p>
                 </div>
                 <button 
-                  onClick={() => handleDelete(item.id)}
-                  style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#FEE2E2', color: '#B91C1C', cursor: 'pointer' }}
+                    onClick={() => setEditingItem({ media_type: 'video' })}
+                    style={{ 
+                        padding: '12px 24px', borderRadius: '14px', background: 'var(--secondary)', 
+                        color: '#000', border: 'none', fontWeight: '800', cursor: 'pointer', 
+                        display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
+                    }}
                 >
-                  <Trash2 size={18} />
+                    <Plus size={20} /> ADICIONAR CONTEÚDO
                 </button>
-              </div>
-            );
-          })}
-          {mediaList.length === 0 && <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>Nenhuma mídia cadastrada ainda.</p>}
+            </div>
+
+            {loading && !editingItem && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--gold)', fontWeight: '700' }}>Sincronizando biblioteca...</p>}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                {mediaItems.map(item => (
+                    <div key={item.id} style={{ 
+                        background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', 
+                        border: '1px solid var(--border-color)', position: 'relative',
+                        transition: 'transform 0.3s ease', cursor: 'default'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                            <div style={{ 
+                                background: item.media_type === 'video' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px'
+                            }}>
+                                {item.media_type === 'video' ? <Video size={14} color="#EF4444" /> : <Music size={14} color="#10B981" />}
+                                <span style={{ fontSize: '11px', fontWeight: '900', color: item.media_type === 'video' ? '#EF4444' : '#10B981', textTransform: 'uppercase' }}>
+                                    {item.media_type}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button onClick={() => setEditingItem(item)} style={iconBtnStyle}><Edit2 size={14} /></button>
+                                <button onClick={() => deleteItem(item.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
+                            </div>
+                        </div>
+
+                        <h4 style={{ fontWeight: '800', color: 'white', marginBottom: '8px', fontSize: '17px' }}>{item.title}</h4>
+                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '20px', lineHeight: '1.5' }}>{item.description}</p>
+                        
+                        <div style={{ 
+                            background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', 
+                            display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--gold)',
+                            fontWeight: '600', border: '1px solid rgba(255,255,255,0.05)'
+                        }}>
+                            <LinkIcon size={14} />
+                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {editingItem && (
+                <div style={overlayStyle}>
+                    <div style={modalStyle} className="fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ fontWeight: '900', fontSize: '20px' }}>{editingItem.id ? 'Editar Conteúdo' : 'Novo Conteúdo'}</h3>
+                            <button onClick={() => setEditingItem(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
+                        </div>
+                        
+                        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={labelStyle}>Título do Conteúdo</label>
+                                <input name="title" defaultValue={editingItem.title} required style={inputStyle} placeholder="Ex: Aula Magna - II CIECC" />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div>
+                                    <label style={labelStyle}>Tipo</label>
+                                    <select name="media_type" defaultValue={editingItem.media_type} style={inputStyle}>
+                                        <option value="video">Vídeo (YouTube)</option>
+                                        <option value="audio">Áudio (Podcast/Aula)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Categoria</label>
+                                    <input name="category" defaultValue={editingItem.category} style={inputStyle} placeholder="Ex: Educação" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={labelStyle}>Link do YouTube / Áudio</label>
+                                <input name="url" defaultValue={editingItem.url} required style={inputStyle} placeholder="https://youtube.com/watch?v=..." />
+                            </div>
+
+                            <div>
+                                <label style={labelStyle}>Descrição</label>
+                                <textarea name="description" defaultValue={editingItem.description} style={{ ...inputStyle, minHeight: '100px', resize: 'none' }} placeholder="Breve resumo do conteúdo..." />
+                            </div>
+
+                            <button type="submit" disabled={loading} style={btnSaveStyle}>
+                                {loading ? 'PROCESSANDO...' : <><Save size={20} /> SALVAR NA BIBLIOTECA</>}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-const ModeButton = ({ active, onClick, icon, label }) => (
-  <button 
-    onClick={onClick}
-    style={{
-      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-      padding: '12px', borderRadius: '12px', border: active ? '1px solid var(--brand)' : '1px solid var(--border-color)',
-      background: active ? 'rgba(212, 193, 156, 0.1)' : 'rgba(255,255,255,0.05)', color: active ? 'var(--brand)' : '#94A3B8',
-      fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s'
-    }}
-  >
-    {icon} {label}
-  </button>
-);
-
-const inputStyle = {
-  padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)',
-  fontSize: '14px', outline: 'none', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)'
+const iconBtnStyle = { 
+    width: '32px', height: '32px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+    color: 'white', background: 'rgba(255,255,255,0.05)', transition: 'all 0.2s'
+};
+const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)' };
+const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
+const modalStyle = { background: '#0F172A', width: '100%', maxWidth: '550px', borderRadius: '32px', padding: '40px', boxShadow: '0 25px 50px rgba(0,0,0,0.5)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' };
+const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '15px', outline: 'none', color: 'white', backgroundColor: 'rgba(255,255,255,0.05)', fontWeight: '600' };
+const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '1px' };
+const btnSaveStyle = { 
+    padding: '18px', borderRadius: '16px', background: 'var(--primary)', color: 'white', border: 'none', 
+    fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+    gap: '12px', marginTop: '10px', width: '100%', fontSize: '16px', letterSpacing: '0.5px', boxShadow: '0 10px 20px rgba(74, 16, 29, 0.3)'
 };
 
 export default MediaCMS;

@@ -44,7 +44,26 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
       };
     });
 
-    // 3. Filtro Lógica de Negócio (Client-side para garantir "toda a base")
+    // 3. Buscar Palestrantes da tabela de Palestrantes (Gestão CMS)
+    const { data: cmsSpeakers } = await supabase.from('speakers').select('*');
+    if (cmsSpeakers) {
+      cmsSpeakers.forEach(s => {
+        // Evitar duplicidade se já existir na lista pelo nome (ou CPF se tivéssemos)
+        if (!baseResults.some(r => r.name === s.name)) {
+          baseResults.push({
+            id: s.id,
+            name: s.name,
+            role: s.institution || 'Palestrante',
+            institution: s.institution || 'II CIECC',
+            type: 'palestrante',
+            verified: true,
+            avatar: s.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop'
+          });
+        }
+      });
+    }
+
+    // 4. Filtro Lógica de Negócio (Client-side para garantir "toda a base")
     if (filterType !== 'all') {
       baseResults = baseResults.filter(r => r.type === filterType);
     }

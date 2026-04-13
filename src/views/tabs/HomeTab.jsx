@@ -66,6 +66,7 @@ const HomeTab = ({
   const [sponsors, setSponsors] = React.useState([]);
   const [workshops, setWorkshops] = React.useState([]);
   const [favoriteItems, setFavoriteItems] = React.useState([]);
+  const [speakers, setSpeakers] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
@@ -79,6 +80,21 @@ const HomeTab = ({
     async function fetchWorkshops() {
       const { data } = await supabase.from('agenda_sessions').select('*').eq('category', 'Oficina').limit(10);
       if (data && isMounted) setWorkshops(data);
+    }
+    
+    async function fetchSpeakers() {
+      const { data } = await supabase.from('speakers').select('*').limit(20);
+      if (data && isMounted) {
+        setSpeakers(data.map(s => ({
+          id: s.id,
+          name: s.name,
+          desc: s.institution,
+          img: s.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=400&h=400&auto=format&fit=crop',
+          longBio: s.bio,
+          category: 'Palestrante',
+          websiteUrl: s.website_url
+        })));
+      }
     }
     
     async function fetchFavorites() {
@@ -148,6 +164,7 @@ const HomeTab = ({
 
     fetchSponsors();
     fetchWorkshops();
+    fetchSpeakers();
     fetchFavorites();
 
     // REALTIME FAVORITES: Sincroniza tudo instantaneamente
@@ -216,7 +233,7 @@ const HomeTab = ({
   };
 
   const shortcuts = shortcutsData || [];
-  const confirmedSpeakers = confirmedSpeakersData || [];
+  const confirmedSpeakers = speakers && speakers.length > 0 ? speakers : (confirmedSpeakersData || []);
 
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px' }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Plus, Trash2, Edit2, Save, X, Clock, MapPin } from 'lucide-react';
+import { Calendar, Users, Plus, Trash2, Edit2, Save, X, Clock, MapPin, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import SuccessMessage from '../../../components/admin/SuccessMessage';
 
 const ScheduleCMS = () => {
     const [sessions, setSessions] = useState([]);
@@ -11,6 +12,8 @@ const ScheduleCMS = () => {
     const [loading, setLoading] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
     const [photoSource, setPhotoSource] = useState('link'); // 'link' ou 'upload'
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
 
     useEffect(() => {
         loadData();
@@ -23,6 +26,11 @@ const ScheduleCMS = () => {
         setSessions(sData || []);
         setSpeakers(spData || []);
         setLoading(false);
+    };
+
+    const triggerSuccess = (msg) => {
+        setSuccessMsg(msg);
+        setShowSuccess(true);
     };
 
     const handleSaveSession = async (e) => {
@@ -40,12 +48,14 @@ const ScheduleCMS = () => {
             start_time: data.start_time,
             end_time: data.end_time,
             room: data.room,
-            category: data.category
+            category: data.category,
+            updated_at: new Date().toISOString()
         });
 
         if (!error) {
             setEditingSession(null);
             loadData();
+            triggerSuccess('Programação atualizada com sucesso!');
         } else {
             alert(error.message);
         }
@@ -58,28 +68,43 @@ const ScheduleCMS = () => {
         const data = Object.fromEntries(formData.entries());
         
         setLoading(true);
-        const { error } = await supabase.from('speakers').upsert({
-            id: editingSpeaker?.id || undefined,
-            name: data.name,
-            bio: data.bio,
-            photo_url: data.photo_url,
-            institution: data.institution,
-            website_url: data.website_url
-        });
+        try {
+            let finalPhotoUrl = photoSource === 'link' ? data.photo_url : (editingSpeaker?.photo_url || '');
 
-        // Lógica de upload se necessário (a ser integrada com cmsService ou supabase direct)
-        if (!error && photoSource === 'upload' && uploadFile) {
-            // Aqui viria a chamada de upload para o bucket 'speakers'
-            console.log("Upload de foto detectado:", uploadFile);
-        }
+            if (photoSource === 'upload' && uploadFile) {
+                const fileExt = uploadFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('speakers')
+                    .upload(fileName, uploadFile);
+                
+                if (uploadError) throw uploadError;
 
-        if (!error) {
+                const { data: urlData } = supabase.storage.from('speakers').getPublicUrl(fileName);
+                finalPhotoUrl = urlData.publicUrl;
+            }
+
+            const { error } = await supabase.from('speakers').upsert({
+                id: editingSpeaker?.id || undefined,
+                name: data.name,
+                bio: data.bio,
+                photo_url: finalPhotoUrl,
+                institution: data.institution,
+                website_url: data.website_url,
+                updated_at: new Date().toISOString()
+            });
+
+            if (error) throw error;
+
             setEditingSpeaker(null);
+            setUploadFile(null);
             loadData();
-        } else {
-            alert(error.message);
+            triggerSuccess('Palestrante salvo e integrado ao sistema!');
+        } catch (error) {
+            alert('Erro ao salvar: ' + error.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const deleteItem = async (table, id) => {
@@ -87,10 +112,13 @@ const ScheduleCMS = () => {
         setLoading(true);
         await supabase.from(table).delete().eq('id', id);
         loadData();
+        triggerSuccess('Item removido permanentemente.');
     };
 
     return (
         <div style={{ paddingBottom: '40px' }}>
+            {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
+            
             <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
                 <button 
                     onClick={() => setActiveTab('sessions')}
@@ -106,7 +134,7 @@ const ScheduleCMS = () => {
                 </button>
             </div>
 
-            {loading && <p style={{ textAlign: 'center', padding: '20px' }}>Carregando dados...</p>}
+            {loading && !editingSession && !editingSpeaker && <p style={{ textAlign: 'center', padding: '20px', color: 'var(--gold)', fontWeight: '700' }}>Sincronizando dados...</p>}
 
             {activeTab === 'sessions' && (
                 <div className="fade-in">
@@ -131,7 +159,7 @@ const ScheduleCMS = () => {
                                 <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
                                 <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
                                 {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <span style={{ opacity: 0.7 }}>🎤</span> {s.speakers.name}
+                                    <img src={s.speakers.photo_url} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} alt="" /> {s.speakers.name}
                                 </div>}
                             </div>
                         ))}
@@ -172,7 +200,7 @@ const ScheduleCMS = () => {
                     <div style={modalStyle} className="fade-in">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h3 style={{ fontWeight: '800' }}>{editingSession.id ? 'Editar Atividade' : 'Nova Atividade'}</h3>
-                            <button onClick={() => setEditingSession(null)} style={{ background: 'none', border: 'none' }}><X /></button>
+                            <button onClick={() => setEditingSession(null)} style={{ background: 'none', border: 'none', color: 'white' }}><X /></button>
                         </div>
                         <form onSubmit={handleSaveSession} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <input name="title" placeholder="Título da Palestra" defaultValue={editingSession.title} required style={inputStyle} />
@@ -208,7 +236,7 @@ const ScheduleCMS = () => {
                             </select>
 
                             <button type="submit" disabled={loading} style={btnSaveStyle}>
-                                <Save size={18} /> SALVAR ATIVIDADE
+                                {loading ? 'SALVANDO...' : <><Save size={18} /> SALVAR ATIVIDADE</>}
                             </button>
                         </form>
                     </div>
@@ -221,7 +249,7 @@ const ScheduleCMS = () => {
                     <div style={modalStyle} className="fade-in">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h3 style={{ fontWeight: '800' }}>{editingSpeaker.id ? 'Editar Palestrante' : 'Novo Palestrante'}</h3>
-                            <button onClick={() => setEditingSpeaker(null)} style={{ background: 'none', border: 'none' }}><X /></button>
+                            <button onClick={() => setEditingSpeaker(null)} style={{ background: 'none', border: 'none', color: 'white' }}><X /></button>
                         </div>
                         <form onSubmit={handleSaveSpeaker} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <input name="name" placeholder="Nome Completo" defaultValue={editingSpeaker.name} required style={inputStyle} />
@@ -243,7 +271,7 @@ const ScheduleCMS = () => {
                                     <div style={{ border: '2px dashed var(--border-color)', padding: '16px', borderRadius: '12px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
                                         <input type="file" id="speaker-photo" accept="image/*" onChange={(e) => setUploadFile(e.target.files[0])} style={{ display: 'none' }} />
                                         <label htmlFor="speaker-photo" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                            <Plus size={20} color="#64748B" />
+                                            <ImageIcon size={20} color="var(--gold)" />
                                             <span style={{ fontSize: '12px', fontWeight: '700' }}>{uploadFile ? uploadFile.name : 'Selecionar Foto no PC'}</span>
                                         </label>
                                     </div>
@@ -255,7 +283,7 @@ const ScheduleCMS = () => {
                             <input name="website_url" placeholder="Site Oficial / Bio (https://...)" defaultValue={editingSpeaker.website_url} style={inputStyle} />
                             
                             <button type="submit" disabled={loading} style={btnSaveStyle}>
-                                <Save size={18} /> SALVAR PALESTRANTE
+                                {loading ? 'PROCESSANDO...' : <><Save size={18} /> SALVAR PALESTRANTE</>}
                             </button>
                         </form>
                     </div>
@@ -277,6 +305,6 @@ const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
 const modalStyle = { background: '#0F172A', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', color: '#FFFFFF', border: '1px solid var(--border-color)' };
 const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.05)' };
 const labelStyle = { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', display: 'block' };
-const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px' };
+const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px', width: '100%' };
 
 export default ScheduleCMS;
