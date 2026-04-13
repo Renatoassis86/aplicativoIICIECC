@@ -13,15 +13,24 @@ import { Capacitor } from '@capacitor/core';
 // ===================================
 
 export const fetchInbox = async (userId, userRole) => {
+  if (!userId) {
+    console.warn("[Notifications] userId ausente. Pulando busca de inbox.");
+    return { unreadCount: 0, items: [] };
+  }
+
   try {
     // 1. Constrói o filtro lógico: Tudo de "all" + Role Específica + Menção Pessoal
-    let audienceFilter = `target_role.eq.all,target_role.eq.${userRole || 'congressista'}`;
-    if (userRole?.includes('patrocinador')) audienceFilter += `,target_role.eq.sponsors`;
-    if (userRole === 'staff' || userRole === 'admin' || userRole === 'organizador') audienceFilter += `,target_role.eq.staff`;
+    const roles = ['all', userRole || 'congressista'];
+    if (userRole?.includes('patrocinador')) roles.push('sponsors');
+    if (['staff', 'admin', 'organizador', 'master'].includes(userRole)) roles.push('staff');
     
-    // Adiciona o filtro para notificações direcionadas diretamente à este ID (ex: Marcação)
-    // Suporta tanto o antigo target_user_id (UUID) quanto o novo target_user_cpf (Text)
-    audienceFilter += `,target_user_cpf.eq.${userId}`;
+    // Filtro para papéis
+    const roleFilters = roles.map(r => `target_role.eq.${r}`).join(',');
+    
+    // Filtro para usuário específico (CPF)
+    const userFilter = `target_user_cpf.eq.${userId}`;
+    
+    const audienceFilter = `${roleFilters},${userFilter}`;
 
     // 2. Busca mensagens destinadas a este público
     const { data: notifications, error } = await supabase

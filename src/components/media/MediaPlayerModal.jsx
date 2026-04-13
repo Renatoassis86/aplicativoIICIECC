@@ -14,8 +14,8 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
   
   const isYoutube = mediaUrl?.includes('youtube.com') || mediaUrl?.includes('youtu.be');
-  const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video';
-  const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast';
+  const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video' || media.type === 'video';
+  const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast' || media.media_type === 'podcast';
 
   const getYoutubeId = (url) => {
     if (!url) return '';

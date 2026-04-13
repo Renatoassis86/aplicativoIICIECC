@@ -68,15 +68,24 @@ const HomeTab = ({
       const { data } = await supabase.from('agenda_sessions').select('*').eq('category', 'Oficina').limit(10);
       if (data && isMounted) setWorkshops(data);
     }
+    
     async function fetchFavorites() {
       if (!userCpf) return;
       try {
-        const { data: favIds, error: favErr } = await supabase.from('agenda_favorites').select('session_id').eq('user_cpf', userCpf);
+        const { data: favIds, error: favErr } = await supabase
+          .from('agenda_favorites')
+          .select('session_id')
+          .eq('user_cpf', userCpf);
+        
         if (favErr) throw favErr;
         
         if (favIds && favIds.length > 0) {
           const ids = favIds.map(f => f.session_id);
-          const { data: sessions, error: sessErr } = await supabase.from('agenda_sessions').select('*, speakers(*)').in('id', ids);
+          const { data: sessions, error: sessErr } = await supabase
+            .from('agenda_sessions')
+            .select('*, speakers(*)')
+            .in('id', ids);
+          
           if (sessErr) throw sessErr;
           
           if (isMounted) setFavoriteSessions(sessions || []);
@@ -93,7 +102,23 @@ const HomeTab = ({
     fetchWorkshops();
     fetchFavorites();
 
-    return () => { isMounted = false; };
+    // REALTIME FAVORITES: Sincroniza Agenda -> Home instantaneamente
+    const favSub = supabase
+      .channel('home_favorites_sync')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'agenda_favorites', 
+        filter: `user_cpf=eq.${userCpf}` 
+      }, () => {
+        fetchFavorites();
+      })
+      .subscribe();
+
+    return () => { 
+      isMounted = false; 
+      supabase.removeChannel(favSub);
+    };
   }, [userCpf]);
 
   const CarouselSection = ({ title, items, renderItem }) => (
