@@ -109,41 +109,25 @@ export const fetchAllProfiles = async () => {
  */
 export const createOrUpdateAdminUser = async (userData) => {
     const { cpf, name, email, user_type, password } = userData;
-    const cleanCpf = stripCPF(cpf);
+    const adminCpf = localStorage.getItem('current_user_cpf');
 
-    // 1. Garantir que está na tabela de membros (Inscritos)
-    const { error: memberError } = await supabase
-        .from('members')
-        .upsert({ 
-            cpf: cleanCpf, 
-            name, 
-            email,
-            initial_password: password || undefined
-        }, { onConflict: 'cpf' });
+    if (!adminCpf) throw new Error("Acesso negado: Administrador não identificado.");
 
-    if (memberError) throw memberError;
+    const { data, error } = await supabase.rpc('admin_upsert_user', {
+        p_admin_cpf: adminCpf,
+        p_target_cpf: stripCPF(cpf),
+        p_name: name,
+        p_email: email,
+        p_user_type: user_type,
+        p_password: password || null
+    });
 
-    // 2. Garantir que tem perfil com o tipo correto
-    const profileUpdate = {
-        cpf: cleanCpf,
-        user_type: user_type,
-        onboarding_completed: true, 
-        updated_at: new Date().toISOString()
-    };
-
-    if (password) {
-        profileUpdate.current_password = password;
-        profileUpdate.password_reset = true;
-    }
-
-    const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert(profileUpdate, { onConflict: 'cpf' });
-
-    if (profileError) throw profileError;
+    if (error) throw error;
+    if (data && !data.success) throw new Error(data.message);
 
     return { success: true };
 };
+
 
 
 /**

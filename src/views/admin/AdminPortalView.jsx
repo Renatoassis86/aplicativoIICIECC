@@ -51,7 +51,7 @@ import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 import ProfileCMS from './modules/ProfileCMS';
 
-export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
+export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [activeModule, setActiveModule] = useState('home');
   const [posts, setPosts] = useState([]);
@@ -68,9 +68,17 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [newMaterialUrl, setNewMaterialUrl] = useState('');
 
   useEffect(() => {
+    // Trava de Segurança: Redireciona se não for um papel administrativo
+    const allowedRoles = ['admin', 'organizador', 'staff', 'master'];
+    if (!allowedRoles.includes(userType)) {
+      console.error("[Security] Tentativa de acesso não autorizado detectada.");
+      onBackToApp();
+      return;
+    }
+
     document.body.classList.add('admin-mode');
     return () => document.body.classList.remove('admin-mode');
-  }, []);
+  }, [userType]);
 
   useEffect(() => {
     loadData();
@@ -200,8 +208,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         </nav>
 
         <div className="sidebar-footer">
-          <button onClick={onBackToApp} className="footer-btn">
-            <ArrowLeft size={16} /> <span className="menu-label">Ver App Mobile</span>
+          <button onClick={() => window.open('/', '_blank')} className="footer-btn">
+            <Monitor size={16} /> <span className="menu-label">Ver App Mobile</span>
           </button>
           <button onClick={onLogout} className="footer-btn logout">
             <LogOut size={16} /> <span className="menu-label">Sair do Sistema</span>

@@ -68,6 +68,10 @@ function App() {
             setSelectedType(profile.user_type);
             setUserAvatar(profile.avatar_url);
             return;
+          } else {
+            console.warn("[App] Tentativa de acesso não autorizado ao Admin por:", savedCpf);
+            setView('app');
+            // Continua fluxo normal para congressista
           }
         }
 
@@ -131,94 +135,63 @@ function App() {
     setAuthStatus('loading');
 
     try {
-      // 1. Verificar se o membro existe
-      const { data: member } = await supabase
-        .from('members')
-        .select('*')
-        .eq('cpf', cpf)
-        .single();
+      const { data, error } = await supabase.rpc('authenticate_member', {
+        p_cpf: cpf,
+        p_password: password
+      });
 
-      // Membro não cadastrado: bloqueia acesso
-      if (!member) {
-        alert('CPF não localizado na lista de inscritos. Verifique se digitou corretamente ou entre em contato com o suporte do evento.');
+      if (error || !data) {
+        throw new Error(error?.message || 'Erro ao conectar');
+      }
+
+      if (!data.success) {
+        alert(data.message || 'Credenciais inválidas.');
         setAuthStatus('logged-out');
         return;
       }
 
-      setUserName(member.name);
+      // Sucesso na autenticação
+      const { status, name, user_type, avatar_url, onboarding_completed } = data;
+      
+      setCurrentUserCpf(cpf);
+      localStorage.setItem('current_user_cpf', cpf);
+      setUserName(name);
 
-      // 2. Verificar perfil
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('cpf', cpf)
-        .single();
-
-      let currentProfile = profile;
-      if (profileError || !profile) {
-        const { data: newProfile } = await supabase
-          .from('profiles')
-          .insert([{ cpf, password_reset: false }])
-          .select()
-          .single();
-        currentProfile = newProfile;
-      }
-
-      // 3. Validar Senha de Primeiro Acesso
-      if (currentProfile && !currentProfile.password_reset) {
-        const expectedPassword = 'congresso2026';
-
-        if (password === expectedPassword) {
-          setCurrentUserCpf(cpf);
-          localStorage.setItem('current_user_cpf', cpf);
-          setAuthStatus('reset-password');
-        } else {
-          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão (congresso2026).`);
-          setAuthStatus('logged-out');
-        }
+      if (status === 'reset-password') {
+        setAuthStatus('reset-password');
         return;
       }
 
-      // 4. Validar Senha salva no perfil (Após reset)
-      if (currentProfile && password === currentProfile.current_password) {
-        setCurrentUserCpf(cpf);
-        localStorage.setItem('current_user_cpf', cpf);
-        setUserName(member.name);
-        setUserAvatar(currentProfile.avatar_url);
+      setUserAvatar(avatar_url);
+      const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
+      const canBypassOnboarding = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(user_type) || user_type?.includes('patrocinador');
 
-        const type = currentProfile.user_type;
-        const canBypassOnboarding = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || type?.includes('patrocinador');
-        const isUrlAdmin = window.location.pathname.includes('/admin');
-
-        if (currentProfile.onboarding_completed || canBypassOnboarding) {
-          setSelectedType(type || 'congressista');
-          setView(canBypassOnboarding && isUrlAdmin ? 'admin-portal' : 'app');
-          setAuthStatus('logged-in');
-        } else if (type) {
-          // NOVO: Verificar se já respondeu mas o flag está desatualizado
-          const alreadyDone = await checkOnboardingAlreadyDone(cpf, type);
-          if (alreadyDone) {
-            setSelectedType(type);
-            setView('app');
-            setAuthStatus('logged-in');
-          } else {
-            setSelectedType(type);
-            setView('app');
-            setAuthStatus('questionnaire');
-          }
-        } else {
+      if (onboarding_completed || canBypassOnboarding) {
+        setSelectedType(user_type || 'congressista');
+        setView(canBypassOnboarding && isUrlAdmin ? 'admin-portal' : 'app');
+        setAuthStatus('logged-in');
+      } else if (user_type) {
+        const alreadyDone = await checkOnboardingAlreadyDone(cpf, user_type);
+        if (alreadyDone) {
+          setSelectedType(user_type);
           setView('app');
-          setAuthStatus('select-type');
+          setAuthStatus('logged-in');
+        } else {
+          setSelectedType(user_type);
+          setView('app');
+          setAuthStatus('questionnaire');
         }
       } else {
-        alert('Senha ou CPF incorretos.');
-        setAuthStatus('logged-out');
+        setView('app');
+        setAuthStatus('select-type');
       }
-    } catch (_) {
-      alert('Erro ao conectar com o servidor.');
+    } catch (err) {
+      console.error("[Login] Erro:", err);
+      alert('Erro ao conectar com o servidor: ' + err.message);
       setAuthStatus('logged-out');
     }
   };
+
 
   const handlePasswordResetComplete = async (newPassword) => {
     try {
@@ -378,12 +351,13 @@ class ErrorBoundary extends React.Component {
             
             {/* ADMIN FLOWS */}
             
-            {(authStatus === 'logged-in' && view === 'admin-portal') && (
+            {(authStatus === 'logged-in' && view === 'admin-portal' && ['organizador', 'admin', 'staff', 'master'].includes(selectedType)) && (
               <AdminPortalView 
                 onLogout={handleLogout}
                 onBackToApp={() => setView('app')}
                 userName={userName}
                 userCpf={currentUserCpf}
+                userType={selectedType}
               />
             )}
 

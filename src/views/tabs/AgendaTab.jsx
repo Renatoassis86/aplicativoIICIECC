@@ -20,7 +20,7 @@ const AgendaTab = ({ userCpf }) => {
     if (typeof val === 'object' && val.rendered) return val.rendered;
     return String(val);
   };
-  const [selectedDay, setSelectedDay] = useState('01/05');
+  const [activeTab, setActiveTab] = useState('Palestras');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -48,10 +48,10 @@ const AgendaTab = ({ userCpf }) => {
       if (error) throw error;
 
       if (data) {
-        // Formatar dados para o padrão esperado pelo componente
-        const formatted = data.map(s => ({
+        setSessions(data.map(s => ({
           id: s.id,
           date: s.session_date ? s.session_date.split('-').reverse().slice(0, 2).join('/') : '01/05',
+          fullDate: s.session_date,
           time: s.start_time ? s.start_time.slice(0, 5) : '00:00',
           title: s.title || 'Sem título',
           speaker: Array.isArray(s.speakers) ? (s.speakers[0]?.name || 'A confirmar') : (s.speakers?.name || 'A confirmar'),
@@ -59,8 +59,7 @@ const AgendaTab = ({ userCpf }) => {
           category: s.category || 'Palestra',
           description: s.description || '',
           fullSpeaker: Array.isArray(s.speakers) ? s.speakers[0] : s.speakers
-        }));
-        setSessions(formatted);
+        })));
       }
     } catch (err) {
       console.error('Error fetching sessions:', err);
@@ -69,11 +68,10 @@ const AgendaTab = ({ userCpf }) => {
     }
   };
 
-  // Garantindo as 3 abas principais solicitadas
   const tabs = [
-    { id: '01/05', label: 'Dia 01/05' },
-    { id: '02/05', label: 'Dia 02/05' },
-    { id: 'Oficinas', label: 'Oficinas' }
+    { id: 'Palestras', label: 'Palestras', categories: ['Palestra', 'Debate', 'Mesa Redonda'] },
+    { id: 'Oficinas', label: 'Oficinas', categories: ['Oficina'] },
+    { id: 'Extras', label: 'Solenidades & Outros', categories: ['Check-in', 'Solenidade', 'Intervalo', 'Artigos', 'Fórum', 'Apresentação', 'Networking'] }
   ];
 
   const toggleFavorite = async (id) => {
@@ -81,13 +79,24 @@ const AgendaTab = ({ userCpf }) => {
     setFavorites(prev => isNowFavorite ? [...prev, id] : prev.filter(f => f !== id));
   };
 
-  // Filtragem dos eventos
+  // Filtragem dos eventos pela aba ativa
+  const currentTabConfig = tabs.find(t => t.id === activeTab);
   const filteredEvents = sessions.filter(e => {
-    if (selectedDay === 'Oficinas') return e.category === 'Oficina';
-    if (e.date !== selectedDay) return false;
+    const matchesCategory = currentTabConfig.categories.includes(e.category);
+    if (!matchesCategory) return false;
     if (onlyFavorites) return favorites.includes(e.id);
     return true;
+  }).sort((a, b) => {
+    if (a.fullDate !== b.fullDate) return a.fullDate.localeCompare(b.fullDate);
+    return a.time.localeCompare(b.time);
   });
+
+  // Agrupamento por dia para exibição
+  const groupedEvents = filteredEvents.reduce((acc, event) => {
+    if (!acc[event.date]) acc[event.date] = [];
+    acc[event.date].push(event);
+    return acc;
+  }, {});
 
   return (
     <div className="tab-content fade-in" style={{ padding: '0 0 40px' }}>
@@ -96,7 +105,7 @@ const AgendaTab = ({ userCpf }) => {
         background: 'var(--primary)', 
         position: 'sticky', 
         top: 0, 
-        zIndex: 10,
+        zIndex: 100,
         boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
         color: 'white',
         borderBottomLeftRadius: '24px',
@@ -124,7 +133,6 @@ const AgendaTab = ({ userCpf }) => {
           </button>
         </div>
         
-        {/* Tab Selector - Garantindo Exibição dos 3 Botões */}
         <div style={{ 
           display: 'flex', 
           background: 'rgba(0,0,0,0.25)', 
@@ -135,15 +143,15 @@ const AgendaTab = ({ userCpf }) => {
           {tabs.map(tab => (
             <button 
               key={tab.id} 
-              onClick={() => setSelectedDay(tab.id)}
+              onClick={() => setActiveTab(tab.id)}
               style={{
                 flex: 1,
                 padding: '12px 0',
                 borderRadius: '10px',
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: '800',
-                background: selectedDay === tab.id ? 'var(--gold)' : 'transparent',
-                color: selectedDay === tab.id ? 'var(--secondary)' : 'rgba(255,255,255,0.8)',
+                background: activeTab === tab.id ? 'var(--gold)' : 'transparent',
+                color: activeTab === tab.id ? 'var(--secondary)' : 'rgba(255,255,255,0.8)',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 border: 'none',
                 whiteSpace: 'nowrap'
@@ -155,45 +163,66 @@ const AgendaTab = ({ userCpf }) => {
         </div>
       </header>
 
-      <section style={{ padding: '20px' }}>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', marginBottom: '20px' }}>
-          {selectedDay === '01/05' ? '1º Dia (Sexta-feira)' : selectedDay === '02/05' ? '2º Dia (Sábado)' : 'Grade Completa de Oficinas'}
-        </p>
-
+      <section style={{ padding: '0 20px' }}>
         {loading ? (
-            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Carregando programação...</p>
-        ) : filteredEvents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-             <Heart size={48} color="var(--border)" style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-             <p style={{ fontWeight: '700' }}>Nada programado para este dia.</p>
+            <p style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)', fontWeight: '700' }}>Carregando cronograma...</p>
+        ) : Object.keys(groupedEvents).length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
+             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                <Heart size={32} color="var(--border)" style={{ opacity: 0.3 }} />
+             </div>
+             <p style={{ fontWeight: '800', fontSize: '16px', color: 'var(--secondary)' }}>Nada para exibir aqui.</p>
+             <p style={{ fontSize: '13px', marginTop: '4px' }}>Tente mudar de aba ou limpar os favoritos.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredEvents.map(event => (
-              <div key={event.id} className="card" style={{ padding: '20px', display: 'flex', gap: '16px', cursor: 'pointer' }} onClick={() => setSelectedSession(event)}>
-                <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
-                  <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
-                  <Clock size={12} color="var(--text-muted)" style={{ marginTop: '4px' }} />
-                </div>
-                
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
-                      {event.category}
-                    </span>
-                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }} style={{ background: 'none', border: 'none' }}>
-                      <Heart size={20} fill={favorites.includes(event.id) ? "var(--primary)" : "none"} color={favorites.includes(event.id) ? "var(--primary)" : "#CBD5E0"} />
-                    </button>
+          Object.entries(groupedEvents).map(([day, dayEvents]) => (
+            <div key={day} style={{ marginTop: '24px' }}>
+               <div style={{ 
+                 position: 'sticky', 
+                 top: '115px', 
+                 zIndex: 90, 
+                 background: 'var(--bg-app)', 
+                 padding: '8px 0',
+                 borderBottom: '1px solid var(--border)',
+                 marginBottom: '16px',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '12px'
+               }}>
+                 <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {day === '01/05' ? 'Sexta-feira, 01 de Maio' : 'Sábado, 02 de Maio'}
+                 </span>
+                 <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.5 }}></div>
+               </div>
+               
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {dayEvents.map(event => (
+                  <div key={event.id} className="card" style={{ padding: '20px', display: 'flex', gap: '16px', cursor: 'pointer' }} onClick={() => setSelectedSession(event)}>
+                    <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
+                      <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
+                      <Clock size={12} color="var(--text-muted)" style={{ marginTop: '4px' }} />
+                    </div>
+                    
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
+                          {event.category}
+                        </span>
+                        <button onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }} style={{ background: 'none', border: 'none' }}>
+                          <Heart size={20} fill={favorites.includes(event.id) ? "var(--primary)" : "none"} color={favorites.includes(event.id) ? "var(--primary)" : "#CBD5E0"} />
+                        </button>
+                      </div>
+                      <p style={{ fontWeight: '700', fontSize: '16px', lineHeight: '1.2', color: 'var(--secondary)' }}>{event.title}</p>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{event.speaker}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
+                        <MapPin size={12} /><span style={{ fontSize: '11px' }}>{event.room}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p style={{ fontWeight: '700', fontSize: '16px', lineHeight: '1.2', color: 'var(--secondary)' }}>{event.title}</p>
-                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{event.speaker}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
-                    <MapPin size={12} /><span style={{ fontSize: '11px' }}>{event.room}</span>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </section>
 
