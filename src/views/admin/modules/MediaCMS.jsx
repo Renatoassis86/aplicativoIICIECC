@@ -311,7 +311,7 @@ const MediaCMS = () => {
                                         </div>
                                         <div style={{ overflow: 'hidden', flex: 1 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 8px', borderRadius: '6px' }}>{item.category.toUpperCase()}</span>
+                                                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 8px', borderRadius: '6px' }}>{(item.category || 'Outros').toUpperCase()}</span>
                                                 {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '6px' }}>LIVE</span>}
                                                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{item.source_type === 'file' ? 'ARQUIVO LOCAL' : 'LINK EXTERNO'}</span>
                                             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Plus, Trash2, Edit2, Save, X, Clock, MapPin, Image as ImageIcon } from 'lucide-react';
+import { Calendar, Users, Plus, Trash2, Edit2, Save, X, Clock, MapPin, Image as ImageIcon, LayoutGrid, List } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
 
@@ -14,6 +14,7 @@ const ScheduleCMS = () => {
     const [photoSource, setPhotoSource] = useState('link'); // 'link' ou 'upload'
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' ou 'list'
 
     useEffect(() => {
         loadData();
@@ -139,32 +140,67 @@ const ScheduleCMS = () => {
             {activeTab === 'sessions' && (
                 <div className="fade-in">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                        <h3 style={{ fontWeight: '800', fontSize: '20px' }}>Gerenciar Programação</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                           <h3 style={{ fontWeight: '800', fontSize: '20px', margin: 0 }}>Gerenciar Programação</h3>
+                           <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
+                              <button onClick={() => setLayoutMode('grid')} style={{ ...viewToggleStyle, background: layoutMode === 'grid' ? 'var(--gold)' : 'transparent', color: layoutMode === 'grid' ? 'black' : 'white' }}><LayoutGrid size={16} /></button>
+                              <button onClick={() => setLayoutMode('list')} style={{ ...viewToggleStyle, background: layoutMode === 'list' ? 'var(--gold)' : 'transparent', color: layoutMode === 'list' ? 'black' : 'white' }}><List size={16} /></button>
+                           </div>
+                        </div>
                         <button onClick={() => setEditingSession({})} style={btnPlusStyle}>
                             <Plus size={18} /> Nova Atividade
                         </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                        {sessions.map(s => (
-                            <div key={s.id} style={cardStyle}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <span style={badgeStyle}>{s.category || 'Palestra'}</span>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                    {layoutMode === 'grid' ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                            {sessions.map(s => (
+                                <div key={s.id} style={cardStyle}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <span style={badgeStyle}>{s.category || 'Palestra'}</span>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button onClick={() => setEditingSession(s)} style={iconBtnStyle}><Edit2 size={14} /></button>
+                                            <button onClick={() => deleteItem('agenda_sessions', s.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
+                                        </div>
+                                    </div>
+                                    <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#FFFFFF', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
+                                    <div style={metaStyle}><Calendar size={14} color="var(--gold)" /> {new Date(s.session_date).toLocaleDateString()}</div>
+                                    <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
+                                    <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
+                                    {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <img src={s.speakers.photo_url} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} alt="" /> {s.speakers.name}
+                                    </div>}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {sessions.map(s => (
+                                <div key={s.id} style={{ ...cardStyle, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
+                                        <div style={{ minWidth: '120px', textAlign: 'center', borderRight: '1px solid var(--border-color)', paddingRight: '20px' }}>
+                                            <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>{s.start_time}</div>
+                                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>{new Date(s.session_date).toLocaleDateString()}</div>
+                                        </div>
+                                        
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                <span style={{ ...badgeStyle, fontSize: '9px', padding: '1px 6px' }}>{s.category}</span>
+                                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{s.room}</span>
+                                            </div>
+                                            <h4 style={{ margin: 0, fontWeight: '800', color: '#FFFFFF', fontSize: '15px' }}>{s.title}</h4>
+                                            {s.speakers && <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: '700' }}>— {s.speakers.name}</span>}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px', marginLeft: '24px' }}>
                                         <button onClick={() => setEditingSession(s)} style={iconBtnStyle}><Edit2 size={14} /></button>
                                         <button onClick={() => deleteItem('agenda_sessions', s.id)} style={iconBtnDeleteStyle}><Trash2 size={14} /></button>
                                     </div>
                                 </div>
-                                <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#FFFFFF', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
-                                <div style={metaStyle}><Calendar size={14} color="var(--gold)" /> {new Date(s.session_date).toLocaleDateString()}</div>
-                                <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
-                                <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
-                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img src={s.speakers.photo_url} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} alt="" /> {s.speakers.name}
-                                </div>}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -307,5 +343,6 @@ const modalStyle = { background: '#0F172A', width: '100%', maxWidth: '500px', bo
 const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.05)' };
 const labelStyle = { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', display: 'block' };
 const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px', width: '100%' };
+const viewToggleStyle = { border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' };
 
 export default ScheduleCMS;
