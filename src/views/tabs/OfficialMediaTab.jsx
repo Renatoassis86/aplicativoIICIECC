@@ -10,6 +10,25 @@ import { useCMS } from '../../hooks/useCMS';
 import { supabase } from '../../lib/supabase';
 import { useContent } from '../../hooks/useContent';
 
+const CarouselSection = ({ title, items, renderItem }) => (
+  <div style={{ marginBottom: '40px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 20px' }}>
+      <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>{title}</h3>
+    </div>
+    <div style={{ 
+      display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
+      scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
+      scrollSnapType: 'x mandatory' 
+    }} className="no-scrollbar">
+      {items.map((item, idx) => (
+        <div key={idx} style={{ scrollSnapAlign: 'start' }}>
+          {renderItem(item, idx)}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const OfficialMediaTab = ({ onOpenMedia }) => {
   const { content: mediaTitle } = useContent('titles', 'page_media');
   const { content: mediaSubtitle } = useContent('titles', 'page_media_subtitle');
@@ -20,25 +39,6 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     if (typeof val === 'object') return fallback;
     return val;
   };
-
-  const CarouselSection = ({ title, items, renderItem }) => (
-    <div style={{ marginBottom: '40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 20px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>{title}</h3>
-      </div>
-      <div style={{ 
-        display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
-        scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-        scrollSnapType: 'x mandatory' 
-      }} className="no-scrollbar">
-        {items.map((item, idx) => (
-          <div key={idx} style={{ scrollSnapAlign: 'start' }}>
-            {renderItem(item, idx)}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
   const { cms } = useCMS();
   const [mediaList, setMediaList] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
