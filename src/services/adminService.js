@@ -131,17 +131,30 @@ export const createOrUpdateAdminUser = async (userData) => {
 
 
 /**
- * Exclui um membro e seu perfil
+ * Exclui um membro e todos os seus dados vinculados em outras tabelas
  */
 export const deleteMember = async (cpf) => {
-    // A deleção em cascata deve lidar com profiles se configurado no Postgres, 
-    // mas aqui fazemos manual por segurança
     const cleanCpf = stripCPF(cpf);
     
-    // Deletar perfil primeiro (FK)
+    // Deletar em cascata manual (para tabelas que não possuem FK oficial ou CASCADE)
+    // 1. Favoritos de Agenda
+    await supabase.from('agenda_favorites').delete().eq('user_cpf', cleanCpf);
+    
+    // 2. Comentários e Engajamento de Mídia
+    await supabase.from('media_comments').delete().eq('user_cpf', cleanCpf);
+    await supabase.from('media_engagements').delete().eq('user_cpf', cleanCpf);
+    
+    // 3. Respostas de Pesquisa (Survey)
+    await supabase.from('survey_responses').delete().eq('user_cpf', cleanCpf);
+
+    // 4. Engajamento Social (Likes/Comentários)
+    await supabase.from('social_engagements').delete().eq('user_id', cleanCpf);
+    await supabase.from('social_comments').delete().eq('user_id', cleanCpf);
+
+    // 5. Deletar perfil primeiro (FK)
     await supabase.from('profiles').delete().eq('cpf', cleanCpf);
     
-    // Deletar membro
+    // 6. Deletar membro (Principal)
     const { error } = await supabase.from('members').delete().eq('cpf', cleanCpf);
     
     if (error) throw error;
