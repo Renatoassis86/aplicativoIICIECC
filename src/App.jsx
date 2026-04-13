@@ -342,28 +342,18 @@ class ErrorBoundary extends React.Component {
             
             {/* ADMIN FLOWS */}
             {authStatus === 'admin-portal' && (
-              window.innerWidth > 1024 ? (
-                <AdminPortalView 
-                  onLogout={handleLogout}
-                  onBackToApp={() => setAuthStatus('logged-out')}
-                  userName="Acesso Direto Admin"
-                  userCpf="ADMIN-URL"
-                />
-              ) : (
-                <AdminImportView onBackToApp={() => setAuthStatus('logged-out')} />
-              )
+              <AdminPortalView 
+                onLogout={handleLogout}
+                onBackToApp={() => setAuthStatus('logged-out')}
+                userName="Acesso Direto Admin"
+                userCpf="ADMIN-URL"
+              />
             )}
             
             {(authStatus === 'logged-in' && view === 'admin-portal') && (
               <AdminPortalView 
                 onLogout={handleLogout}
-                onBackToApp={() => {
-                  if (selectedType === 'organizador' && window.innerWidth > 1024) {
-                    setView('admin-portal');
-                  } else {
-                    setView('app');
-                  }
-                }}
+                onBackToApp={() => setView('app')}
                 userName={userName}
                 userCpf={currentUserCpf}
               />

@@ -31,7 +31,8 @@ import {
   Bell, 
   ShieldCheck,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  Menu
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';
@@ -338,17 +339,27 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           background: 'rgba(255,255,255,0.02)', 
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid var(--border-color)',
-          padding: '20px 40px',
+          padding: window.innerWidth <= 1024 ? '12px 20px' : '20px 40px',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          gap: '12px'
         }}>
-          <div>
-            <h2 style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Dashboard / {activeMenu.toUpperCase()}</h2>
-            <h3 style={{ fontSize: '20px', color: 'white', fontWeight: '900' }}>II CIECC 2026 Digital Hub</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="mobile-menu-toggle"
+              style={{ background: 'none', border: 'none', color: 'white', padding: '8px', cursor: 'pointer', display: window.innerWidth <= 1024 ? 'block' : 'none' }}
+            >
+              <Menu size={24} />
+            </button>
+            <div style={{ overflow: 'hidden' }}>
+              <h2 style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>Dashboard / {activeMenu.toUpperCase()}</h2>
+              <h3 style={{ fontSize: window.innerWidth <= 1024 ? '16px' : '20px', color: 'white', fontWeight: '900', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>II CIECC 2026 Digital Hub</h3>
+            </div>
           </div>
           
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: window.innerWidth <= 1024 ? 'none' : 'flex' }}>
             <div className="search-bar">
                <Search size={18} color="rgba(255,255,255,0.4)" />
                <input placeholder="Busca global..." />
@@ -419,6 +430,12 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           max-width: 1400px;
           width: 100%;
           margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+          .content-container {
+            padding: 20px 16px;
+          }
         }
 
         /* Stats Grid */
