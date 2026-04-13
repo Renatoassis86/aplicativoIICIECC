@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin, Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin, Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay, Camera } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment, togglePinPost, toggleArchivePost } from '../../services/social/socialService';
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
@@ -41,15 +41,25 @@ const NativeCarousel = ({ title, items, onSelect }) => {
             }}
           >
             <div style={{ width: '100%', height: '100px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                {item.media_type === 'video' ? <Clapperboard color="white" size={32} opacity={0.3} /> : <Podcast color="white" size={32} opacity={0.3} />}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%)' }}></div>
+                {item.media_type === 'image' ? (
+                   <img src={item.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : item.media_type === 'video' ? (
+                   <Clapperboard color="white" size={32} opacity={0.3} />
+                ) : (
+                   <Podcast color="white" size={32} opacity={0.3} />
+                )}
+                
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 100%)' }}></div>
+                
                 <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--primary)', padding: '6px', borderRadius: '50%' }}>
-                    <Play size={12} color="white" fill="white" />
+                    {item.media_type === 'image' ? <Camera size={12} color="white" /> : <Play size={12} color="white" fill="white" />}
                 </div>
             </div>
             <div style={{ padding: '12px' }}>
                <h6 style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', height: '32px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.2' }}>{item.title}</h6>
-               <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', fontWeight: '700' }}>{item.media_type === 'video' ? 'Vídeo' : 'Áudio'}</p>
+               <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', fontWeight: '700' }}>
+                 {item.media_type === 'image' ? 'Foto' : item.media_type === 'video' ? 'Vídeo' : 'Áudio'}
+               </p>
             </div>
           </div>
         ))}

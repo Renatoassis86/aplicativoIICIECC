@@ -125,6 +125,7 @@ const MediaCMS = () => {
                                 <select name="media_type" defaultValue={editingItem?.media_type || 'video'} style={inputStyle}>
                                     <option value="video">🎞️ Vídeo</option>
                                     <option value="audio">🎙️ Áudio</option>
+                                    <option value="image">📸 Foto</option>
                                 </select>
                             </div>
                             <div>

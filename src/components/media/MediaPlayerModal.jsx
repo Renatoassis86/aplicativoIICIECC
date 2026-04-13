@@ -16,6 +16,7 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
   
   const isYoutube = mediaUrl?.includes('youtube.com') || mediaUrl?.includes('youtu.be');
+  const isImage = media.media_type === 'image' || media.type === 'image' || mediaUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/i);
   const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video' || media.type === 'video';
   const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast' || media.media_type === 'podcast';
 
@@ -69,6 +70,15 @@ const MediaPlayerModal = ({ media, onClose }) => {
             >
               ABRIR NO NAVEGADOR
             </button>
+          </div>
+        ) : isImage ? (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img 
+               src={mediaUrl} 
+               alt={media.title} 
+               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }} 
+               onError={() => setError("Não foi possível carregar esta imagem.")}
+            />
           </div>
         ) : isYoutube || isVideoFile ? (
           <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', background: '#000', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
