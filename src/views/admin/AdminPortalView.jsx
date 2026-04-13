@@ -342,10 +342,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           display: flex;
           flex-direction: column;
           overflow-x: hidden;
-          overflow-y: auto;
+          overflow-y: auto; /* Garantir que este é o contexto de scroll principal */
           position: relative;
-          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 600px);
+          background: radial-gradient(circle at top right, rgba(212, 193, 156, 0.05), transparent 600px);
           min-width: 0;
+          -webkit-overflow-scrolling: touch; /* Scroll suave em iOS */
         }
 
         .content-container {
@@ -354,7 +355,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           max-width: 1600px;
           margin: 0 auto;
           box-sizing: border-box;
-          overflow-x: hidden;
+          min-height: calc(100vh - 80px); /* Garante que sempre haja espaço para rolar se necessário */
         }
 
         @media (max-width: 1400px) {

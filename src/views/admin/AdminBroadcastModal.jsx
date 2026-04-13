@@ -77,10 +77,21 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
                   <Send size={40} color="#38A169" />
                </div>
                <h4 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px' }}>Mensagem Enviada!</h4>
-               <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.6' }}>
-                  O alerta foi disparado com sucesso e já está disponível na central de notificações de todos os congressistas do grupo <strong>{audienceOptions.find(o => o.id === audience)?.label}</strong>.
+               <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.6', marginBottom: '32px' }}>
+                  O disparo foi concluído com sucesso. Todos os usuários do grupo <strong>{audienceOptions.find(o => o.id === audience)?.label}</strong> receberão o alerta instantaneamente.
                </p>
-               <button onClick={onClose} className="btn-primary" style={{ marginTop: '32px', width: '100%' }}>CONCLUIR</button>
+               <button onClick={onClose} className="btn-primary" style={{ width: '100%', height: '56px', fontSize: '16px' }}>CONCLUIR E FECHAR</button>
+            </div>
+          ) : status === 'error' ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+               <div style={{ width: '80px', height: '80px', background: '#FFF5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                  <X size={40} color="#C53030" />
+               </div>
+               <h4 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px' }}>Falha no Disparo</h4>
+               <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.6', marginBottom: '32px' }}>
+                  Ocorreu um erro técnico ao tentar salvar o comunicado. Verifique sua conexão ou tente novamente mais tarde.
+               </p>
+               <button onClick={() => setStatus(null)} className="btn-primary" style={{ width: '100%', height: '56px', fontSize: '16px', background: 'var(--secondary)', color: 'white' }}>TENTAR NOVAMENTE</button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

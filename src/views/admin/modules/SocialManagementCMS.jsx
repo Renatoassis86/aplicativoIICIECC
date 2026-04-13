@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, MessageCircle, Heart, Trash2, Shield, 
   CheckCircle, XCircle, Search, Filter, 
   MoreHorizontal, Eye, Flag, Share2, 
   User, Calendar, Clock, Image as ImageIcon,
-  Video, Play, Bookmark, Archive
+  Video, Play, Bookmark, Archive, PlusSquare, Upload,
+  Camera, Film, Podcast, Send
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
 
 const SocialManagementCMS = () => {
-    const fileRef = React.useRef(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [uploading, setUploading] = useState(false);
+    const [mediaFile, setMediaFile] = useState(null);
+    const [mediaType, setMediaType] = useState('image');
     const [searchTerm, setSearchTerm] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
-    const [filterType, setFilterType] = useState('ALL'); // 'ALL', 'image', 'video'
-    const [activeSourceType, setActiveSourceType] = useState('file');
+    const [filterType, setFilterType] = useState('ALL');
 
     useEffect(() => {
         loadPosts();
@@ -26,14 +26,19 @@ const SocialManagementCMS = () => {
 
     const loadPosts = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('social_posts')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (data) setPosts(data);
-        if (error) console.error("Erro ao carregar posts:", error);
-        setLoading(false);
+        try {
+            const { data, error } = await supabase
+                .from('social_posts')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (data) setPosts(data);
+            if (error) throw error;
+        } catch (err) {
+            console.error("Erro ao carregar posts:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const triggerSuccess = (msg) => {
@@ -44,7 +49,7 @@ const SocialManagementCMS = () => {
     const handleFileUpload = async (file) => {
         if (!file) return null;
         try {
-            const fileExt = file.name.split('.').pop();
+            const fileExt = file.name.split('.').pop().toLowerCase();
             const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
             const filePath = `social/${fileName}`;
 
@@ -57,7 +62,7 @@ const SocialManagementCMS = () => {
             const { data: { publicUrl } } = supabase.storage.from('app_media').getPublicUrl(filePath);
             return publicUrl;
         } catch (error) {
-            alert('Erro no upload: ' + error.message);
+            console.error("Upload error:", error);
             return null;
         }
     };
@@ -69,66 +74,63 @@ const SocialManagementCMS = () => {
 
         setLoading(true);
         try {
-            let finalMediaUrl = data.media_url;
-
-            if (activeSourceType === 'file' && fileRef.current?.files[0]) {
-                setUploading(true);
-                const uploadedUrl = await handleFileUpload(fileRef.current.files[0]);
-                if (uploadedUrl) finalMediaUrl = uploadedUrl;
-                else { setLoading(false); setUploading(false); return; }
-                setUploading(false);
+            let mediaUrl = data.media_url_manual;
+            
+            if (mediaFile) {
+                const uploaded = await handleFileUpload(mediaFile);
+                if (uploaded) {
+                    mediaUrl = uploaded;
+                } else {
+                    throw new Error("Não foi possível realizar o upload do arquivo.");
+                }
             }
 
-            const payload = {
+            if (!mediaUrl && !data.caption) {
+                alert('O post precisa de uma mídia ou legenda!');
+                setLoading(false);
+                return;
+            }
+
+            const { error } = await supabase.from('social_posts').insert({
                 author_name: data.author_name || 'Organização CIECC',
-                author_role: data.author_role || 'Diretoria Geral',
+                author_role: data.author_role || 'Comunicado Oficial',
                 author_tier: 4,
-                content_type: data.media_type,
-                media_type: data.media_type,
-                media_urls: [finalMediaUrl],
+                content_type: mediaType, // image, video, audio
+                media_urls: mediaUrl ? [mediaUrl] : [],
                 caption: data.caption,
-                sponsor_name: data.author_name || 'Organização CIECC',
-                sponsor_role: data.author_role || 'Diretoria Geral',
-                user_id: 'CIECC_ADMIN',
+                user_id: 'SYSTEM_ADMIN',
+                media_type: mediaType,
                 created_at: new Date().toISOString()
-            };
+            });
 
-            const { error } = await supabase.from('social_posts').insert([payload]);
+            if (error) throw error;
 
-            if (!error) {
-                triggerSuccess('Post publicado com sucesso!');
-                e.target.reset();
-                if (fileRef.current) fileRef.current.value = '';
-                loadPosts();
-            } else {
-                throw error;
-            }
+            triggerSuccess('Post publicado com sucesso no feed Conectar!');
+            e.target.reset();
+            setMediaFile(null);
+            setMediaType('image');
+            loadPosts();
         } catch (err) {
             alert('Erro ao publicar: ' + err.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const deletePost = async (id) => {
-        if (!window.confirm('Excluir esta publicação permanentemente? Esta ação não pode ser desfeita.')) return;
-        
+        if (!window.confirm('Excluir esta publicação permanentemente?')) return;
         setLoading(true);
         try {
-            const { error } = await supabase
-                .from('social_posts')
-                .delete()
-                .eq('id', id);
-
+            const { error } = await supabase.from('social_posts').delete().eq('id', id);
             if (!error) {
-                setPosts(posts.filter(p => p.id !== id));
-                triggerSuccess('Publicação removida com sucesso.');
-            } else {
-                throw error;
-            }
+                setPosts(prev => prev.filter(p => p.id !== id));
+                triggerSuccess('Publicação removida.');
+            } else throw error;
         } catch (err) {
             alert('Erro ao excluir: ' + err.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const toggleArchive = async (post) => {
@@ -140,11 +142,11 @@ const SocialManagementCMS = () => {
                 .eq('id', post.id);
 
             if (!error) {
-                setPosts(posts.map(p => p.id === post.id ? { ...p, is_archived: newStatus } : p));
+                setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_archived: newStatus } : p));
                 triggerSuccess(newStatus ? 'Publicação arquivada.' : 'Publicação restaurada.');
-            }
+            } else throw error;
         } catch (err) {
-            alert('Erro ao atualizar status: ' + err.message);
+            alert('Erro ao atualizar: ' + err.message);
         }
     };
 
@@ -156,6 +158,12 @@ const SocialManagementCMS = () => {
         return matchesSearch && matchesType;
     });
 
+    const typeOptions = [
+        { id: 'image', label: '📸 FOTO', color: '#3182CE', icon: <Camera size={20} /> },
+        { id: 'video', label: '🎥 VÍDEO', color: '#E53E3E', icon: <Film size={20} /> },
+        { id: 'audio', label: '🎙️ ÁUDIO', color: '#805AD5', icon: <Podcast size={20} /> }
+    ];
+
     return (
         <div style={{ paddingBottom: '60px' }}>
             {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
@@ -163,154 +171,116 @@ const SocialManagementCMS = () => {
             {/* HEADER */}
             <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                    <h3 style={{ fontWeight: '900', fontSize: '32px', color: 'white', letterSpacing: '-1px' }}>Gestão do Conectar</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', marginTop: '4px' }}>Moderação de posts, fotos e vídeos compartilhados na rede social.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                   <div style={tagStyle}>TOTAL: {posts.length}</div>
-                   <div style={{ ...tagStyle, background: 'var(--brand)', color: 'black' }}>ATIVOS: {posts.filter(p => !p.is_archived).length}</div>
+                    <h3 style={{ fontWeight: '900', fontSize: '32px', color: 'white', letterSpacing: '-1px' }}>Gestão Conectar Social</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px' }}>Publique e modere o feed da comunidade.</p>
                 </div>
             </div>
 
             <div className="responsive-grid">
                 
-                {/* COLUNA ESQUERDA: FORMULÁRIO DE POSTAGEM */}
+                {/* COLUNA ESQUERDA: FORMULÁRIO */}
                 <div style={{ 
                     background: 'var(--card-bg)', padding: '32px', borderRadius: '32px', 
-                    border: '1px solid var(--border-color)', position: 'sticky', top: '20px',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.3)', minWidth: 0
+                    border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', minWidth: 0
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(212, 193, 156, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
-                            <PlusSquare size={20} />
-                        </div>
-                        <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>Nova Publicação</h4>
+                        <PlusSquare size={24} color="var(--brand)" />
+                        <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>Nova Postagem Oficial</h4>
                     </div>
 
                     <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        
                         <div>
-                            <label style={labelStyle}>Identidade Visual (Autor)</label>
+                            <label style={labelStyle}>TIPO DE MÍDIA</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                                {typeOptions.map(opt => (
+                                    <button 
+                                        key={opt.id}
+                                        type="button"
+                                        onClick={() => setMediaType(opt.id)}
+                                        style={{
+                                            padding: '16px 8px', borderRadius: '16px', border: '2px solid',
+                                            borderColor: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.1)',
+                                            background: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.05)',
+                                            color: 'white',
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                                            transition: 'all 0.2s', cursor: 'pointer'
+                                        }}
+                                    >
+                                        {opt.icon}
+                                        <span style={{ fontSize: '10px', fontWeight: '900' }}>{opt.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={labelStyle}>Autor e Cargo</label>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input name="author_name" defaultValue="Organização CIECC" required style={inputStyle} placeholder="Nome do Autor" />
-                                <input name="author_role" defaultValue="Diretoria Geral" required style={inputStyle} placeholder="Cargo / Tier" />
+                                <input name="author_name" defaultValue="Organização CIECC" required style={inputStyle} />
+                                <input name="author_role" defaultValue="Comunicado Oficial" required style={inputStyle} />
                             </div>
                         </div>
 
                         <div>
-                            <label style={labelStyle}>Tipo de Mídia</label>
-                            <select name="media_type" style={inputStyle}>
-                                <option value="image">📸 Foto / Galeria</option>
-                                <option value="video">🎞️ Vídeo / Reel</option>
-                            </select>
+                            <label style={labelStyle}>Legenda</label>
+                            <textarea name="caption" required style={{ ...inputStyle, minHeight: '100px', resize: 'none' }} placeholder="Texto da publicação..." />
                         </div>
 
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
-                            <label style={labelStyle}>Mídia do Post</label>
-                            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                                <button type="button" onClick={() => setActiveSourceType('file')} style={{ ...tabStyle, flex: 1, background: activeSourceType === 'file' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: activeSourceType === 'file' ? 'black' : 'white' }}>UPLOAD</button>
-                                <button type="button" onClick={() => setActiveSourceType('url')} style={{ ...tabStyle, flex: 1, background: activeSourceType === 'url' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: activeSourceType === 'url' ? 'black' : 'white' }}>URL</button>
-                            </div>
-
-                            {activeSourceType === 'file' ? (
-                                <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
-                                    <input type="file" ref={fileRef} style={{ display: 'none' }} id="social_file" onChange={(e) => e.target.files[0] && triggerSuccess('Arquivo selecionado!')} />
-                                    <label htmlFor="social_file" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                        <Upload size={20} color="var(--brand)" />
-                                        <span style={{ fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.7)' }}>Clique para selecionar</span>
-                                    </label>
-                                </div>
-                            ) : (
-                                <input name="media_url" style={inputStyle} placeholder="URL da imagem ou vídeo..." />
-                            )}
+                        <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                            <input type="file" id="social_file_upload" style={{ display: 'none' }} onChange={(e) => setMediaFile(e.target.files[0])} />
+                            <label htmlFor="social_file_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                                <Upload size={24} color="var(--brand)" />
+                                <span style={{ fontSize: '13px', fontWeight: '700', color: mediaFile ? 'var(--brand)' : 'white' }}>
+                                    {mediaFile ? mediaFile.name : 'Selecionar Arquivo'}
+                                </span>
+                            </label>
                         </div>
 
-                        <div>
-                            <label style={labelStyle}>Legenda do Post</label>
-                            <textarea name="caption" required style={{ ...inputStyle, minHeight: '100px', resize: 'none' }} placeholder="O que você quer compartilhar com os congressistas?" />
-                        </div>
+                        <div style={{ textAlign: 'center', opacity: 0.5 }}><span style={{ fontSize: '10px', fontWeight: '900' }}>OU URL MANUAL</span></div>
+                        <input name="media_url_manual" style={inputStyle} placeholder="https://..." />
 
-                        <button type="submit" disabled={loading || uploading} style={btnSaveStyle}>
-                            {loading || uploading ? 'PUBLICANDO...' : 'POSTAR NA REDE SOCIAL'}
+                        <button type="submit" disabled={loading} style={btnSaveStyle}>
+                            {loading ? 'PUBLICANDO...' : 'PUBLICAR NO CONECTAR'}
                         </button>
                     </form>
                 </div>
 
-                {/* COLUNA DIREITA: FEED DE MODERAÇÃO */}
+                {/* COLUNA DIREITA: MODERAÇÃO */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
-                    
-                    {/* FILTROS E BUSCA */}
-                    <div style={{ 
-                        background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', 
-                        border: '1px solid var(--border-color)',
-                        display: 'flex', flexDirection: 'column', gap: '20px'
-                    }}>
-                        <div style={{ position: 'relative' }}>
-                            <Search size={20} color="var(--brand)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                            <input 
-                                placeholder="Pesquisar por autor ou conteúdo..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ ...inputStyle, paddingLeft: '48px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-                            />
+                    <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '24px', border: '1px solid var(--border-color)', display: 'flex', gap: '12px' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            <Search size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                            <input placeholder="Filtrar feed..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ ...inputStyle, paddingLeft: '48px', height: '48px' }} />
                         </div>
-                        
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => setFilterType('ALL')} style={{ ...tabStyle, background: filterType === 'ALL' ? 'var(--brand)' : 'transparent', color: filterType === 'ALL' ? 'black' : 'white' }}>TODOS</button>
-                            <button onClick={() => setFilterType('image')} style={{ ...tabStyle, background: filterType === 'image' ? 'var(--brand)' : 'transparent', color: filterType === 'image' ? 'black' : 'white' }}>FOTOS</button>
-                            <button onClick={() => setFilterType('video')} style={{ ...tabStyle, background: filterType === 'video' ? 'var(--brand)' : 'transparent', color: filterType === 'video' ? 'black' : 'white' }}>VÍDEOS</button>
-                            <button onClick={loadPosts} disabled={loading} style={tabStyle}>
-                                <Users size={16} className={loading ? 'animate-spin' : ''} />
-                            </button>
-                        </div>
+                        <button onClick={loadPosts} style={{ ...tabStyle, width: '48px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        </button>
                     </div>
 
-                    {/* GRID DE POSTS */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                        {filteredPosts.length === 0 ? (
-                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', background: 'var(--card-bg)', borderRadius: '32px', border: '1px solid var(--border-color)' }}>
-                                <MessageCircle size={48} style={{ opacity: 0.1, marginBottom: '16px', margin: '0 auto' }} />
-                                <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '700' }}>Nenhuma publicação encontrada.</p>
-                            </div>
-                        ) : (
-                            filteredPosts.map(post => (
-                                <div key={post.id} style={{ 
-                                    background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)',
-                                    overflow: 'hidden', position: 'relative', opacity: post.is_archived ? 0.6 : 1
-                                }}>
-                                    <div style={{ width: '100%', height: '180px', background: '#000' }}>
-                                        {post.media_type === 'video' ? (
-                                            <video src={post.media_urls?.[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
-                                        ) : (
-                                            <img src={post.media_urls?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        )}
-                                    </div>
-
-                                    <div style={{ padding: '20px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--brand)', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '14px' }}>
-                                                {post.author_name?.charAt(0)}
-                                            </div>
-                                            <div style={{ flex: 1, overflow: 'hidden' }}>
-                                                <h6 style={{ color: 'white', fontWeight: '800', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.author_name}</h6>
-                                            </div>
-                                        </div>
-
-                                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.4', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                            {post.caption}
-                                        </p>
-
-                                        <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button onClick={() => toggleArchive(post)} style={{ ...actionBtnStyle, flex: 1, height: '36px', fontSize: '10px' }}>
-                                                {post.is_archived ? 'RESTAURAR' : 'ARQUIVAR'}
-                                            </button>
-                                            <button onClick={() => deletePost(post.id)} style={{ ...actionBtnStyle, height: '36px', width: '36px', color: '#EF4444' }}>
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                        {filteredPosts.map(post => (
+                            <div key={post.id} style={{ 
+                                background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)', 
+                                overflow: 'hidden', opacity: post.is_archived ? 0.5 : 1
+                            }}>
+                                <div style={{ height: '160px', background: '#000', position: 'relative' }}>
+                                    {post.media_type === 'video' ? (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Video size={40} color="rgba(255,255,255,0.2)" /></div>
+                                    ) : (
+                                        <img src={post.media_urls?.[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                    )}
+                                </div>
+                                <div style={{ padding: '20px' }}>
+                                    <h6 style={{ color: 'white', fontWeight: '800', fontSize: '14px', marginBottom: '8px' }}>{post.author_name}</h6>
+                                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: '1.4', marginBottom: '16px', height: '34px', overflow: 'hidden' }}>{post.caption}</p>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => toggleArchive(post)} style={{ ...actionBtnStyle, flex: 1 }}>{post.is_archived ? 'REATIVAR' : 'ARQUIVAR'}</button>
+                                        <button onClick={() => deletePost(post.id)} style={{ ...actionBtnStyle, width: '48px', color: '#EF4444' }}><Trash2 size={16} /></button>
                                     </div>
                                 </div>
-                            ))
-                        )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -318,32 +288,10 @@ const SocialManagementCMS = () => {
     );
 };
 
-// ============================================
-// ESTILOS COMPLEMENTARES
-// ============================================
-
-const tagStyle = { 
-    background: 'rgba(255,255,255,0.05)', padding: '6px 14px', borderRadius: '10px', 
-    fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', letterSpacing: '1px' 
-};
-
-const inputStyle = { 
-    width: '100%', padding: '16px', borderRadius: '16px', 
-    border: '1px solid rgba(255,255,255,0.08)', fontSize: '15px', outline: 'none', 
-    color: '#000', backgroundColor: '#FFFFFF', fontWeight: '600',
-    transition: 'border-color 0.2s' 
-};
-
-const tabStyle = {
-    padding: '10px 18px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
-    fontSize: '11px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s',
-    whiteSpace: 'nowrap', letterSpacing: '1px'
-};
-
-const actionBtnStyle = { 
-    height: '48px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
-    color: 'white', fontWeight: '800', fontSize: '12px', gap: '10px', transition: 'all 0.2s'
-};
+const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', display: 'block', letterSpacing: '1px' };
+const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '14px', outline: 'none' };
+const btnSaveStyle = { width: '100%', padding: '18px', borderRadius: '18px', background: 'var(--brand)', color: 'black', fontWeight: '900', border: 'none', cursor: 'pointer', marginTop: '10px' };
+const tabStyle = { padding: '12px 20px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: '800', fontSize: '12px' };
+const actionBtnStyle = { height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: '800', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 
 export default SocialManagementCMS;
