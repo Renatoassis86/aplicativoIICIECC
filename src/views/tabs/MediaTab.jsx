@@ -12,10 +12,64 @@ import { useContent } from '../../hooks/useContent';
  * Feed Institucional estilo Instagram com Algoritmo de Patrocínios.
  * Suporta Carrossel, Imagem Única e Reels.
  */
+const MovingCarousel = ({ title, items, renderItem }) => {
+  const scrollRef = React.useRef(null);
+  
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || items.length < 3) return;
+    
+    let scrollAmount = 0;
+    const step = 2; // Aumentado para movimento mais visível
+    const interval = setInterval(() => {
+      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 2) {
+        el.scrollLeft = 0;
+        scrollAmount = 0;
+      } else {
+        el.scrollLeft += step;
+        scrollAmount += step;
+      }
+    }, 40);
+    
+    return () => clearInterval(interval);
+  }, [items]);
+
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      <h5 style={{ padding: '0 20px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>{title}</h5>
+      <div 
+        ref={scrollRef}
+        style={{ 
+          display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
+          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
+        }}
+        className="no-scrollbar"
+      >
+        {items.map((item, i) => (
+          <div key={i} style={{ flexShrink: 0 }}>
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function MediaTab({ userType, userName, userCpf }) {
   const { content: mediaTitle } = useContent('titles', 'page_media');
+  
+  // Helper para evitar erro #31 (objetos no JSX)
+  const displaySafe = (val, fallback = '') => {
+    if (!val) return fallback;
+    if (typeof val === 'object') return fallback;
+    return val;
+  };
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [speakers, setSpeakers] = useState([]);
+  const [allSponsors, setAllSponsors] = useState([]);
+  const [mediaAssets, setMediaAssets] = useState([]);
   
   // UI States
   const [showCreator, setShowCreator] = useState(false);
@@ -53,21 +107,34 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const privilegedRoles = ['organizador', 'admin', 'staff', 'master', 'patrocinador', 'sponsor', 'mantenedor', 'expositor', 'parceiro'];
   const canPost = privilegedRoles.some(r => (userType || '').toLowerCase().includes(r));
 
-  const loadPosts = async () => {
+  const loadInitialData = async () => {
     setLoading(true);
-    const data = await fetchFeedPosts(userCpf);
-    setPosts(data);
+    try {
+      const [postsData, spkData, spnData, astData] = await Promise.all([
+        fetchFeedPosts(userCpf),
+        supabase.from('speakers').select('*').limit(15),
+        supabase.from('sponsors').select('*').eq('active', true).order('order_index'),
+        supabase.from('media_assets').select('*').limit(20)
+      ]);
+      
+      setPosts(postsData || []);
+      setSpeakers(spkData.data || []);
+      setAllSponsors(spnData.data || []);
+      setMediaAssets(astData.data || []);
+    } catch (e) {
+      console.error("[MediaTab] Error loading data:", e);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    loadPosts();
+    loadInitialData();
   }, []);
 
   const handlePinPost = async (postId, currentPinState) => {
     try {
       await togglePinPost(postId, currentPinState);
-      loadPosts(); 
+      loadInitialData(); 
     } catch (e) {
       console.error("[handlePinPost]", e);
     }
@@ -76,7 +143,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const handleArchivePost = async (postId, currentArchiveState) => {
     try {
       await toggleArchivePost(postId, currentArchiveState);
-      loadPosts(); 
+      loadInitialData(); 
     } catch (e) {
       console.error("[handleArchivePost]", e);
     }
@@ -217,6 +284,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
     );
   };
 
+
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px', background: '#F8F9FA' }}>
       
@@ -231,7 +299,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
           <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
-            {viewingSaved ? 'Itens Salvos' : (mediaTitle || 'CONECTAR')}
+            {viewingSaved ? 'Itens Salvos' : displaySafe(mediaTitle, 'CONECTAR')}
           </h1>
         </div>
 
@@ -249,6 +317,94 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
       {/* FEED CONTEÚDO */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
+        
+        {/* MEDIA CENTER - CARROSSEIS EM MOVIMENTO */}
+        {!viewingSaved && !loading && (
+          <div style={{ background: 'white', padding: '20px 0', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '8px' }}>
+            
+            {speakers.length > 0 && (
+              <MovingCarousel 
+                title="🗣️ Palestrantes de Peso"
+                items={speakers}
+                renderItem={(s) => (
+                  <div style={{ width: '80px', textAlign: 'center' }}>
+                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid var(--gold)', padding: '2px', margin: '0 auto 8px' }}>
+                      <img src={s.photo_url || 'https://via.placeholder.com/100'} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    </div>
+                    <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</p>
+                  </div>
+                )}
+              />
+            )}
+
+            {allSponsors.length > 0 && (
+              <MovingCarousel 
+                title="💎 Patrocinadores Master"
+                items={allSponsors}
+                renderItem={(s) => (
+                  <div style={{ width: '100px', height: '60px', background: '#F8F9FA', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px', border: '1px solid rgba(0,0,0,0.03)' }}>
+                    <img src={s.logo_url} alt="" style={{ height: '24px', objectFit: 'contain', marginBottom: '4px' }} />
+                    <p style={{ fontSize: '8px', fontWeight: '800', color: 'var(--gold)', textTransform: 'uppercase' }}>{s.tier || 'Parceiro'}</p>
+                  </div>
+                )}
+              />
+            )}
+
+            {posts.filter(p => p.mediaUrls && p.mediaUrls.length > 0).length > 0 && (
+              <MovingCarousel 
+                title="📸 Fotos do Evento"
+                items={posts.filter(p => p.mediaUrls && p.mediaUrls.length > 0).slice(0, 8)}
+                renderItem={(p) => (
+                  <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden' }}>
+                    <img src={p.mediaUrls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
+              />
+            )}
+
+            {mediaAssets.filter(a => a.media_type === 'audio' || a.title.toLowerCase().includes('podcast')).length > 0 && (
+              <MovingCarousel 
+                title="🎙️ Podcast CIECC"
+                items={mediaAssets.filter(a => a.media_type === 'audio' || a.title.toLowerCase().includes('podcast'))}
+                renderItem={(a) => (
+                  <div style={{ width: '150px', background: 'var(--primary)', color: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '50%' }}><Play size={16} fill="white" /></div>
+                    <p style={{ fontSize: '11px', fontWeight: '700', lineHeight: '1.2' }}>{a.title}</p>
+                  </div>
+                )}
+              />
+            )}
+
+            {mediaAssets.filter(a => a.media_type === 'video').length > 0 && (
+              <MovingCarousel 
+                title="🎥 Entrevistas & Bastidores"
+                items={mediaAssets.filter(a => a.media_type === 'video')}
+                renderItem={(a) => (
+                  <div style={{ width: '200px', height: '112px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
+                    <img src={`https://img.youtube.com/vi/${a.url_or_path.split('/').pop()}/mqdefault.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}><Play size={20} color="white" fill="white" /></div>
+                  </div>
+                )}
+              />
+            )}
+
+            {mediaAssets.filter(a => a.title.toLowerCase().includes('antiga') || a.description?.toLowerCase().includes('história')).length > 0 && (
+              <MovingCarousel 
+                title="🏛️ Memórias CIECC (Fotos Antigas)"
+                items={mediaAssets.filter(a => a.title.toLowerCase().includes('antiga') || a.description?.toLowerCase().includes('história'))}
+                renderItem={(a) => (
+                  <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+                    <img src={a.url_or_path} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'sepia(0.5)' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', padding: '8px' }}>
+                      <p style={{ fontSize: '9px', color: 'white', fontWeight: '700' }}>{a.title}</p>
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
+          </div>
+        )}
         {loading ? (
           <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
             <RefreshCw size={32} color="var(--primary)" className="spin" style={{ marginBottom: '16px' }} />

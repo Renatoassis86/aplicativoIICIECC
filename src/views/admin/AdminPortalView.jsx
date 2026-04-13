@@ -45,7 +45,9 @@ import ScheduleCMS from './modules/ScheduleCMS';
 import UserManagementCMS from './modules/UserManagementCMS';
 import SponsorsCMS from './modules/SponsorsCMS';
 import TextContentCMS from './modules/TextContentCMS';
+import FileManagementCMS from './modules/FileManagementCMS';
 import AdminImportView from './AdminImportView';
+import MembersListCMS from './modules/MembersListCMS';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -125,15 +127,15 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   }, []);
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 size={20} />, color: '#6366F1' },
-    { id: 'home', label: 'Editar Página Inicial', icon: <Layout size={20} />, color: '#8B5CF6' },
-    { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#EC4899' },
-    { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#F59E0B' },
-    { id: 'users', label: 'Gestão de Usuários', icon: <ShieldCheck size={20} />, color: '#10B981' },
-    { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} />, color: '#8B5CF6' },
-    { id: 'texts', label: 'Textos & Objetos', icon: <FileText size={20} />, color: '#6366F1' },
-    { id: 'import', label: 'Importar Inscritos', icon: <FileSpreadsheet size={20} />, color: '#06B6D4' },
-    { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#64748B' },
+    { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 size={20} />, color: '#D4C19C' },
+    { id: 'home', label: 'Editar Página Inicial', icon: <Layout size={20} />, color: '#D4C19C' },
+    { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#D4C19C' },
+    { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#D4C19C' },
+    { id: 'users', label: 'Gestão de Usuários', icon: <ShieldCheck size={20} />, color: '#D4C19C' },
+    { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} />, color: '#D4C19C' },
+    { id: 'texts', label: 'Textos & Objetos', icon: <FileText size={20} />, color: '#D4C19C' },
+    { id: 'import', label: 'Importar Inscritos', icon: <FileSpreadsheet size={20} />, color: '#D4C19C' },
+    { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#D4C19C' },
   ];
 
   const renderContent = () => {
@@ -142,10 +144,10 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
           <div className="stats-grid">
              {[
-               { label: 'Congressistas', value: stats.attendees, trend: '+12%', icon: <Users />, color: '#6366F1' },
-               { label: 'Interações Feed', value: stats.posts * 10, trend: '+45%', icon: <ImageIcon />, color: '#10B981' },
-               { label: 'Push Deliverability', value: '98.4%', trend: 'Estável', icon: <Send />, color: '#F59E0B' },
-               { label: 'Active Sessions', value: '84', trend: 'Live', icon: <Activity />, color: '#EF4444' }
+               { label: 'Congressistas', value: stats.attendees, trend: '+12%', icon: <Users />, color: '#D4C19C' },
+               { label: 'Interações Feed', value: stats.posts * 10, trend: '+45%', icon: <ImageIcon />, color: '#D4C19C' },
+               { label: 'Push Deliverability', value: '98.4%', trend: 'Estável', icon: <Send />, color: '#D4C19C' },
+               { label: 'Active Sessions', value: '84', trend: 'Live', icon: <Activity />, color: '#D4C19C' }
              ].map((stat, i) => (
                <div key={i} className="stat-card">
                  <div style={{ position: 'absolute', top: 0, right: 0, padding: '20px', opacity: 0.1 }}>{stat.icon}</div>
@@ -168,7 +170,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                   {[1,2,3].map(i => (
                     <div key={i} className="log-item">
                       <div className="log-icon">
-                         <UserPlus size={18} color="#6366F1" />
+                         <UserPlus size={18} color="#D4C19C" />
                       </div>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: '14px', fontWeight: '700', color: '#FFFFFF' }}>Novo congressista cadastrado via QR</p>
@@ -269,7 +271,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'sponsors': return <SponsorsCMS />;
       case 'texts': return <TextContentCMS />;
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
-      case 'members': return <div className="card-main"><h4>Lista de Membros (Em desenvolvimento)</h4></div>;
+      case 'members': return <MembersListCMS />;
       default: return null;
     }
   };
@@ -279,20 +281,13 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       
       {/* SIDEBAR */}
       <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div style={{ padding: '40px 32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px', padding: '0 8px' }}>
-          <div style={{ width: '48px', height: '48px', background: 'var(--brand)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--primary-glow)' }}>
-            <span style={{ color: 'white', fontWeight: '900', fontSize: '24px' }}>A</span>
-          </div>
-          <div>
-            <h1 style={{ color: '#FFFFFF', fontSize: '20px', fontWeight: '900', letterSpacing: '1px', margin: 0 }}>ARKOS</h1>
-            <p style={{ color: 'var(--brand)', fontSize: '10px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '2px' }}>Intelligence</p>
-          </div>
-        </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <button className="mobile-only sidebar-close" onClick={() => setIsSidebarOpen(false)}>
-              <LogOut size={20} color="white" />
-            </button>
+        <div className="sidebar-header" style={{ padding: '32px 24px', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <img src="/logo.png" alt="CIECC" style={{ height: '40px', filter: 'brightness(0) invert(1)' }} />
+            <div>
+              <h1 style={{ color: 'white', fontSize: '15px', fontWeight: '900', letterSpacing: '1px' }}>CIECC Console</h1>
+              <p style={{ color: 'var(--gold)', fontSize: '9px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2px' }}>Digital Hub Control</p>
+            </div>
           </div>
         </div>
 
@@ -334,26 +329,18 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       <main className="admin-main">
         
         {/* HEADER */}
-        <header className="main-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-             <button className="mobile-only hamburger" onClick={() => setIsSidebarOpen(true)}>
-                <div style={{ width: '20px', height: '2px', background: 'white', marginBottom: '4px' }}></div>
-                <div style={{ width: '15px', height: '2px', background: 'white', marginBottom: '4px' }}></div>
-                <div style={{ width: '20px', height: '2px', background: 'white' }}></div>
-             </button>
-             <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{ width: '4px', height: '24px', background: 'var(--brand)', borderRadius: '2px' }}></div>
-                    <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF' }}>Infraestrutura de Inteligência</h2>
-                </div>
-                <h2 className="view-title">
-                  {menuItems.find(i => i.id === activeMenu)?.label}
-                </h2>
-                <div className="status-bar">
-                  <div className="online-indicator"></div>
-                  <p className="status-text">Root Admin: <strong style={{ color: 'white' }}>{userName}</strong></p>
-                </div>
-             </div>
+        <header className="topbar" style={{ 
+          background: 'rgba(255,255,255,0.02)', 
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid var(--border-color)',
+          padding: '20px 40px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Dashboard / {activeMenu.toUpperCase()}</h2>
+            <h3 style={{ fontSize: '20px', color: 'white', fontWeight: '900' }}>II CIECC 2026 Digital Hub</h3>
           </div>
           
           <div className="header-actions">
@@ -374,18 +361,18 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       <style dangerouslySetInnerHTML={{__html: `
         :root {
           --sidebar-width: 280px;
-          /* ARKOS Palette - Infrastructure of the New Economy */
-          --primary: #0ea5e9; /* Sky Blue */
-          --primary-glow: rgba(14, 165, 233, 0.4);
-          --secondary: #1e293b; /* Slate 800 */
-          --bg-dark: #020617; /* Deepest Navy */
-          --card-bg: rgba(30, 41, 59, 0.7); /* Slate 800 semi-transparent */
-          --border-color: rgba(148, 163, 184, 0.1); /* Slate 400 very soft */
-          --text-main: #f8fafc; /* Slate 50 */
-          --text-muted: #94a3b8; /* Slate 400 */
-          --brand: #0ea5e9;
-          --success: #10b981; /* Emerald */
-          --font-sans: 'Inter', system-ui, sans-serif;
+          --primary: #6B141A; /* Burgundy */
+          --primary-glow: rgba(107, 20, 26, 0.4);
+          --secondary: #1e293b; 
+          --bg-dark: #0A0A0A; 
+          --card-bg: rgba(25, 25, 25, 0.7); 
+          --border-color: rgba(255, 255, 255, 0.08); 
+          --text-main: #f8fafc; 
+          --text-muted: #94a3b8; 
+          --brand: #D4C19C; /* Gold */
+          --gold: #D4C19C;
+          --success: #10b981;
+          --font-sans: 'Outfit', sans-serif;
         }
 
         .admin-container {
@@ -399,7 +386,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
         .admin-sidebar {
           width: var(--sidebar-width);
-          background: #0F172A;
+          background: linear-gradient(180deg, #4A101D 0%, #6B141A 100%);
           display: flex;
           flex-direction: column;
           border-right: 1px solid var(--border-color);
@@ -414,19 +401,6 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           overflow-y: auto;
           position: relative;
           background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 600px);
-        }
-
-        .main-header {
-          padding: 32px 40px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: rgba(10, 15, 26, 0.8);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border-color);
-          position: sticky;
-          top: 0;
-          z-index: 80;
         }
 
         .content-container {
@@ -474,7 +448,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           backdrop-filter: blur(10px);
         }
         .card-alert { 
-          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+          background: linear-gradient(180deg, #4A101D 0%, #6B141A 100%); 
           border-radius: 24px; padding: 32px; color: white; position: relative; overflow: hidden; 
           border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 10px 30px rgba(0,0,0,0.4);

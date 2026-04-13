@@ -7,7 +7,9 @@ import {
   MoreVertical,
   Bell,
   User,
-  Menu
+  Menu,
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 
 // Importando os componentes das abas
@@ -110,6 +112,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenMap={() => setCurrentPage('map')}
           onOpenGTs={() => setCurrentPage('gts')}
           onOpenProfile={() => setCurrentPage('profile')}
+          onNavigate={(tab) => { setActiveTab(tab); setCurrentPage(null); }}
           userType={userType}
         />
       );
@@ -126,11 +129,12 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
          className="clickable"
          style={{ 
            position: 'fixed', top: 'calc(env(safe-area-inset-top, 24px) + 12px)', left: '16px', 
-           zIndex: 1000000, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
-           padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.3)', display: 'flex'
+           zIndex: 1000000, background: 'var(--primary)', 
+           padding: '10px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.3)', display: 'flex',
+           boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
          }}
       >
-        <div style={{ transform: 'rotate(180deg)', display: 'flex', opacity: 0.7 }}><ArrowRight size={20} color="white" /></div>
+        <div style={{ display: 'flex' }}><ArrowLeft size={20} color="white" /></div>
       </button>
     );
 
@@ -139,6 +143,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
         position: 'fixed', inset: 0, zIndex: 99999, background: '#F7F8FA', 
         overflowY: 'auto', paddingBottom: '20px' 
       }}>
+        <BackButton />
         {currentPage === 'ticket' && <MyTicketModal userCpf={userCpf} onClose={() => setCurrentPage(null)} />}
         {currentPage === 'notifications' && (
           <NotificationsSheet 

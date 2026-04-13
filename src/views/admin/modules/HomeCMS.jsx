@@ -55,7 +55,7 @@ const HomeCMS = () => {
           <button 
             disabled={loading}
             onClick={loadContent}
-            style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
+            style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Recarregar Atual
           </button>
@@ -120,7 +120,7 @@ const HomeCMS = () => {
           onClick={handleSave}
           disabled={loading}
           style={{ 
-            flex: 1, background: 'var(--primary)', color: 'white', border: 'none', 
+            flex: 1, background: 'var(--gold)', color: '#000', border: 'none', 
             padding: '20px', borderRadius: '16px', fontWeight: '800', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
             boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
@@ -147,7 +147,7 @@ const InputGroup = ({ label, value, onChange, placeholder, fullWidth = false }) 
         color: '#FFFFFF', background: 'rgba(255,255,255,0.05)'
       }}
       onFocus={(e) => {
-        e.target.style.borderColor = 'var(--brand)';
+        e.target.style.borderColor = 'var(--gold)';
         e.target.style.background = 'rgba(255,255,255,0.1)';
       }}
       onBlur={(e) => {

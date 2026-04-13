@@ -62,10 +62,14 @@ export default function SponsorsCMS() {
     }
 
     const { error } = await supabase.from('sponsors').insert([{ ...newSponsor, logo_url: finalLogoUrl }]);
-    if (!error) {
-      setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length, tagline: '', bio: '', booth: '' });
+    if (error) {
+      console.error('Erro ao salvar patrocinador:', error);
+      alert('Erro ao salvar patrocinador: ' + error.message);
+    } else {
+      setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '' });
       setUploadFile(null);
       fetchSponsors();
+      alert('Patrocinador salvo com sucesso!');
     }
     setSaving(false);
   };
@@ -89,7 +93,7 @@ export default function SponsorsCMS() {
     <div className="sponsors-cms-container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       <div style={{ maxWidth: '1000px' }}>
         <h3 style={{ fontWeight: '900', color: '#FFFFFF', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '24px' }}>
-          <Plus size={28} color="var(--brand)" /> Adicionar Novo Patrocinador
+          <Plus size={28} color="var(--gold)" /> Adicionar Novo Patrocinador
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 0.5fr', gap: '16px', marginBottom: '16px' }}>
@@ -108,7 +112,7 @@ export default function SponsorsCMS() {
               placeholder="Ex: Líder em tecnologia"
               value={newSponsor.tagline}
               onChange={e => setNewSponsor({...newSponsor, tagline: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', fontWeight: '600', outline: 'none' }}
             />
           </div>
           <div>
@@ -131,7 +135,7 @@ export default function SponsorsCMS() {
               placeholder="0"
               value={newSponsor.order_index}
               onChange={e => setNewSponsor({...newSponsor, order_index: parseInt(e.target.value)})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '800' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', fontWeight: '800', outline: 'none' }}
             />
           </div>
         </div>
@@ -140,10 +144,10 @@ export default function SponsorsCMS() {
           <div>
             <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Biografia / Descrição Longa</label>
             <textarea 
-              placeholder="Conte mais sobre a empresa..."
+              placeholder="Texto completo sobre a empresa..."
               value={newSponsor.bio}
               onChange={e => setNewSponsor({...newSponsor, bio: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', minHeight: '100px', resize: 'none', outline: 'none' }}
+              style={{ width: '100%', minHeight: '120px', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', fontWeight: '600', outline: 'none', resize: 'vertical' }}
             />
           </div>
           <div>
@@ -152,13 +156,13 @@ export default function SponsorsCMS() {
               placeholder="Ex: Pavilhão Sul"
               value={newSponsor.booth}
               onChange={e => setNewSponsor({...newSponsor, booth: e.target.value})}
-              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#000000', background: '#FFFFFF', fontWeight: '600' }}
+              style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', fontWeight: '600', outline: 'none' }}
             />
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Logo e Website</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8' }}>Logo e Website</label>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                     <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
@@ -185,18 +189,18 @@ export default function SponsorsCMS() {
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ border: '2px dashed #CBD5E1', padding: '14px', borderRadius: '12px', textAlign: 'center', background: 'white' }}>
+                    <div style={{ padding: '14px', borderRadius: '12px', border: '2px dashed var(--border-color)', background: 'rgba(255,255,255,0.03)', textAlign: 'center' }}>
                         <input type="file" id="sponsor-logo" accept="image/*" onChange={(e) => setUploadFile(e.target.files[0])} style={{ display: 'none' }} />
                         <label htmlFor="sponsor-logo" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                            <ImageIcon size={20} color="#64748B" />
-                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#1E293B' }}>{uploadFile ? uploadFile.name : 'Selecionar Logo no PC'}</span>
+                            <ImageIcon size={20} color="var(--gold)" />
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#FFFFFF' }}>{uploadFile ? uploadFile.name : 'Selecionar Logo no PC'}</span>
                         </label>
                     </div>
                     <input 
                         placeholder="URL do Site"
                         value={newSponsor.website_url}
                         onChange={e => setNewSponsor({...newSponsor, website_url: e.target.value})}
-                        style={{ padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', color: '#1E293B', background: 'white' }}
+                        style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
                     />
                 </div>
             )}
@@ -233,7 +237,7 @@ export default function SponsorsCMS() {
                 ) : (
                   <ImageIcon size={24} color="#64748B" />
                 )}
-                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--brand)', color: '#FFFFFF', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '900', border: '2px solid #000' }}>
+                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--gold)', color: '#000', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '900', border: '2px solid #000' }}>
                   {sponsor.order_index}
                 </div>
               </div>
@@ -241,7 +245,7 @@ export default function SponsorsCMS() {
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                   <h5 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>{sponsor.name}</h5>
-                  <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(14, 165, 233, 0.2)', color: 'var(--brand)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sponsor.tier}</span>
+                  <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(212, 175, 55, 0.2)', color: 'var(--gold)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sponsor.tier}</span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ExternalLink size={12} /> {sponsor.website_url || 'Nenhum site cadastrado'}
@@ -251,7 +255,7 @@ export default function SponsorsCMS() {
               <div style={{ display: 'flex', gap: '12px' }}>
                  <button 
                   onClick={() => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, isEditing: !s.isEditing } : s))}
-                  style={{ background: 'rgba(14, 165, 233, 0.1)', color: 'var(--brand)', border: '1px solid rgba(14, 165, 233, 0.2)', padding: '10px 18px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  style={{ background: 'rgba(212, 175, 55, 0.1)', color: 'var(--gold)', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '10px 18px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
                   {sponsor.isEditing ? 'Fechar Edição' : 'Editar Patrocinador'}
                 </button>

@@ -193,15 +193,14 @@ const AdminImportView = ({ onBackToApp }) => {
   return (
     <div className="admin-container fade-in" style={{
       minHeight: '100vh',
-      background: 'var(--bg-app)',
+      background: 'var(--bg-dark)',
       paddingBottom: '60px'
     }}>
-      {/* Header Premium Arkos Slate */}
       <header style={{ 
-        background: 'var(--primary)', 
-        padding: '24px 20px',
+        background: 'linear-gradient(180deg, #4A101D 0%, #6B141A 100%)', 
+        padding: '32px 20px',
         color: 'white',
-        boxShadow: 'var(--shadow-md)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center'
@@ -210,22 +209,22 @@ const AdminImportView = ({ onBackToApp }) => {
           <div style={{ 
             width: '40px', 
             height: '40px', 
-            background: 'var(--primary)', 
+            background: 'var(--gold)', 
             borderRadius: '10px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
+            color: '#000',
             fontWeight: '900',
             fontSize: '18px'
-          }}>A</div>
+          }}>C</div>
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-sans)', color: 'white' }}>Portal Administrativo</h1>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Gestão de Dados</p>
+            <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>CIECC Console</h1>
+            <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Módulo de Importação</p>
           </div>
         </div>
-        <button onClick={onBackToApp} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
-          <LogOut size={24} />
+        <button onClick={onBackToApp} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}>
+          <LogOut size={20} />
         </button>
       </header>
 
@@ -233,17 +232,17 @@ const AdminImportView = ({ onBackToApp }) => {
         
         {/* === STEP 1: UPLOAD === */}
         {step === 1 && (
-          <div className="card fade-in" style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '24px' }}>
+          <div className="fade-in" style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
             <div style={{
               width: '80px', height: '80px', borderRadius: '50%',
               background: 'var(--accent)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 24px'
             }}>
-              <Upload size={32} color="var(--primary)" />
+              <Upload size={32} color="var(--gold)" />
             </div>
-            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '12px' }}>Importar Congressistas</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '400px', margin: '0 auto 32px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '12px' }}>Importar Congressistas</h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', maxWidth: '400px', margin: '0 auto 32px' }}>
               Suba a lista de inscritos para liberar o acesso ao aplicativo. <br/>
               O CPF será o login e a senha inicial será <strong>congresso2026</strong>.
             </p>

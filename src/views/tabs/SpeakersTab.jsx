@@ -24,6 +24,13 @@ const SpeakersTab = ({ onNavigate }) => {
   const [speakersList, setSpeakersList] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper para evitar erro #31 (objetos no JSX)
+  const displaySafe = (val, fallback = '') => {
+    if (!val) return fallback;
+    if (typeof val === 'object') return fallback;
+    return val;
+  };
+
   React.useEffect(() => {
     fetchSpeakers();
   }, []);
@@ -63,8 +70,8 @@ const SpeakersTab = ({ onNavigate }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
            <div>
-              <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>{speakersTitle || 'Palestrantes'}</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{speakersSubtitle || 'Conheça as mentes por trás do II CIECC'}</p>
+              <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>{displaySafe(speakersTitle, 'Palestrantes')}</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{displaySafe(speakersSubtitle, 'Conheça as mentes por trás do II CIECC')}</p>
            </div>
            <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
               <Users size={24} />

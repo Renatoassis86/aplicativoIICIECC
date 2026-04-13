@@ -3,7 +3,7 @@ import {
   Camera, Image as ImageIcon, X, Search,
   ChevronRight, RefreshCw, MapPin, Video, CheckCircle
 } from 'lucide-react';
-import { createPost } from '../../services/social/socialService';
+import { createPost, updatePostApi } from '../../services/social/socialService';
 import { supabase } from '../../lib/supabase';
 
 /**
@@ -454,10 +454,10 @@ const SocialPostCreator = (props) => {
         paddingTop: 'max(14px, env(safe-area-inset-top))'
       }}>
         <button
-          onClick={step > 1 ? () => setStep(step - 1) : onClose}
+          onClick={isEdit ? onClose : (step > 1 ? () => setStep(step - 1) : onClose)}
           style={{ background: 'none', border: 'none', color: 'white', padding: 4 }}
         >
-          {step > 1 ? <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} /> : <X size={24} />}
+          {isEdit ? <X size={24} /> : (step > 1 ? <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} /> : <X size={24} />)}
         </button>
 
         <h2 style={{ fontSize: 16, fontWeight: 700 }}>

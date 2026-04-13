@@ -82,17 +82,15 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         <div className="login-hero-side">
           <div className="hero-overlay"></div>
           <div className="hero-content">
-            <div style={{ width: '80px', height: '80px', background: '#0ea5e9', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 0 30px rgba(14, 165, 233, 0.3)' }}>
-              <span style={{ color: 'white', fontWeight: '900', fontSize: '40px' }}>A</span>
-            </div>
+            <img src="/logo.png" alt="CIECC" className="desktop-logo" />
             <div className="hero-text">
-              <h1 className="hero-title">ARKOS 360</h1>
-              <p className="hero-subtitle">Infraestrutura de Inteligência para a Nova Economia</p>
+              <h1 className="hero-title">II CIECC 2026</h1>
+              <p className="hero-subtitle">Congresso Internacional de Educação e Criatividade</p>
             </div>
             
             <div className="hero-footer">
-               <div className="location-badge">Digital Hub</div>
-               <div className="date-badge">Enterprise Console</div>
+               <div className="location-badge">Joinville, SC</div>
+               <div className="date-badge">14 e 15 de Maio</div>
             </div>
           </div>
         </div>
@@ -102,14 +100,12 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
           <div className="login-form-card fade-in">
             
             <div className="mobile-only-header">
-              <div style={{ width: '60px', height: '60px', background: 'var(--brand)', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(14, 165, 233, 0.3)' }}>
-                <span style={{ color: 'white', fontWeight: '900', fontSize: '30px' }}>A</span>
-              </div>
+              <img src="/logo.png" alt="CIECC" className="mobile-logo" />
             </div>
 
             <header style={{ marginBottom: '32px' }}>
-              <h2 className="form-title">Console,</h2>
-              <p className="form-subtitle">Gerenciamento Seguro e Inteligente</p>
+              <h2 className="form-title">Bem-vindo,</h2>
+              <p className="form-subtitle">Acesso exclusivo para congressistas</p>
             </header>
 
             <form onSubmit={handleSubmit}>
@@ -167,8 +163,8 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
                 <p className="created-by">Criado por</p>
                 <div className="arkos-brand">
                   <svg width="18" height="18" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 32L20 8L32 32" stroke="var(--brand)" strokeWidth="3" />
-                    <path d="M4 21H36" stroke="var(--brand)" strokeWidth="3" />
+                    <path d="M8 32L20 8L32 32" stroke="#D4C19C" strokeWidth="3" />
+                    <path d="M4 21H36" stroke="#D4C19C" strokeWidth="3" />
                   </svg>
                   <span className="arkos-text">ARKOS</span>
                 </div>
@@ -207,7 +203,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         .hero-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 6, 23, 0.95) 100%);
+          background: linear-gradient(135deg, rgba(107, 20, 26, 0.2) 0%, rgba(0,0,0,0.95) 100%);
         }
 
         .hero-content {
@@ -234,7 +230,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
         .hero-subtitle {
           font-size: 20px;
-          color: #0ea5e9;
+          color: #D4C19C;
           font-weight: 500;
           margin-bottom: 40px;
           opacity: 0.9;
@@ -328,7 +324,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
           gap: 12px;
           transition: all 0.3s;
           margin-top: 10px;
-          box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
+          box-shadow: 0 10px 20px rgba(107, 20, 26, 0.3);
         }
 
         .login-submit-btn:hover {

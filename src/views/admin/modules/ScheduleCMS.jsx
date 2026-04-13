@@ -129,7 +129,7 @@ const ScheduleCMS = () => {
                                 <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#FFFFFF', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
                                 <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
                                 <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
-                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <span style={{ opacity: 0.7 }}>🎤</span> {s.speakers.name}
                                 </div>}
                             </div>
@@ -266,7 +266,7 @@ const tabStyle = { padding: '12px 24px', borderRadius: '12px', border: '1px soli
 const activeTabStyle = { ...tabStyle, background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' };
 const btnPlusStyle = { padding: '10px 18px', borderRadius: '10px', background: 'var(--secondary)', color: '#000', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' };
 const cardStyle = { background: 'var(--card-bg)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' };
-const badgeStyle = { fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(14, 165, 233, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
+const badgeStyle = { fontSize: '10px', color: 'var(--gold)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: '800', textTransform: 'uppercase' };
 const iconBtnStyle = { width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', background: 'rgba(255,255,255,0.05)' };
 const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.2)' };
 const metaStyle = { fontSize: '13px', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '700' };

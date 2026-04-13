@@ -69,7 +69,7 @@ const UserManagementCMS = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
                     <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
-                        <UserPlus size={20} color="var(--brand)" /> Configurar Acesso
+                        <UserPlus size={20} color="var(--gold)" /> Configurar Acesso
                     </h3>
                     <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
 
@@ -141,11 +141,12 @@ const UserManagementCMS = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#FFFFFF' }}>Gerenciamento de Usuários</h3>
                     <button 
+                        type="submit" 
                         disabled={loading}
                         onClick={loadData}
-                        style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
+                        style={{ width: 'auto', padding: '12px 20px', borderRadius: '12px', background: 'var(--primary)', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                     >
-                        <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Recarregar Atual
+                        {loading ? <div className="animate-spin">⌛</div> : <><RefreshCw size={16} /> RECARREGAR</>}
                     </button>
                 </div>
 
@@ -157,7 +158,7 @@ const UserManagementCMS = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{ ...inputStyle, paddingLeft: '40px' }}
-                        onFocus={(e) => { e.target.style.borderColor = 'var(--brand)'; e.target.style.background = 'rgba(255,255,255,0.1)'; }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--gold)'; e.target.style.background = 'rgba(255,255,255,0.1)'; }}
                         onBlur={(e) => { e.target.style.borderColor = 'var(--border-color)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                     />
                 </div>
@@ -167,19 +168,19 @@ const UserManagementCMS = () => {
                         <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
                             <div style={{ 
                                 width: '40px', height: '40px', borderRadius: '10px', 
-                                background: u.user_type === 'admin' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(255,255,255,0.05)',
+                                background: u.user_type === 'admin' ? 'rgba(212, 193, 156, 0.1)' : 'rgba(255,255,255,0.05)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: u.user_type === 'admin' ? 'var(--brand)' : '#94A3B8'
+                                color: u.user_type === 'admin' ? 'var(--gold)' : '#94A3B8'
                             }}>
                                 {u.user_type === 'admin' ? <Shield size={20} /> : <Briefcase size={20} />}
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
-                                        <span style={badgeStyle}>
-                                            {u.user_type}
-                                        </span>
+                                        <ShieldCheck size={18} color="var(--gold)" />
+                                        <div>
+                                            <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
+                                        </div>
                                     </div>
                                     <button 
                                         onClick={() => {
@@ -191,7 +192,7 @@ const UserManagementCMS = () => {
                                             });
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}
+                                        style={{ background: 'rgba(212, 193, 156, 0.1)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: 'none', cursor: 'pointer' }}
                                     >
                                         EDITAR UX
                                     </button>
@@ -214,7 +215,7 @@ const UserManagementCMS = () => {
 
 const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '8px' };
 const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#FFFFFF' };
-const badgeStyle = { fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(14, 165, 233, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
+const badgeStyle = { fontSize: '10px', fontWeight: '900', color: 'var(--gold)', background: 'rgba(212, 193, 156, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
 const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)' };
 
 export default UserManagementCMS;
