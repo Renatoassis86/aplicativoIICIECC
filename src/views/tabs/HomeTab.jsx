@@ -559,16 +559,11 @@ const HomeTab = ({
         {favoriteItems.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {favoriteItems.map(item => (
-              <div 
-                key={`${item.itemType}-${item.id}`} 
-                onClick={() => {
-                  if (item.itemType === 'agenda') onNavigate('agenda');
-                  else if (item.itemType === 'social') onNavigate('feed');
-                  else if (item.itemType === 'media') onOpenMedia(item);
-                }} 
-                className="card" 
-                style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
-              >
+                <div 
+                  key={`${item.itemType}-${item.id}`} 
+                  className="card" 
+                  style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}
+                >
                 <div style={{ background: 'var(--primary)', color: 'white', padding: '10px', borderRadius: '12px', minWidth: '60px', textAlign: 'center' }}>
                   {item.itemType === 'agenda' ? (
                     <p style={{ fontSize: '12px', fontWeight: '800' }}>{item.start_time?.slice(0, 5)}</p>
@@ -586,7 +581,7 @@ const HomeTab = ({
                       : item.itemType === 'social' ? 'Feed Social' : (item.type || 'Mídia Oficial')}
                   </p>
                 </div>
-                <ChevronRight size={18} color="#CBD5E0" />
+                {/* Seta removida */}
               </div>
             ))}
           </div>

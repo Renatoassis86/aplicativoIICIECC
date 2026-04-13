@@ -75,7 +75,7 @@ export const toggleFavoriteSession = async (userCpf, sessionId) => {
         .select('id')
         .eq('user_cpf', userCpf)
         .eq('session_id', sessionId)
-        .single();
+        .maybeSingle();
 
     if (data) {
         // Remover
