@@ -10,9 +10,12 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
 
-  const isYoutube = media.url?.includes('youtube.com') || media.url?.includes('youtu.be');
-  const isVideoFile = media.url?.endsWith('.mp4') || media.url?.endsWith('.webm');
-  const isAudioFile = media.url?.endsWith('.mp3') || media.url?.endsWith('.wav') || media.media_type === 'audio';
+  // Normalizar a URL independente da origem (OfficialMediaTab vs MediaTab)
+  const mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
+  
+  const isYoutube = mediaUrl?.includes('youtube.com') || mediaUrl?.includes('youtu.be');
+  const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video';
+  const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast';
 
   const getYoutubeId = (url) => {
     if (!url) return '';
@@ -21,7 +24,7 @@ const MediaPlayerModal = ({ media, onClose }) => {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  const youtubeId = isYoutube ? getYoutubeId(media.url) : null;
+  const youtubeId = isYoutube ? getYoutubeId(mediaUrl) : null;
 
   useEffect(() => {
     if (isPlaying) {
@@ -39,7 +42,9 @@ const MediaPlayerModal = ({ media, onClose }) => {
     const ref = videoRef.current || audioRef.current;
     if (ref) {
       if (isPlaying) ref.pause();
-      else ref.play();
+      else {
+        ref.play().catch(e => console.error("Playback error:", e));
+      }
       setIsPlaying(!isPlaying);
     }
   };
@@ -92,16 +97,17 @@ const MediaPlayerModal = ({ media, onClose }) => {
               allowFullScreen
             ></iframe>
           </div>
-        ) : isVideoFile ? (
+        ) : isVideoFile && !isAudioFile ? (
           <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
             <video 
               ref={videoRef}
-              src={media.url} 
+              src={mediaUrl} 
               style={{ width: '100%', maxHeight: '70vh' }}
               onLoadedMetadata={() => setDuration(videoRef.current.duration)}
               onPause={() => setIsPlaying(false)}
               onPlay={() => setIsPlaying(true)}
               playsInline
+              autoPlay
             />
           </div>
         ) : (
@@ -114,17 +120,18 @@ const MediaPlayerModal = ({ media, onClose }) => {
             }}>
                <img src="/logo.png" style={{ width: '50%', opacity: 0.2, filter: 'invert(1)' }} alt="" />
                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--gold)', fontWeight: '900', letterSpacing: '2px', fontSize: '12px', marginBottom: '8px' }}>PODCAST</p>
-                  <h2 style={{ color: 'white', fontSize: '24px', fontWeight: '800' }}>CIECC Hub</h2>
+                  <p style={{ color: 'var(--gold)', fontWeight: '900', letterSpacing: '2px', fontSize: '12px', marginBottom: '8px' }}>AUDIO HUB</p>
+                  <h2 style={{ color: 'white', fontSize: '24px', fontWeight: '800' }}>{media.title || 'CIECC Podcast'}</h2>
                </div>
             </div>
 
             <audio 
               ref={audioRef}
-              src={media.url}
+              src={mediaUrl}
               onLoadedMetadata={() => setDuration(audioRef.current.duration)}
               onPause={() => setIsPlaying(false)}
               onPlay={() => setIsPlaying(true)}
+              autoPlay
             />
 
             {/* Audio Controls */}

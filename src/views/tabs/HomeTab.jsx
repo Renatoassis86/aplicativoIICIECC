@@ -58,28 +58,42 @@ const HomeTab = ({
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchSponsors() {
       const { data } = await supabase.from('sponsors').select('*').eq('active', true).order('order_index');
-      if (data) setSponsors(data);
+      if (data && isMounted) setSponsors(data);
     }
     async function fetchWorkshops() {
       const { data } = await supabase.from('agenda_sessions').select('*').eq('category', 'Oficina').limit(10);
-      if (data) setWorkshops(data);
+      if (data && isMounted) setWorkshops(data);
     }
     async function fetchFavorites() {
       if (!userCpf) return;
-      const { data: favIds } = await supabase.from('agenda_favorites').select('session_id').eq('user_cpf', userCpf);
-      if (favIds && favIds.length > 0) {
-        const ids = favIds.map(f => f.session_id);
-        const { data: sessions } = await supabase.from('agenda_sessions').select('*, speakers(*)').in('id', ids);
-        if (sessions) setFavoriteSessions(sessions);
-      } else {
-        setFavoriteSessions([]);
+      try {
+        const { data: favIds, error: favErr } = await supabase.from('agenda_favorites').select('session_id').eq('user_cpf', userCpf);
+        if (favErr) throw favErr;
+        
+        if (favIds && favIds.length > 0) {
+          const ids = favIds.map(f => f.session_id);
+          const { data: sessions, error: sessErr } = await supabase.from('agenda_sessions').select('*, speakers(*)').in('id', ids);
+          if (sessErr) throw sessErr;
+          
+          if (isMounted) setFavoriteSessions(sessions || []);
+        } else {
+          if (isMounted) setFavoriteSessions([]);
+        }
+      } catch (err) {
+        console.error("Error fetching home favorites:", err);
+        if (isMounted) setFavoriteSessions([]);
       }
     }
+
     fetchSponsors();
     fetchWorkshops();
     fetchFavorites();
+
+    return () => { isMounted = false; };
   }, [userCpf]);
 
   const CarouselSection = ({ title, items, renderItem }) => (

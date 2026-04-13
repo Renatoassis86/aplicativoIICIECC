@@ -55,62 +55,72 @@ export const fetchFeedPosts = async (userId) => {
 };
 
 const processPostsResponse = async (rawPosts, userId) => {
-    const { data: allComments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
-    const { data: engagements } = await supabase.from('social_engagements').select('*');
+    try {
+        const { data: allComments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
+        const { data: engagements } = await supabase.from('social_engagements').select('*');
 
-    const hydratedPosts = await Promise.all(rawPosts.map(async post => {
-      const flatComments = (allComments || []).filter(c => c.post_id === post.id);
-      
-      // Build recursive comment tree
-      const buildTree = (parentId = null) => {
-        return flatComments
-          .filter(c => c.parent_id === parentId)
-          .map(c => {
-            const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
-            return {
-              ...c,
-              authorName: c.user_name,
-              text: c.content,
-              isOwner: c.user_id === userId,
-              likes: cLikes.length,
-              likedByMe: cLikes.some(e => e.user_id === userId),
-              replies: buildTree(c.id)
-            };
-          });
-      };
+        const hydratedPosts = await Promise.all(rawPosts.map(async post => {
+          try {
+              const flatComments = (allComments || []).filter(c => c.post_id === post.id);
+              
+              // Build recursive comment tree
+              const buildTree = (parentId = null) => {
+                return flatComments
+                  .filter(c => c.parent_id === parentId)
+                  .map(c => {
+                    const cLikes = (engagements || []).filter(e => e.type === 'like_comment' && e.comment_id === c.id);
+                    return {
+                      ...c,
+                      authorName: c.user_name,
+                      text: c.content,
+                      isOwner: c.user_id === userId,
+                      likes: cLikes.length,
+                      likedByMe: cLikes.some(e => e.user_id === userId),
+                      replies: buildTree(c.id)
+                    };
+                  });
+              };
 
-      const pLikes = (engagements || []).filter(e => e.type === 'post_like' && e.post_id === post.id);
-      const pSaves = (engagements || []).filter(e => e.type === 'post_save' && e.post_id === post.id);
+              const pLikes = (engagements || []).filter(e => e.type === 'post_like' && e.post_id === post.id);
+              const pSaves = (engagements || []).filter(e => e.type === 'post_save' && e.post_id === post.id);
 
-      // Hydrate Tagged Users (busca nomes dos CPFs)
-      let taggedUsersNames = [];
-      if (post.tagged_user_ids && post.tagged_user_ids.length > 0) {
-        const { data: memberData } = await supabase.from('members').select('name').in('cpf', post.tagged_user_ids);
-        taggedUsersNames = (memberData || []).map(m => m.name);
-      }
+              // Hydrate Tagged Users (busca nomes dos CPFs)
+              let taggedUsersNames = [];
+              if (post.tagged_user_ids && Array.isArray(post.tagged_user_ids) && post.tagged_user_ids.length > 0) {
+                const { data: memberData } = await supabase.from('members').select('name').in('cpf', post.tagged_user_ids);
+                taggedUsersNames = (memberData || []).map(m => m.name);
+              }
 
-      return {
-        id: post.id,
-        sponsorName: post.author_name,
-        sponsorRole: post.author_role,
-        tier: getSponsorTierByLevel(post.author_tier),
-        sponsorAvatar: post.author_name.charAt(0).toUpperCase(),
-        mediaType: post.content_type || 'image',
-        mediaUrls: post.media_urls || [],
-        caption: post.caption,
-        isPinned: post.is_pinned || false,
-        isArchived: post.is_archived || false,
-        isSponsor: true, 
-        comments: buildTree(null),
-        likes: pLikes.length,
-        likedByMe: pLikes.some(e => e.user_id === userId),
-        savedByMe: pSaves.some(e => e.user_id === userId),
-        timeAgo: agilizarTempoRelativo(post.created_at),
-        taggedUsers: taggedUsersNames
-      };
-    }));
+              return {
+                id: post.id,
+                sponsorName: post.author_name || 'Usuário',
+                sponsorRole: post.author_role || 'Participante',
+                tier: getSponsorTierByLevel(post.author_tier),
+                sponsorAvatar: (post.author_name || '?').charAt(0).toUpperCase(),
+                mediaType: post.content_type || 'image',
+                mediaUrls: post.media_urls || [],
+                caption: post.caption || '',
+                isPinned: post.is_pinned || false,
+                isArchived: post.is_archived || false,
+                isSponsor: true, 
+                comments: buildTree(null),
+                likes: pLikes.length,
+                likedByMe: pLikes.some(e => e.user_id === userId),
+                savedByMe: pSaves.some(e => e.user_id === userId),
+                timeAgo: agilizarTempoRelativo(post.created_at),
+                taggedUsers: taggedUsersNames
+              };
+          } catch (itemErr) {
+              console.error("[SocialService] Error hydrating post:", post.id, itemErr);
+              return null; // Don't kill the whole feed
+          }
+        }));
 
-    return hydratedPosts;
+        return hydratedPosts.filter(p => p !== null);
+    } catch (err) {
+        console.error("[SocialService] processPostsResponse Critical Error:", err);
+        return [];
+    }
 };
 
 export const togglePinPost = async (postId, currentState) => {

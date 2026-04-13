@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin } from 'lucide-react';
-import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment, togglePinPost } from '../../services/social/socialService';
+import { supabase } from '../../lib/supabase';
+import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment, togglePinPost, toggleArchivePost } from '../../services/social/socialService';
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
 import PostOptionsModal from '../../components/networking/PostOptionsModal';
 import CommentsSheet from '../../components/networking/CommentsSheet';
@@ -13,41 +14,21 @@ import { useContent } from '../../hooks/useContent';
  * Feed Institucional estilo Instagram com Algoritmo de Patrocínios.
  * Suporta Carrossel, Imagem Única e Reels.
  */
-const MovingCarousel = ({ title, items, renderItem }) => {
-  const scrollRef = React.useRef(null);
-  
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el || items.length < 3) return;
-    
-    let scrollAmount = 0;
-    const step = 2; // Aumentado para movimento mais visível
-    const interval = setInterval(() => {
-      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 2) {
-        el.scrollLeft = 0;
-        scrollAmount = 0;
-      } else {
-        el.scrollLeft += step;
-        scrollAmount += step;
-      }
-    }, 40);
-    
-    return () => clearInterval(interval);
-  }, [items]);
 
+const NativeCarousel = ({ title, items, renderItem }) => {
   return (
     <div style={{ marginBottom: '24px' }}>
       <h5 style={{ padding: '0 20px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>{title}</h5>
       <div 
-        ref={scrollRef}
         style={{ 
           display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
-          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
+          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory'
         }}
         className="no-scrollbar"
       >
         {items.map((item, i) => (
-          <div key={i} style={{ flexShrink: 0 }}>
+          <div key={i} style={{ flexShrink: 0, scrollSnapAlign: 'start' }}>
             {renderItem(item)}
           </div>
         ))}
@@ -66,13 +47,6 @@ export default function MediaTab({ userType, userName, userCpf }) {
     if (typeof val === 'object' && val.text) return val.text;
     if (typeof val === 'object' && val.rendered) return val.rendered;
     return fallback;
-  };
-
-  const getYoutubeId = (url) => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   const [posts, setPosts] = useState([]);
@@ -140,7 +114,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
   useEffect(() => {
     loadInitialData();
-  }, []);
+  }, [userCpf]);
 
   const handlePinPost = async (postId, currentPinState) => {
     try {
@@ -192,11 +166,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
-      
-      // Se não houver parentId, adiciona ao topo
       if (!parentId) return { ...p, comments: [...(p.comments || []), newComment], comments_count: (p.comments_count || 0) + 1 };
-      
-      // Se for resposta, adiciona aninhado
       return { ...p, comments: findAndAddRecursive(p.comments), comments_count: (p.comments_count || 0) + 1 };
     }));
   };
@@ -230,16 +200,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
   const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
     .filter(p => !hiddenPosts.includes(p.id))
-    .filter(p => !p.isArchived || viewingSaved); // Archived only shows if saved or in a special view (simplified as hidden here)
+    .filter(p => !p.isArchived || viewingSaved);
 
-  // Renderiza a mídia baseada no tipo (Image, Carousel, Reel)
   const [muted, setMuted] = useState(true);
 
   const renderMedia = (post) => {
     if (post.mediaType === 'reel' || (post.mediaUrls[0]?.endsWith('.mp4'))) {
       return (
         <div 
-          onClick={() => setMuted(!muted)}
+          onClick={() => setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
           style={{ width: '100%', maxHeight: '600px', background: '#000', position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
         >
           <video 
@@ -248,20 +217,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
             autoPlay loop muted={muted} playsInline 
           />
           <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '8px', color: 'white' }}>
-            {muted ? <RefreshCw size={16} /> : <Play size={16} />}
+            <Play size={16} />
           </div>
-          {muted && (
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '50%' }}>
-              <Play size={32} color="white" fill="white" />
-            </div>
-          )}
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '50%' }}>
+            <Play size={32} color="white" fill="white" />
+          </div>
         </div>
       );
     }
     
-    // Se for carousel ou imagem única, usamos object-fit: contain dentro de um fundo preto 
-    // ou mantemos o 4/5 para padronização de feed. O Instagram usa 4/5 (portrait) ou 1:1.
-    // Para aceitar 'qualquer uma', removemos o aspectRatio fixo e usamos minHeight.
     return (
       <div style={{ 
         width: '100%', 
@@ -295,11 +259,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
     );
   };
 
-
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px', background: '#F8F9FA' }}>
       
-      {/* HEADER FIXO INSTAGRAM-STYLE */}
+      {/* HEADER */}
       <section style={{ 
         padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 20px', 
         background: 'var(--primary)', borderBottom: '1px solid rgba(255,255,255,0.1)',
@@ -326,15 +289,14 @@ export default function MediaTab({ userType, userName, userCpf }) {
         </div>
       </section>
 
-      {/* FEED CONTEÚDO */}
+      {/* FEED */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
         
-        {/* MEDIA CENTER - CARROSSEIS EM MOVIMENTO */}
         {!viewingSaved && !loading && (
           <div style={{ background: 'white', padding: '20px 0', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '8px' }}>
             
             {speakers.length > 0 && (
-              <MovingCarousel 
+              <NativeCarousel 
                 title="🗣️ Palestrantes de Peso"
                 items={speakers}
                 renderItem={(s) => (
@@ -349,7 +311,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
             )}
 
             {allSponsors.length > 0 && (
-              <MovingCarousel 
+              <NativeCarousel 
                 title="💎 Patrocinadores Master"
                 items={allSponsors}
                 renderItem={(s) => (
@@ -361,10 +323,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
               />
             )}
 
-            {posts.filter(p => p.mediaUrls && p.mediaUrls.length > 0).length > 0 && (
-              <MovingCarousel 
+            {posts.filter(p => p.mediaUrls?.length > 0).length > 0 && (
+              <NativeCarousel 
                 title="📸 Fotos do Evento"
-                items={posts.filter(p => p.mediaUrls && p.mediaUrls.length > 0).slice(0, 8)}
+                items={posts.filter(p => p.mediaUrls?.length > 0).slice(0, 8)}
                 renderItem={(p) => (
                   <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden' }}>
                     <img src={p.mediaUrls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -373,10 +335,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
               />
             )}
 
-            {mediaAssets.filter(a => a.media_type === 'audio' || a.title.toLowerCase().includes('podcast')).length > 0 && (
-              <MovingCarousel 
+            {mediaAssets.filter(a => a.media_type === 'audio').length > 0 && (
+              <NativeCarousel 
                 title="🎙️ Podcast CIECC"
-                items={mediaAssets.filter(a => a.media_type === 'audio' || a.title.toLowerCase().includes('podcast'))}
+                items={mediaAssets.filter(a => a.media_type === 'audio')}
                 renderItem={(a) => (
                   <div 
                     onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'audio' })}
@@ -390,12 +352,18 @@ export default function MediaTab({ userType, userName, userCpf }) {
             )}
 
             {mediaAssets.filter(a => a.media_type === 'video').length > 0 && (
-              <MovingCarousel 
+              <NativeCarousel 
                 title="🎥 Entrevistas & Bastidores"
                 items={mediaAssets.filter(a => a.media_type === 'video')}
                 renderItem={(a) => {
-                  const yid = getYoutubeId(a.url_or_path);
-                  const thumb = yid ? `https://img.youtube.com/vi/${yid}/mqdefault.jpg` : 'https://via.placeholder.com/200x112';
+                  const getYoutubeIdLocal = (url) => {
+                    if (!url) return null;
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url.match(regExp);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                  };
+                  const yid = getYoutubeIdLocal(a.url_or_path);
+                  const thumb = yid ? `https://img.youtube.com/vi/${yid}/mqdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=168&fit=crop';
                   return (
                     <div 
                       onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'video' })}
@@ -409,23 +377,9 @@ export default function MediaTab({ userType, userName, userCpf }) {
               />
             )}
 
-            {mediaAssets.filter(a => a.title.toLowerCase().includes('antiga') || a.description?.toLowerCase().includes('história')).length > 0 && (
-              <MovingCarousel 
-                title="🏛️ Memórias CIECC (Fotos Antigas)"
-                items={mediaAssets.filter(a => a.title.toLowerCase().includes('antiga') || a.description?.toLowerCase().includes('história'))}
-                renderItem={(a) => (
-                  <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
-                    <img src={a.url_or_path} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'sepia(0.5)' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', padding: '8px' }}>
-                      <p style={{ fontSize: '9px', color: 'white', fontWeight: '700' }}>{a.title}</p>
-                    </div>
-                  </div>
-                )}
-              />
-            )}
-
           </div>
         )}
+
         {loading ? (
           <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
             <RefreshCw size={32} color="var(--primary)" className="spin" style={{ marginBottom: '16px' }} />
@@ -440,8 +394,6 @@ export default function MediaTab({ userType, userName, userCpf }) {
         ) : (
           visiblePosts.map(post => (
             <article key={post.id} className="fade-in" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-              
-              {/* Post Header */}
               <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ 
@@ -459,7 +411,6 @@ export default function MediaTab({ userType, userName, userCpf }) {
                       {post.isSponsor && <ShieldCheck size={14} color="#38A169" />}
                       {post.isPinned && <Pin size={14} color="var(--primary)" fill="var(--primary)" />}
                     </h4>
-                    {/* Badge do Tier Algorítmico */}
                     {post.tier ? (
                        <p style={{ fontSize: '11px', color: post.tier.color, fontWeight: '800', textTransform: 'uppercase' }}>{post.tier.name}</p>
                     ) : (
@@ -472,126 +423,80 @@ export default function MediaTab({ userType, userName, userCpf }) {
                 </button>
               </div>
 
-              {/* Mídia Dinâmica (Reel, Carousel, IMG) */}
               {renderMedia(post)}
 
-              {/* Barra de Ações */}
               <div style={{ padding: '12px 16px 4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <button onClick={() => handleLike(post.id, post.likedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
-                    <Heart size={26} color={post.likedByMe ? "#E53E3E" : "var(--text-main)"} fill={post.likedByMe ? "#E53E3E" : "none"} style={{ transition: 'all 0.2s' }} />
+                    <Heart size={26} color={post.likedByMe ? "#E53E3E" : "var(--text-main)"} fill={post.likedByMe ? "#E53E3E" : "none"} />
                   </button>
                   <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0 }}>
                     <MessageCircle size={26} color="var(--text-main)" />
                   </button>
                 </div>
                 <button onClick={() => handleSave(post.id, post.savedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
-                   <Bookmark size={26} color={post.savedByMe ? "var(--primary)" : "var(--text-main)"} fill={post.savedByMe ? "var(--primary)" : "none"} style={{ transition: 'all 0.2s' }} />
+                   <Bookmark size={26} color={post.savedByMe ? "var(--primary)" : "var(--text-main)"} fill={post.savedByMe ? "var(--primary)" : "none"} />
                 </button>
               </div>
 
-              {/* Curtidas & Legenda */}
               <div style={{ padding: '0 16px 16px 16px' }}>
-                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px' }}>
-                  {post.likes.toLocaleString()} curtidas
-                </p>
+                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px' }}>{post.likes.toLocaleString()} curtidas</p>
                 <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.4', marginBottom: '8px' }}>
                   <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{post.sponsorName}</span>
                   {post.caption}
                 </p>
-                
-                {/* Usuários Marcados */}
-                {post.taggedUsers && post.taggedUsers.length > 0 && (
-                  <p style={{ fontSize: '13px', color: '#0095F6', fontWeight: '700', marginBottom: '8px' }}>
-                    Com: {post.taggedUsers.map(name => `@${name}`).join(', ')}
-                  </p>
+                {post.taggedUsers?.length > 0 && (
+                  <p style={{ fontSize: '13px', color: '#0095F6', fontWeight: '700', marginBottom: '8px' }}>Com: {post.taggedUsers.map(name => `@${name}`).join(', ')}</p>
                 )}
-                
-                {/* Primeiros 3 Comentários */}
-                {post.comments && post.comments.length > 0 && (
+                {post.comments?.length > 0 && (
                   <div style={{ marginBottom: '8px' }}>
                     {post.comments.slice(0, 3).map(c => (
                       <p key={c.id} style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: '700', marginRight: '6px' }}>{c.authorName}</span>
-                        {c.text}
+                        <span style={{ fontWeight: '700', marginRight: '6px' }}>{c.authorName}</span>{c.text}
                       </p>
                     ))}
                   </div>
                 )}
-
-                {(post.comments && post.comments.length > 3) && (
-                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
-                    Ver todos os {post.comments.length} comentários
-                  </button>
-                )}
-                {(!post.comments || post.comments.length <= 3) && post.comments?.length > 0 && (
-                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
-                    Responder...
-                  </button>
-                )}
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: '600' }}>
-                  {post.timeAgo}
-                </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>{post.timeAgo}</p>
               </div>
             </article>
           ))
         )}
       </section>
 
-      {/* MODAL DE CRIAÇÃO (EXCLUSIVO PARA PATROCINADORES) */}
       {(showCreator || editingPost) && (
         <SocialPostCreator 
-          isEdit={!!editingPost}
-          initialPost={editingPost}
-          sponsorName={userName || 'Expositor'} 
-          sponsorRole={authorMeta.role}
-          sponsorTier={authorMeta.tier}
-          userId={userCpf}
-          onClose={() => { setShowCreator(false); setEditingPost(null); }} 
-          onSuccess={() => { setShowCreator(false); setEditingPost(null); loadPosts(); }} 
+          isEdit={!!editingPost} initialPost={editingPost}
+          sponsorName={userName || 'Expositor'} sponsorRole={authorMeta.role} sponsorTier={authorMeta.tier}
+          userId={userCpf} onClose={() => { setShowCreator(false); setEditingPost(null); }} 
+          onSuccess={() => { setShowCreator(false); setEditingPost(null); loadInitialData(); }} 
         />
       )}
 
-      {/* MODALS DA INTEGRAÇÃO INSTAGRAM */}
       {activeOptionsPost && (
         <PostOptionsModal 
-           post={activeOptionsPost} 
-           userType={userType} 
-           userName={userName} 
-           onClose={() => setActiveOptionsPost(null)} 
-           onDelete={handleDeletePost}
-           onHide={handleHidePost}
-           onPin={handlePinPost}
-           onArchive={handleArchivePost}
-           onSave={handleSave}
-           onEdit={handleEditPost}
+           post={activeOptionsPost} userType={userType} userName={userName} 
+           onClose={() => setActiveOptionsPost(null)} onDelete={handleDeletePost}
+           onHide={handleHidePost} onPin={handlePinPost} onArchive={handleArchivePost}
+           onSave={handleSave} onEdit={handleEditPost}
         />
       )}
 
       {activeCommentsPost && (
         <CommentsSheet
-           postId={activeCommentsPost.id}
-           comments={posts.find(p => p.id === activeCommentsPost.id)?.comments || []}
-           userName={userName || 'Participante'}
-           userType={userType || 'congressista'}
-           ownerName={activeCommentsPost.sponsorName || 'Organizador'}
-           onClose={() => setActiveCommentsPost(null)}
-           onAddComment={handleAddComment}
-           onDeleteComment={handleDeleteComment}
-           onLike={handleLikeComment}
+           postId={activeCommentsPost.id} comments={posts.find(p => p.id === activeCommentsPost.id)?.comments || []}
+           userName={userName} userType={userType} ownerName={activeCommentsPost.sponsorName}
+           onClose={() => setActiveCommentsPost(null)} onAddComment={handleAddComment}
+           onDeleteComment={handleDeleteComment} onLike={handleLikeComment}
         />
       )}
 
-      {selectedAsset && (
-        <MediaPlayerModal 
-          media={selectedAsset}
-          onClose={() => setSelectedAsset(null)}
-        />
-      )}
+      {selectedAsset && <MediaPlayerModal media={selectedAsset} onClose={() => setSelectedAsset(null)} />}
 
       <style dangerouslySetInnerHTML={{__html: `
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}} />
     </div>
   );
