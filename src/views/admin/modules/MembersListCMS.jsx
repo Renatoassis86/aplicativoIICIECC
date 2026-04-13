@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Mail, Phone, RefreshCw, Edit2, Trash2, MessageCircle } from 'lucide-react';
-import { fetchAllMembers, fetchAllProfiles } from '../../../services/adminService';
+import { fetchAllMembers, fetchAllProfiles, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 import { supabase } from '../../../lib/supabase';
 
@@ -41,13 +41,11 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
         if (!window.confirm('Excluir este membro PERMANENTEMENTE? Esta ação não pode ser desfeita.')) return;
         try {
             setLoading(true);
-            const { error: pErr } = await supabase.from('profiles').delete().eq('cpf', cpf);
-            const { error: mErr } = await supabase.from('members').delete().eq('cpf', cpf);
-            if (pErr || mErr) throw new Error('Falha ao excluir dos registros.');
-            alert('Membro excluído com sucesso.');
+            await deleteMember(cpf);
+            alert('Membro excluído com sucesso do banco de dados.');
             loadData();
         } catch (e) {
-            alert(e.message);
+            alert('Falha na exclusão: ' + e.message);
         } finally {
             setLoading(false);
         }
