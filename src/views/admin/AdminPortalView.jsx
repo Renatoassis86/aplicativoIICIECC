@@ -49,6 +49,7 @@ import TextContentCMS from './modules/TextContentCMS';
 import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
+import ProfileCMS from './modules/ProfileCMS';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -143,6 +144,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'texts', label: 'Textos & Objetos', icon: <FileText size={20} />, color: '#D4C19C' },
     { id: 'import', label: 'Importar Inscritos', icon: <FileSpreadsheet size={20} />, color: '#D4C19C' },
     { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#D4C19C' },
+    { id: 'profile', label: 'Meu Perfil', icon: <UserCheck size={20} />, color: '#D4C19C' },
   ];
 
   const renderContent = () => {
@@ -156,6 +158,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'texts': return <TextContentCMS />;
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
       case 'members': return <MembersListCMS onEditUser={(u) => { setSelectedUserForEdit(u); setActiveMenu('users'); }} />;
+      case 'profile': return <ProfileCMS userCpf={userCpf} />;
       default: return null;
     }
   };

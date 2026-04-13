@@ -108,7 +108,7 @@ export const fetchAllProfiles = async () => {
  * Cria ou atualiza um usuário administrativo (organizador, staff, patrocinador)
  */
 export const createOrUpdateAdminUser = async (userData) => {
-    const { cpf, name, email, user_type } = userData;
+    const { cpf, name, email, user_type, password } = userData;
     const cleanCpf = stripCPF(cpf);
 
     // 1. Garantir que está na tabela de membros (Inscritos)
@@ -117,25 +117,34 @@ export const createOrUpdateAdminUser = async (userData) => {
         .upsert({ 
             cpf: cleanCpf, 
             name, 
-            email
+            email,
+            initial_password: password || undefined
         }, { onConflict: 'cpf' });
 
     if (memberError) throw memberError;
 
     // 2. Garantir que tem perfil com o tipo correto
+    const profileUpdate = {
+        cpf: cleanCpf,
+        user_type: user_type,
+        onboarding_completed: true, 
+        updated_at: new Date().toISOString()
+    };
+
+    if (password) {
+        profileUpdate.current_password = password;
+        profileUpdate.password_reset = true;
+    }
+
     const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-            cpf: cleanCpf,
-            user_type: user_type,
-            onboarding_completed: true, // Bypass onboarding for admins/sponsors if needed
-            password_reset: false // Will require them to set password on first login
-        }, { onConflict: 'cpf' });
+        .upsert(profileUpdate, { onConflict: 'cpf' });
 
     if (profileError) throw profileError;
 
     return { success: true };
 };
+
 
 /**
  * Exclui um membro e seu perfil

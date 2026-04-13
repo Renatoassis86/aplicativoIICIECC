@@ -12,7 +12,8 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
         name: '',
         cpf: '',
         email: '',
-        user_type: 'staff'
+        user_type: 'staff',
+        password: ''
     });
 
     useEffect(() => {
@@ -57,7 +58,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
         try {
             await createOrUpdateAdminUser(newUser);
             alert(isEditing ? 'Perfil atualizado com sucesso!' : 'Novo usuário configurado!');
-            setNewUser({ name: '', cpf: '', email: '', user_type: 'staff' });
+            setNewUser({ name: '', cpf: '', email: '', user_type: 'staff', password: '' });
             setIsEditing(false);
             onClearSelection();
             loadData();
@@ -153,6 +154,20 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                             </select>
                         </div>
 
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>{isEditing ? 'Nova Senha (deixe em branco para manter)' : 'Senha de Acesso'}</label>
+                            <div style={{ position: 'relative' }}>
+                                <RefreshCw size={16} style={{ position: 'absolute', right: '12px', top: '14px', color: 'rgba(255,255,255,0.2)' }} />
+                                <input 
+                                    type="text" 
+                                    value={newUser.password} 
+                                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                                    style={inputStyle}
+                                    placeholder={isEditing ? "Alterar senha..." : "Senha inicial"}
+                                />
+                            </div>
+                        </div>
+
                         <button 
                             onClick={handleCreateUser}
                             disabled={loading}
@@ -171,7 +186,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                             <button 
                                 onClick={() => {
                                     setIsEditing(false);
-                                    setNewUser({ name: '', cpf: '', email: '', user_type: 'staff' });
+                                    setNewUser({ name: '', cpf: '', email: '', user_type: 'staff', password: '' });
                                     onClearSelection();
                                 }}
                                 style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}

@@ -32,18 +32,16 @@ function App() {
         const isAdminForced = urlParams.get('admin') === 'true';
 
         if (isPathAdmin || isAdminForced) {
-          console.log("[App] Rota Administrativa ativa via URL");
-          setAuthStatus('admin-portal');
+          console.log("[App] Modo administrativo detectado na URL.");
         }
 
         const savedCpf = localStorage.getItem('current_user_cpf');
         if (!savedCpf) {
           console.log("[App] Nenhum CPF salvo. Login necessário.");
-          if (!isPathAdmin && !isAdminForced) {
-            setAuthStatus('logged-out');
-          }
+          setAuthStatus('logged-out');
           return;
         }
+
 
         console.log("[App] CPF salvo encontrado:", savedCpf);
         setCurrentUserCpf(savedCpf);
@@ -379,14 +377,6 @@ class ErrorBoundary extends React.Component {
           }}>
             
             {/* ADMIN FLOWS */}
-            {authStatus === 'admin-portal' && (
-              <AdminPortalView 
-                onLogout={handleLogout}
-                onBackToApp={() => setAuthStatus('logged-out')}
-                userName="Acesso Direto Admin"
-                userCpf="ADMIN-URL"
-              />
-            )}
             
             {(authStatus === 'logged-in' && view === 'admin-portal') && (
               <AdminPortalView 
