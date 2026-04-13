@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Mail, Phone, MapPin, RefreshCw, Edit2, Trash2, MessageCircle, ExternalLink } from 'lucide-react';
+import { Users, Search, Mail, Phone, RefreshCw, Edit2, Trash2, MessageCircle } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 import { supabase } from '../../../lib/supabase';
@@ -25,7 +25,8 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
                 return {
                     ...m,
                     user_type: profile ? profile.user_type : 'congressista',
-                    institution: profile?.institution || m.institution || '---'
+                    avatar_url: profile?.avatar_url,
+                    job_title: profile?.job_title
                 };
             });
             
@@ -129,7 +130,7 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
 
             <div className="card-main" style={{ padding: 0, overflow: 'hidden', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
                 <div style={{ overflowX: 'auto' }} className="no-scrollbar">
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '900px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '940px' }}>
                         <thead>
                             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                                 <th style={thStyle}>Membro</th>
@@ -146,7 +147,7 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
                                 const waLink = cleanPhone ? `https://wa.me/55${cleanPhone}` : null;
                                 
                                 return (
-                                    <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                                    <tr key={m.id || m.cpf} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
                                         <td style={tdStyle}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '16px' }}>
@@ -162,38 +163,53 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
                                         </td>
                                         <td style={tdStyle}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                {m.email && (
-                                                    <a href={`mailto:${m.email}`} style={{ fontSize: '12px', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: '700' }}>
+                                                {m.email ? (
+                                                    <a href={`mailto:${m.email}`} style={{ fontSize: '12px', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: '700' }}>
                                                         <Mail size={12} /> {m.email}
                                                     </a>
+                                                ) : (
+                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', fontWeight: '500' }}>Sem e-mail</span>
                                                 )}
-                                                {m.phone && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <span style={{ fontSize: '12px', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                            <Phone size={12} /> {m.phone}
-                                                        </span>
-                                                        {waLink && (
-                                                            <a href={waLink} target="_blank" rel="noreferrer" style={{ color: '#25D366' }}>
-                                                                <MessageCircle size={16} fill="#25D366" color="white" />
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    {m.phone ? (
+                                                        <>
+                                                            <span style={{ fontSize: '12px', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700' }}>
+                                                                <Phone size={12} /> {m.phone}
+                                                            </span>
+                                                            {waLink && (
+                                                                <a href={waLink} target="_blank" rel="noreferrer" style={{ 
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    width: '24px', height: '24px', background: 'rgba(37, 211, 102, 0.1)', 
+                                                                    borderRadius: '6px', color: '#25D366' 
+                                                                }}>
+                                                                    <MessageCircle size={14} fill="#25D366" color="white" />
+                                                                </a>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', fontWeight: '500' }}>Sem telefone</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                         <td style={tdStyle}>
-                                            <p style={{ fontSize: '13px', color: isLeader ? 'white' : '#94A3B8', fontWeight: isLeader ? '800' : '500' }}>
-                                                {m.institution || '---'}
-                                            </p>
-                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{m.city ? `${m.city}/${m.state}` : ''}</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <p style={{ fontSize: '13px', color: isLeader ? 'var(--gold)' : '#FFFFFF', fontWeight: isLeader ? '900' : '700' }}>
+                                                    {m.institution || '---'}
+                                                </p>
+                                                {m.job_title && (
+                                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{m.job_title}</p>
+                                                )}
+                                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '700' }}>{m.city ? `${m.city}/${m.state}` : ''}</p>
+                                            </div>
                                         </td>
                                         <td style={tdStyle}>
                                             <span style={{ 
                                                 padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: '900', 
-                                                textTransform: 'uppercase', letterSpacing: '0.5px',
-                                                background: isLeader ? 'rgba(255,255,255,0.1)' : 'rgba(212, 193, 156, 0.1)', 
-                                                color: isLeader ? 'white' : 'var(--gold)',
-                                                border: isLeader ? '1px solid rgba(255,255,255,0.2)' : 'none'
+                                                textTransform: 'uppercase', letterSpacing: '0.8px',
+                                                background: isLeader ? 'rgba(212, 193, 156, 0.15)' : 'rgba(255,255,255,0.05)', 
+                                                color: isLeader ? 'var(--gold)' : 'rgba(255,255,255,0.6)',
+                                                border: isLeader ? '1px solid rgba(212, 193, 156, 0.3)' : '1px solid rgba(255,255,255,0.05)'
                                             }}>
                                                 {m.user_type?.replace('_', ' ')}
                                             </span>

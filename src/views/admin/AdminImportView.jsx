@@ -11,7 +11,16 @@ const AdminImportView = ({ onBackToApp }) => {
   const [columns, setColumns] = useState([]);
   
   // Mapeamento: chave interna -> nome da coluna no arquivo
-  const [mapping, setMapping] = useState({ cpf: '', name: '', email: '', birth_date: '', ticket_type: '' });
+  const [mapping, setMapping] = useState({ 
+    cpf: '', 
+    name: '', 
+    email: '', 
+    phone: '', 
+    institution: '', 
+    city: '', 
+    state: '', 
+    ticket_type: '' 
+  });
   
   // Filas validadas
   const [validRows, setValidRows] = useState([]);

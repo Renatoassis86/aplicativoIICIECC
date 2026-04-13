@@ -44,16 +44,18 @@ export const bulkImportMembers = async (membersArray) => {
       created_at: m.created_at || new Date().toISOString()
     }));
 
-    // 1. Upsert na tabela members
+    // 1. Upsert na tabela members - Regra: ignoreDuplicates: true (Não sobrescreve CPFs existentes)
     const { data: members, error: membersErr } = await supabase
       .from('members')
-      .upsert(payload, { onConflict: 'cpf' })
+      .upsert(payload, { 
+        onConflict: 'cpf',
+        ignoreDuplicates: true 
+      })
       .select();
 
     if (membersErr) throw membersErr;
 
-    // 2. Garante perfil com user_type derivado do ticket_type e senha padrão
-    // onboarding_completed = false: força o usuário a responder o questionário
+    // 2. Garante perfil apenas para CPFs que acabaram de ser inseridos (ou tenta upsert com ignore tb)
     const profilesPayload = payload.map(m => ({
       cpf: m.cpf,
       user_type: resolveUserType(m.ticket_type),
@@ -65,7 +67,10 @@ export const bulkImportMembers = async (membersArray) => {
 
     const { error: profilesErr } = await supabase
       .from('profiles')
-      .upsert(profilesPayload, { onConflict: 'cpf' });
+      .upsert(profilesPayload, { 
+        onConflict: 'cpf',
+        ignoreDuplicates: true 
+      });
 
     if (profilesErr) throw profilesErr;
 
@@ -77,12 +82,12 @@ export const bulkImportMembers = async (membersArray) => {
 };
 
 /**
- * Busca todos os membros cadastrados
+ * Busca todos os membros cadastrados com todos os campos necessários
  */
 export const fetchAllMembers = async () => {
     const { data, error } = await supabase
         .from('members')
-        .select('*')
+        .select('cpf, name, email, phone, institution, city, state, birth_date, ticket_type')
         .order('name');
     if (error) throw error;
     return data;
@@ -94,7 +99,7 @@ export const fetchAllMembers = async () => {
 export const fetchAllProfiles = async () => {
     const { data, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('cpf, user_type, avatar_url, job_title, linkedin_url');
     if (error) throw error;
     return data;
 };

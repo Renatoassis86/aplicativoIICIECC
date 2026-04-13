@@ -12,73 +12,67 @@ import { Capacitor } from '@capacitor/core';
 // INBOX IN-APP (SUPABASE PERSISTENCE)
 // ===================================
 
-export const fetchInbox = async (userId, userRole) => {
-  if (!userId) {
-    console.warn("[Notifications] userId ausente. Pulando busca de inbox.");
-    return { unreadCount: 0, items: [] };
-  }
-
+/**
+ * LER MENSAGENS (INBOX)
+ * Busca notificações destinadas ao usuário (por CPF ou por Role global)
+ */
+export const fetchInbox = async (userCpf, userRole = 'congressista') => {
   try {
-    // 1. Constrói o filtro lógico: Tudo de "all" + Role Específica + Menção Pessoal
-    const roles = ['all', userRole || 'congressista'];
-    if (userRole?.includes('patrocinador')) roles.push('sponsors');
-    if (['staff', 'admin', 'organizador', 'master'].includes(userRole)) roles.push('staff');
+    if (!userCpf) {
+      console.warn("[NotificationService] userId ausente. Pulando busca.");
+      return [];
+    }
     
-    // Filtro para papéis
-    const roleFilters = roles.map(r => `target_role.eq.${r}`).join(',');
-    
-    // Filtro para usuário específico (CPF)
-    const userFilter = `target_user_cpf.eq.${userId}`;
-    
-    const audienceFilter = `${roleFilters},${userFilter}`;
+    console.log(`[NotificationService] Fetching inbox for ${userCpf} (Role: ${userRole})`);
 
-    // 2. Busca mensagens destinadas a este público
     const { data: notifications, error } = await supabase
       .from('system_notifications')
       .select('*')
-      .or(audienceFilter)
+      .or(`target_user_cpf.eq.${userCpf},target_role.eq.all,target_role.eq.${userRole}`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    if (!notifications) return { unreadCount: 0, items: [] };
 
-    // 3. Busca o que o usuário já leu
-    const { data: reads, error: readsErr } = await supabase
+    // Busca as notificações já lidas por este usuário
+    const { data: reads, error: readErr } = await supabase
       .from('system_notifications_reads')
       .select('notification_id')
-      .eq('user_id', userId);
+      .eq('user_cpf', userCpf);
 
-    if (readsErr) throw readsErr;
+    if (readErr) throw readErr;
 
-    const readIds = new Set(reads.map(r => r.notification_id));
+    const readIds = new Set((reads || []).map(r => r.notification_id));
 
-    // 4. Mescla estado
-    let unreadCount = 0;
-    const items = notifications.map(n => {
-      const isRead = readIds.has(n.id);
-      if (!isRead) unreadCount++;
-      return { ...n, isRead };
-    });
-
-    return { unreadCount, items };
+    return (notifications || []).map(n => ({
+      ...n,
+      isRead: readIds.has(n.id)
+    }));
   } catch (err) {
-    console.error("Notifications fetch error: ", err);
-    return { unreadCount: 0, items: [] };
+    console.error("[NotificationService] Error fetching inbox:", err);
+    return [];
   }
 };
 
-export const markAsRead = async (notificationId, userId) => {
+/**
+ * MARCAR COMO LIDA
+ */
+export const markAsRead = async (userCpf, notificationId) => {
   try {
+    if (!userCpf || !notificationId) return;
+
     const { error } = await supabase
       .from('system_notifications_reads')
-      .insert({ notification_id: notificationId, user_id: userId });
-      
-    // Se der erro de duplicate key (já leu), apenas ignora.
-    if (error && error.code !== '23505') throw error;
-    return true;
+      .upsert({ 
+        user_cpf: userCpf, 
+        notification_id: notificationId 
+      }, { onConflict: 'user_cpf,notification_id' });
+
+    if (error) {
+      if (error.code === '23505') return; // Duplicate
+      throw error;
+    }
   } catch (err) {
-    console.error("Failed to mark as read: ", err);
-    return false;
+    console.error("[NotificationService] Error marking as read:", err);
   }
 };
 

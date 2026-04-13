@@ -104,6 +104,30 @@ function App() {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
   }
 
+  const checkOnboardingAlreadyDone = async (cpf, typeId) => {
+    try {
+      const { data: responses } = await supabase
+        .from('survey_responses')
+        .select('id')
+        .eq('user_cpf', cpf)
+        .eq('survey_type', typeId)
+        .limit(1);
+
+      if (responses && responses.length > 0) {
+        console.log("[App] Usuário já respondeu o formulário anteriormente. Ignorando onboarding.");
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('cpf', cpf);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.warn("[App] Falha ao checar histórico de formulário:", err);
+      return false;
+    }
+  };
+
   const handleLogin = async (rawCpf, password) => {
     const cpf = rawCpf.trim().toLowerCase();
     setAuthStatus('loading');
@@ -142,7 +166,7 @@ function App() {
         currentProfile = newProfile;
       }
 
-      // 3. Validar Senha
+      // 3. Validar Senha de Primeiro Acesso
       if (currentProfile && !currentProfile.password_reset) {
         const expectedPassword = 'congresso2026';
 
@@ -151,7 +175,7 @@ function App() {
           localStorage.setItem('current_user_cpf', cpf);
           setAuthStatus('reset-password');
         } else {
-          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão.`);
+          alert(`Senha incorreta para o primeiro acesso. Use a senha padrão (congresso2026).`);
           setAuthStatus('logged-out');
         }
         return;
@@ -173,9 +197,17 @@ function App() {
           setView(canBypassOnboarding && isUrlAdmin ? 'admin-portal' : 'app');
           setAuthStatus('logged-in');
         } else if (type) {
-          setSelectedType(type);
-          setView('app');
-          setAuthStatus('questionnaire');
+          // NOVO: Verificar se já respondeu mas o flag está desatualizado
+          const alreadyDone = await checkOnboardingAlreadyDone(cpf, type);
+          if (alreadyDone) {
+            setSelectedType(type);
+            setView('app');
+            setAuthStatus('logged-in');
+          } else {
+            setSelectedType(type);
+            setView('app');
+            setAuthStatus('questionnaire');
+          }
         } else {
           setView('app');
           setAuthStatus('select-type');
@@ -207,20 +239,22 @@ function App() {
       const isStaffOrSponsor = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || type?.includes('patrocinador');
 
       if (isStaffOrSponsor || onboardingDone) {
-        // Já completou tudo → vai direto para a home (ou portal se for admin)
         setSelectedType(type || 'congressista');
         setUserAvatar(updatedProfile?.avatar_url || null);
         const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
-        if (isStaffOrSponsor && isUrlAdmin) {
-          setView('admin-portal');
-        }
+        if (isStaffOrSponsor && isUrlAdmin) setView('admin-portal');
         setAuthStatus('logged-in');
       } else if (type) {
-        // Tem tipo mas ainda não fez o questionário → vai para o questionário
-        setSelectedType(type);
-        setAuthStatus('questionnaire');
+        // NOVO: Verificar se já respondeu o questionário após o reset
+        const alreadyDone = await checkOnboardingAlreadyDone(currentUserCpf, type);
+        if (alreadyDone) {
+          setSelectedType(type);
+          setAuthStatus('logged-in');
+        } else {
+          setSelectedType(type);
+          setAuthStatus('questionnaire');
+        }
       } else {
-        // Não tem tipo → escolha de tipo de inscrição
         setAuthStatus('select-type');
       }
     } catch (_) {
@@ -230,13 +264,21 @@ function App() {
 
   const handleTypeSelect = async (type) => {
     try {
+      const typeId = type.id || type;
       await supabase
         .from('profiles')
-        .update({ user_type: type.id || type })
+        .update({ user_type: typeId })
         .eq('cpf', currentUserCpf);
       
-      setSelectedType(type.id || type);
-      setAuthStatus('questionnaire');
+      setSelectedType(typeId);
+
+      // NOVO: Antes de abrir o questionário, verifica se já respondeu para este tipo
+      const alreadyDone = await checkOnboardingAlreadyDone(currentUserCpf, typeId);
+      if (alreadyDone) {
+        setAuthStatus('logged-in');
+      } else {
+        setAuthStatus('questionnaire');
+      }
     } catch (_) {
       alert('Erro ao salvar tipo de inscrição.');
     }
@@ -244,10 +286,8 @@ function App() {
 
   const handleQuestionnaireComplete = async (answers) => {
     try {
-      // selectedType é string (ex: 'aluno_ficv'), não objeto
       const surveyType = typeof selectedType === 'object' ? selectedType?.id : selectedType;
 
-      // 1. Salvar as respostas (ignora erro de tabela inexistente silenciosamente)
       await supabase
         .from('survey_responses')
         .insert([{
@@ -256,7 +296,6 @@ function App() {
           answers: answers || {}
         }]);
 
-      // 2. Marcar onboarding como concluído
       await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
@@ -265,7 +304,6 @@ function App() {
       setView('app');
       setAuthStatus('logged-in');
     } catch (_) {
-      // Mesmo com erro, leva para home para não prender o usuário
       setView('app');
       setAuthStatus('logged-in');
     }

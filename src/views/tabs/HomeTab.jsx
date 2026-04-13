@@ -34,6 +34,18 @@ const HomeTab = ({
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
   onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, userCpf
 }) => {
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return '';
+    if (url.includes('embed')) return url;
+    
+    // Suporte para youtube.com/watch?v=ID e youtu.be/ID
+    const videoIdMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})(?:&|$|\?)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    return url;
+  };
+
   const displaySafe = (val) => {
     if (!val) return '';
     if (typeof val === 'string') return val;
@@ -53,7 +65,7 @@ const HomeTab = ({
   
   const [sponsors, setSponsors] = React.useState([]);
   const [workshops, setWorkshops] = React.useState([]);
-  const [favoriteSessions, setFavoriteSessions] = React.useState([]);
+  const [favoriteItems, setFavoriteItems] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
@@ -72,29 +84,65 @@ const HomeTab = ({
     async function fetchFavorites() {
       if (!userCpf) return;
       try {
-        const { data: favIds, error: favErr } = await supabase
+        // 1. Agenda Favorites
+        const { data: agendaFavs } = await supabase
           .from('agenda_favorites')
           .select('session_id')
           .eq('user_cpf', userCpf);
         
-        if (favErr) throw favErr;
-        
-        if (favIds && favIds.length > 0) {
-          const ids = favIds.map(f => f.session_id);
-          const { data: sessions, error: sessErr } = await supabase
+        // 2. Social Saves (Garantindo post_save)
+        const { data: socialSaves } = await supabase
+          .from('social_engagements')
+          .select('post_id')
+          .eq('user_id', userCpf)
+          .eq('type', 'post_save');
+
+        // 3. Media Saves (Garantindo save ou favorite)
+        const { data: mediaSaves } = await supabase
+          .from('media_engagements')
+          .select('media_id, media_type')
+          .eq('user_cpf', userCpf)
+          .or('type.eq.save,type.eq.favorite,type.eq.like'); // Incluindo like para garantir que apareça se o usuário curtir
+
+        const unifiedResults = [];
+
+        // Detalhes da Agenda
+        if (agendaFavs && agendaFavs.length > 0) {
+          const ids = agendaFavs.map(f => f.session_id);
+          const { data: sessions } = await supabase
             .from('agenda_sessions')
             .select('*, speakers(*)')
             .in('id', ids);
-          
-          if (sessErr) throw sessErr;
-          
-          if (isMounted) setFavoriteSessions(sessions || []);
-        } else {
-          if (isMounted) setFavoriteSessions([]);
+          if (sessions) sessions.forEach(s => unifiedResults.push({ ...s, itemType: 'agenda' }));
+        }
+
+        // Detalhes do Feed Social
+        if (socialSaves && socialSaves.length > 0) {
+          const ids = socialSaves.map(f => f.post_id);
+          const { data: posts } = await supabase
+            .from('social_posts')
+            .select('*')
+            .in('id', ids);
+          if (posts) posts.forEach(p => unifiedResults.push({ ...p, itemType: 'social', title: p.caption?.substring(0, 30) + '...' }));
+        }
+
+        // Detalhes da Mídia (Fotos/Videos)
+        if (mediaSaves && mediaSaves.length > 0) {
+          const ids = mediaSaves.map(m => m.media_id);
+          const { data: assets } = await supabase
+            .from('media_assets')
+            .select('*')
+            .in('id', ids);
+          if (assets) assets.forEach(a => unifiedResults.push({ ...a, itemType: 'media' }));
+        }
+
+        if (isMounted) {
+          // Ordenar por data (mais recentes primeiro)
+          setFavoriteItems(unifiedResults.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
         }
       } catch (err) {
-        console.error("Error fetching home favorites:", err);
-        if (isMounted) setFavoriteSessions([]);
+        console.error("[HomeTab] Error fetching unified favorites:", err);
+        if (isMounted) setFavoriteItems([]);
       }
     }
 
@@ -102,17 +150,12 @@ const HomeTab = ({
     fetchWorkshops();
     fetchFavorites();
 
-    // REALTIME FAVORITES: Sincroniza Agenda -> Home instantaneamente
+    // REALTIME FAVORITES: Sincroniza tudo instantaneamente
     const favSub = supabase
       .channel('home_favorites_sync')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'agenda_favorites', 
-        filter: `user_cpf=eq.${userCpf}` 
-      }, () => {
-        fetchFavorites();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agenda_favorites', filter: `user_cpf=eq.${userCpf}` }, () => fetchFavorites())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_engagements', filter: `user_id=eq.${userCpf}` }, () => fetchFavorites())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'media_engagements', filter: `user_cpf=eq.${userCpf}` }, () => fetchFavorites())
       .subscribe();
 
     return () => { 
@@ -451,51 +494,63 @@ const HomeTab = ({
          }}
        />
 
-       {/* OFICINAS - CARROSSEL */}
-       {workshops.length > 0 && (
-         <CarouselSection 
-           title="Oficinas & Workshops"
-           items={workshops}
-           renderItem={(w) => (
-             <div style={{ 
-               width: '240px', background: 'white', borderRadius: '20px', overflow: 'hidden',
-               border: '1px solid rgba(0,0,0,0.05)', boxShadow: 'var(--shadow-sm)'
-             }}>
-               <div style={{ height: '80px', background: 'var(--primary)', padding: '16px', color: 'white' }}>
-                 <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--gold)', marginBottom: '4px' }}>{w.time}</p>
-                 <p style={{ fontSize: '13px', fontWeight: '800', lineHeight: '1.2' }}>{w.title}</p>
-               </div>
-               <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                 <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{w.location}</p>
-                 <ArrowRight size={14} color="var(--primary)" />
-               </div>
-             </div>
-           )}
-         />
-       )}
+        {/* OFICINAS - CARROSSEL */}
+        {workshops.length > 0 && (
+          <CarouselSection 
+            title="Oficinas & Workshops"
+            items={workshops}
+            renderItem={(w) => (
+              <div style={{ 
+                width: '240px', background: 'white', borderRadius: '20px', overflow: 'hidden',
+                border: '1px solid rgba(0,0,0,0.05)', boxShadow: 'var(--shadow-sm)'
+              }}>
+                <div style={{ height: '80px', background: 'var(--primary)', padding: '16px', color: 'white' }}>
+                  <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--gold)', marginBottom: '4px' }}>{w.start_time?.slice(0,5)}</p>
+                  <p style={{ fontSize: '13px', fontWeight: '800', lineHeight: '1.2' }}>{w.title}</p>
+                </div>
+                <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{w.location}</p>
+                  <ArrowRight size={14} color="var(--primary)" />
+                </div>
+              </div>
+            )}
+          />
+        )}
 
-      {/* 7. Seção de Favoritos Personalizada */}
+      {/* 7. Seção de Favoritos Personalizada (Unificada) */}
       <section style={{ padding: '24px 20px' }}>
         <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Star size={18} fill="var(--gold)" color="var(--gold)" /> Meus Favoritos
         </h4>
         
-        {favoriteSessions.length > 0 ? (
+        {favoriteItems.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {favoriteSessions.map(session => (
+            {favoriteItems.map(item => (
               <div 
-                key={session.id} 
-                onClick={() => onNavigate('agenda')} 
+                key={`${item.itemType}-${item.id}`} 
+                onClick={() => {
+                  if (item.itemType === 'agenda') onNavigate('agenda');
+                  else if (item.itemType === 'social') onNavigate('feed');
+                  else if (item.itemType === 'media') onOpenMedia(item);
+                }} 
                 className="card" 
                 style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
               >
                 <div style={{ background: 'var(--primary)', color: 'white', padding: '10px', borderRadius: '12px', minWidth: '60px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '12px', fontWeight: '800' }}>{session.start_time.slice(0, 5)}</p>
+                  {item.itemType === 'agenda' ? (
+                    <p style={{ fontSize: '12px', fontWeight: '800' }}>{item.start_time?.slice(0, 5)}</p>
+                  ) : item.itemType === 'social' ? (
+                    <Users size={20} color="var(--gold)" />
+                  ) : (
+                    <PlayCircle size={20} color="var(--gold)" />
+                  )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{session.title}</p>
+                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.title}</p>
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    {Array.isArray(session.speakers) ? (session.speakers[0]?.name || 'A confirmar') : (session.speakers?.name || 'A confirmar')}
+                    {item.itemType === 'agenda' 
+                      ? (Array.isArray(item.speakers) ? (item.speakers[0]?.name || 'A confirmar') : (item.speakers?.name || 'A confirmar'))
+                      : item.itemType === 'social' ? 'Feed Social' : (item.type || 'Mídia Oficial')}
                   </p>
                 </div>
                 <ChevronRight size={18} color="#CBD5E0" />
@@ -515,9 +570,9 @@ const HomeTab = ({
                 <Bookmark size={20} color="var(--text-muted)" />
              </div>
              <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '4px' }}>Nada salvo ainda?</p>
-             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Interaja com a programação e salve seus itens preferidos aqui.</p>
+             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Curta a agenda, salve fotos do feed e vídeos para vê-los aqui.</p>
              <button onClick={() => onNavigate('agenda')} style={{ background: 'var(--accent)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}>
-                EXPLORAR EVENTO
+                EXPLORAR O CONGRESSO
              </button>
           </div>
         )}
