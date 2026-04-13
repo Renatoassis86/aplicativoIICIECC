@@ -293,90 +293,9 @@ export default function MediaTab({ userType, userName, userCpf }) {
       <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
         
         {!viewingSaved && !loading && (
-          <div style={{ background: 'white', padding: '20px 0', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '8px' }}>
-            
-            {speakers.length > 0 && (
-              <NativeCarousel 
-                title="🗣️ Palestrantes de Peso"
-                items={speakers}
-                renderItem={(s) => (
-                  <div style={{ width: '80px', textAlign: 'center' }}>
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid var(--gold)', padding: '2px', margin: '0 auto 8px' }}>
-                      <img src={s.photo_url || 'https://via.placeholder.com/100'} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                    </div>
-                    <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</p>
-                  </div>
-                )}
-              />
-            )}
-
-            {allSponsors.length > 0 && (
-              <NativeCarousel 
-                title="💎 Patrocinadores Master"
-                items={allSponsors}
-                renderItem={(s) => (
-                  <div style={{ width: '100px', height: '60px', background: '#F8F9FA', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px', border: '1px solid rgba(0,0,0,0.03)' }}>
-                    <img src={s.logo_url} alt="" style={{ height: '24px', objectFit: 'contain', marginBottom: '4px' }} />
-                    <p style={{ fontSize: '8px', fontWeight: '800', color: 'var(--gold)', textTransform: 'uppercase' }}>{s.tier || 'Parceiro'}</p>
-                  </div>
-                )}
-              />
-            )}
-
-            {posts.filter(p => p.mediaUrls?.length > 0).length > 0 && (
-              <NativeCarousel 
-                title="📸 Fotos do Evento"
-                items={posts.filter(p => p.mediaUrls?.length > 0).slice(0, 8)}
-                renderItem={(p) => (
-                  <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden' }}>
-                    <img src={p.mediaUrls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                )}
-              />
-            )}
-
-            {mediaAssets.filter(a => a.media_type === 'audio').length > 0 && (
-              <NativeCarousel 
-                title="🎙️ Podcast CIECC"
-                items={mediaAssets.filter(a => a.media_type === 'audio')}
-                renderItem={(a) => (
-                  <div 
-                    onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'audio' })}
-                    style={{ width: '150px', background: 'var(--primary)', color: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                  >
-                    <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '50%' }}><Play size={16} fill="white" /></div>
-                    <p style={{ fontSize: '11px', fontWeight: '700', lineHeight: '1.2' }}>{a.title}</p>
-                  </div>
-                )}
-              />
-            )}
-
-            {mediaAssets.filter(a => a.media_type === 'video').length > 0 && (
-              <NativeCarousel 
-                title="🎥 Entrevistas & Bastidores"
-                items={mediaAssets.filter(a => a.media_type === 'video')}
-                renderItem={(a) => {
-                  const getYoutubeIdLocal = (url) => {
-                    if (!url) return null;
-                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-                    const match = url.match(regExp);
-                    return (match && match[2].length === 11) ? match[2] : null;
-                  };
-                  const yid = getYoutubeIdLocal(a.url_or_path);
-                  const thumb = yid ? `https://img.youtube.com/vi/${yid}/mqdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=168&fit=crop';
-                  return (
-                    <div 
-                      onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'video' })}
-                      style={{ width: '200px', height: '112px', borderRadius: '16px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}
-                    >
-                      <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}><Play size={20} color="white" fill="white" /></div>
-                    </div>
-                  );
-                }}
-              />
-            )}
-
+          <div style={{ padding: '8px 0' }}>
+            {/* Feed Social - Espaço para as Stories ou Destaques do Feed se necessário, 
+                mas mantendo o foco total nas postagens do feed validado */}
           </div>
         )}
 
