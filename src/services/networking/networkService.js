@@ -15,7 +15,6 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
         cpf, 
         name, 
         institution, 
-        position,
         profiles (
           user_type,
           avatar_url,
@@ -31,15 +30,30 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
     let baseResults = (members || []).map(m => {
       const p = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
       
-      const type = p?.user_type === 'organizador' ? 'staff' : (p?.user_type || 'congressista');
+      let type = p?.user_type || 'congressista';
       
+      // Normalização de tipos para os filtros do NetworkTab
+      if (['organizador', 'staff', 'apoio', 'voluntario'].includes(type.toLowerCase())) {
+        type = 'staff';
+      } else if (['expositor', 'patrocinador'].includes(type.toLowerCase())) {
+        type = 'expositor';
+      } else if (['parceiro'].includes(type.toLowerCase())) {
+        type = 'parceiro';
+      } else if (['palestrante'].includes(type.toLowerCase())) {
+        type = 'palestrante';
+      } else if (['professor', 'diretor', 'coordenador', 'gestor'].includes(type.toLowerCase())) {
+        // Podem ser congressistas ou uma categoria nova, mas por enquanto mantemos como congressista
+        // ou permitimos que o filtro de busca os encontre pelo job_title
+        type = 'congressista';
+      }
+
       return {
         id: m.cpf,
         name: m.name || 'Participante',
-        role: m.position || p?.job_title || (type === 'palestrante' ? 'Palestrante' : 'Congressista'),
+        role: p?.job_title || (type === 'palestrante' ? 'Palestrante' : 'Congressista'),
         institution: m.institution || '',
         type: type,
-        verified: type === 'palestrante' || type === 'staff',
+        verified: type === 'staff' || type === 'palestrante',
         avatar: p?.avatar_url
       };
     });

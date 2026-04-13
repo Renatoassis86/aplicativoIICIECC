@@ -20,7 +20,7 @@ import OfficialMediaTab from './tabs/OfficialMediaTab';
 import MediaTab from './tabs/MediaTab'; // Feed Social
 import MoreTab from './tabs/MoreTab';
 import SpeakersTab from './tabs/SpeakersTab';
-import MyTicketModal from '../components/ticket/MyTicketModal';
+// import MyTicketModal from '../components/ticket/MyTicketModal';
 
 // Modais de Informação
 import FAQView from './info/FAQView';
@@ -74,7 +74,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           userAvatar={userAvatar} 
           unreadCount={unreadCount} 
           onOpenNotifications={() => setCurrentPage('notifications')} 
-          onOpenTicket={() => setCurrentPage('ticket')} 
+          onOpenTicket={() => {}} // Inativo
           onOpenScanner={() => setCurrentPage('scanner')} 
           onOpenBroadcast={() => setCurrentPage('broadcast')}
           onNavigate={(tab) => setActiveTab(tab)}
@@ -112,7 +112,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenMap={() => setCurrentPage('map')}
           onOpenGTs={() => setCurrentPage('gts')}
           onOpenProfile={() => setCurrentPage('profile')}
-          onOpenTicket={() => setCurrentPage('ticket')}
+          onOpenTicket={() => {}} // Inativo
           onNavigate={(tab) => { setActiveTab(tab); setCurrentPage(null); }}
           onAvatarUpdate={onAvatarUpdate}
           userType={userType}
@@ -133,7 +133,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
         position: 'fixed', inset: 0, zIndex: 99999, background: '#F7F8FA', 
         overflowY: 'auto', paddingBottom: '20px' 
       }}>
-        {currentPage === 'ticket' && <MyTicketModal userCpf={userCpf} onClose={() => setCurrentPage(null)} />}
+        {/* {currentPage === 'ticket' && <MyTicketModal userCpf={userCpf} onClose={() => setCurrentPage(null)} />} */}
         {currentPage === 'notifications' && (
           <NotificationsSheet 
             userId={userCpf} 

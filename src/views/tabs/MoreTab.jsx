@@ -62,7 +62,7 @@ const MoreTab = ({
       title: 'Configurações do Perfil',
       items: [
         { label: 'Meu Perfil / Dados', icon: <User size={18} color="var(--primary)" />, action: onOpenProfile },
-        { label: 'Meus Tickets', icon: <Ticket size={18} color="#D69E2E" />, action: onOpenTicket },
+        // { label: 'Meus Tickets', icon: <Ticket size={18} color="#D69E2E" />, action: onOpenTicket },
         { label: 'Minha Agenda', icon: <BookOpen size={18} color="#2B6CB0" />, action: () => onNavigate('agenda') },
       ]
     },
