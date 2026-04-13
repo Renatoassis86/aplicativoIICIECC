@@ -47,6 +47,50 @@ export const deleteSessionMaterial = async (id) => {
 };
 
 /**
+ * Busca os IDs das sessões favoritadas pelo usuário
+ */
+export const fetchUserFavorites = async (userCpf) => {
+    if (!userCpf) return [];
+    const { data, error } = await supabase
+        .from('agenda_favorites')
+        .select('session_id')
+        .eq('user_cpf', userCpf);
+    
+    if (error) {
+        console.error('Error fetching favorites:', error);
+        return [];
+    }
+    return data.map(f => f.session_id);
+};
+
+/**
+ * Alterna estado de favorito no banco de dados
+ */
+export const toggleFavoriteSession = async (userCpf, sessionId) => {
+    if (!userCpf || !sessionId) return;
+
+    // 1. Verificar se já existe
+    const { data } = await supabase
+        .from('agenda_favorites')
+        .select('id')
+        .eq('user_cpf', userCpf)
+        .eq('session_id', sessionId)
+        .single();
+
+    if (data) {
+        // Remover
+        await supabase.from('agenda_favorites').delete().eq('id', data.id);
+        return false; // Result is not favorite
+    } else {
+        // Adicionar
+        await supabase.from('agenda_favorites').insert([
+            { user_cpf: userCpf, session_id: sessionId }
+        ]);
+        return true; // Result is favorite
+    }
+};
+
+/**
  * Verifica se a sessão já começou para liberar o material
  * @param {string} date "DD/MM" 
  * @param {string} time "HH:mm"

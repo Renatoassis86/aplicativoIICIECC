@@ -8,22 +8,27 @@ import {
 import SessionDetailModal from '../../components/agenda/SessionDetailModal';
 import { supabase } from '../../lib/supabase';
 import { useContent } from '../../hooks/useContent';
+import { fetchUserFavorites, toggleFavoriteSession } from '../../services/agenda/agendaService';
 
-const AgendaTab = () => {
+const AgendaTab = ({ userCpf }) => {
   const { content: agendaTitle } = useContent('titles', 'page_agenda');
   const [selectedDay, setSelectedDay] = useState('01/05');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('ciecc_favorite_sessions');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+    loadFavorites();
+  }, [userCpf]);
+
+  const loadFavorites = async () => {
+    if (!userCpf) return;
+    const favs = await fetchUserFavorites(userCpf);
+    setFavorites(favs);
+  };
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -56,12 +61,9 @@ const AgendaTab = () => {
     { id: 'Oficinas', label: 'Oficinas' }
   ];
 
-  const toggleFavorite = (id) => {
-    setFavorites(prev => {
-      const updated = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id];
-      localStorage.setItem('ciecc_favorite_sessions', JSON.stringify(updated));
-      return updated;
-    });
+  const toggleFavorite = async (id) => {
+    const isNowFavorite = await toggleFavoriteSession(userCpf, id);
+    setFavorites(prev => isNowFavorite ? [...prev, id] : prev.filter(f => f !== id));
   };
 
   // Filtragem dos eventos

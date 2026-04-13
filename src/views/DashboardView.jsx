@@ -88,7 +88,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           }}
         />
       );
-      case 'agenda': return <AgendaTab />;
+      case 'agenda': return <AgendaTab userCpf={userCpf} />;
       case 'network': return <NetworkTab />;
       case 'media': return (
         <OfficialMediaTab 

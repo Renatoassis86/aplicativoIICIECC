@@ -22,6 +22,7 @@ import {
   ScanLine
 } from 'lucide-react';
 import CountdownTimer from '../../components/home/CountdownTimer';
+import SessionDetailModal from '../../components/agenda/SessionDetailModal';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import SponsorDetailModal from '../../components/networking/SponsorDetailModal';
 import { useCMS } from '../../hooks/useCMS';
@@ -31,7 +32,7 @@ import { supabase } from '../../lib/supabase';
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, userCpf
 }) => {
   const { content: shortcutsData } = useContent('home', 'home_shortcuts');
   const { content: confirmedSpeakersData } = useContent('home', 'home_confirmed_speakers');
@@ -45,6 +46,7 @@ const HomeTab = ({
   
   const [sponsors, setSponsors] = React.useState([]);
   const [workshops, setWorkshops] = React.useState([]);
+  const [favoriteSessions, setFavoriteSessions] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
 
@@ -54,12 +56,24 @@ const HomeTab = ({
       if (data) setSponsors(data);
     }
     async function fetchWorkshops() {
-      const { data } = await supabase.from('agenda').select('*').eq('category', 'Oficina').limit(10);
+      const { data } = await supabase.from('agenda_sessions').select('*').eq('category', 'Oficina').limit(10);
       if (data) setWorkshops(data);
+    }
+    async function fetchFavorites() {
+      if (!userCpf) return;
+      const { data: favIds } = await supabase.from('agenda_favorites').select('session_id').eq('user_cpf', userCpf);
+      if (favIds && favIds.length > 0) {
+        const ids = favIds.map(f => f.session_id);
+        const { data: sessions } = await supabase.from('agenda_sessions').select('*, speakers(*)').in('id', ids);
+        if (sessions) setFavoriteSessions(sessions);
+      } else {
+        setFavoriteSessions([]);
+      }
     }
     fetchSponsors();
     fetchWorkshops();
-  }, []);
+    fetchFavorites();
+  }, [userCpf]);
 
   const CarouselSection = ({ title, items, renderItem }) => (
     <section style={{ padding: '24px 0' }}>
@@ -396,25 +410,48 @@ const HomeTab = ({
       {/* 7. Seção de Favoritos Personalizada */}
       <section style={{ padding: '24px 20px' }}>
         <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Star size={18} fill="var(--gold)" color="var(--gold)" /> Seus Favoritos
+          <Star size={18} fill="var(--gold)" color="var(--gold)" /> Meus Favoritos
         </h4>
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '20px', 
-          padding: '24px', 
-          textAlign: 'center',
-          boxShadow: 'var(--shadow-sm)',
-          border: '1px dashed var(--border)'
-        }}>
-           <div style={{ background: '#F8F9FA', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <Bookmark size={20} color="var(--text-muted)" />
-           </div>
-           <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '4px' }}>Nada salvo ainda?</p>
-           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Salve publicações, palestras e parceiros para vê-los aqui rapidamente.</p>
-           <button style={{ background: 'var(--accent)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}>
-              EXPLORAR EVENTO
-           </button>
-        </div>
+        
+        {favoriteSessions.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {favoriteSessions.map(session => (
+              <div 
+                key={session.id} 
+                onClick={() => onNavigate('agenda')} 
+                className="card" 
+                style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
+              >
+                <div style={{ background: 'var(--primary)', color: 'white', padding: '10px', borderRadius: '12px', minWidth: '60px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '12px', fontWeight: '800' }}>{session.start_time.slice(0, 5)}</p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{session.title}</p>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{session.speakers?.name || 'A confirmar'}</p>
+                </div>
+                <ChevronRight size={18} color="#CBD5E0" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '20px', 
+            padding: '24px', 
+            textAlign: 'center',
+            boxShadow: 'var(--shadow-sm)',
+            border: '1px dashed var(--border)'
+          }}>
+             <div style={{ background: '#F8F9FA', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Bookmark size={20} color="var(--text-muted)" />
+             </div>
+             <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '4px' }}>Nada salvo ainda?</p>
+             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Interaja com a programação e salve seus itens preferidos aqui.</p>
+             <button onClick={() => onNavigate('agenda')} style={{ background: 'var(--accent)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}>
+                EXPLORAR EVENTO
+             </button>
+          </div>
+        )}
       </section>
 
       {/* Rodapé da Home (Placeholder Institucional) */}
