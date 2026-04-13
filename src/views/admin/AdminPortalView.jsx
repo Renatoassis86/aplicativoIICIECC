@@ -48,6 +48,7 @@ import SponsorsCMS from './modules/SponsorsCMS';
 import TextContentCMS from './modules/TextContentCMS';
 import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
+import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -145,131 +146,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   ];
 
   const renderContent = () => {
-    if (activeMenu === 'dashboard') {
-      return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-          <div className="stats-grid">
-             {[
-               { label: 'Congressistas', value: stats.attendees, trend: '+12%', icon: <Users />, color: '#D4C19C' },
-               { label: 'Interações Feed', value: stats.posts * 10, trend: '+45%', icon: <ImageIcon />, color: '#D4C19C' },
-               { label: 'Push Deliverability', value: '98.4%', trend: 'Estável', icon: <Send />, color: '#D4C19C' },
-               { label: 'Active Sessions', value: '84', trend: 'Live', icon: <Activity />, color: '#D4C19C' }
-             ].map((stat, i) => (
-               <div key={i} className="stat-card">
-                 <div style={{ position: 'absolute', top: 0, right: 0, padding: '20px', opacity: 0.1 }}>{stat.icon}</div>
-                 <p className="stat-label">{stat.label}</p>
-                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
-                    <h3 className="stat-value">{stat.value}</h3>
-                    <span className="stat-trend" style={{ color: stat.color, background: `${stat.color}15` }}>{stat.trend}</span>
-                 </div>
-               </div>
-             ))}
-          </div>
-
-          <div className="dashboard-grid">
-             <div className="card-main">
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-                  <h4 style={{ fontWeight: '800', fontSize: '18px' }}>Log de Atividade Recente</h4>
-                  <button className="link-btn">Ver Tudo</button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {[1,2,3].map(i => (
-                    <div key={i} className="log-item">
-                      <div className="log-icon">
-                         <UserPlus size={18} color="#D4C19C" />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#FFFFFF' }}>Novo congressista cadastrado via QR</p>
-                        <p style={{ fontSize: '12px', color: '#94A3B8' }}>Há 4 minutos • VIP Silver</p>
-                      </div>
-                      <ChevronRight size={18} color="#CBD5E1" />
-                    </div>
-                  ))}
-                </div>
-             </div>
-             
-             <div className="card-alert">
-                 <div style={{ position: 'relative', zIndex: 10 }}>
-                   <h4 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px' }}>Broadcast de Emergência</h4>
-                   <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '24px' }}>Envie um comunicado oficial segmentado agora.</p>
-                   
-                   <div style={{ marginBottom: '16px' }}>
-                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Título do Alerta</label>
-                     <input 
-                       placeholder="Ex: Mudança de Sala..."
-                       value={broadcastTitle}
-                       onChange={(e) => setBroadcastTitle(e.target.value)}
-                       style={{ width: '100%', background: '#fff', border: 'none', borderRadius: '10px', padding: '12px 16px', color: '#000', fontWeight: '700', fontSize: '14px' }}
-                     />
-                   </div>
-
-                   <div style={{ marginBottom: '16px' }}>
-                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Público Alvo</label>
-                     <div style={{ display: 'flex', gap: '8px' }}>
-                       {[
-                         { id: 'all', label: 'Todos' },
-                         { id: 'staff', label: 'Equipe/Staff' },
-                         { id: 'sponsors', label: 'Patrocinadores' }
-                       ].map(opt => (
-                         <button 
-                           key={opt.id}
-                           onClick={() => setBroadcastAudience(opt.id)}
-                           style={{ 
-                             flex: 1, padding: '10px 4px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', border: '1px solid rgba(255,255,255,0.2)',
-                             background: broadcastAudience === opt.id ? 'var(--brand)' : 'rgba(0,0,0,0.2)',
-                             color: '#fff'
-                           }}
-                         >
-                           {opt.label}
-                         </button>
-                       ))}
-                     </div>
-                   </div>
-
-                   <div style={{ marginBottom: '24px' }}>
-                     <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', display: 'block' }}>Conteúdo da Mensagem</label>
-                     <textarea 
-                       placeholder="Digite o alerta aqui..."
-                       value={emergencyText}
-                       onChange={(e) => setEmergencyText(e.target.value)}
-                       className="alert-textarea"
-                       rows={3}
-                       style={{ marginBottom: 0 }}
-                     />
-                   </div>
-
-                   <button 
-                     onClick={async () => {
-                       if(!emergencyText || !broadcastTitle) {
-                         alert('Por favor, preencha o título e o conteúdo.');
-                         return;
-                       }
-                       const { error } = await supabase.from('system_notifications').insert({
-                         title: broadcastTitle,
-                         message: emergencyText,
-                         type: 'alert',
-                         target_role: broadcastAudience
-                       });
-                       if (error) alert('Erro ao disparar: ' + error.message);
-                       else {
-                         alert('Alerta disparado com sucesso!');
-                         setEmergencyText('');
-                         setBroadcastTitle('');
-                         loadData();
-                       }
-                     }}
-                     className="alert-btn">
-                     <Send size={18} /> DISPARAR ALERTA
-                   </button>
-                 </div>
-                 <Activity style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', opacity: 0.05 }} />
-              </div>
-          </div>
-        </div>
-      );
-    }
-
     switch(activeMenu) {
+      case 'dashboard': return <StrategicDashboardCMS />;
       case 'home': return <HomeCMS />;
       case 'media': return <MediaCMS />;
       case 'schedule': return <ScheduleCMS />;
