@@ -77,7 +77,7 @@ const MediaCMS = () => {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
       {/* FORMULÁRIO */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div className="white-bg" style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+        <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)' }}>
           <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Adicionar Novo Conteúdo</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -97,7 +97,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#94A3B8' }}>Título</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>Título</label>
               <input 
                 type="text" 
                 value={newMedia.title} 
@@ -108,7 +108,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#94A3B8' }}>Descrição (Opcional)</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>Descrição (Opcional)</label>
               <textarea 
                 value={newMedia.description} 
                 onChange={(e) => setNewMedia(prev => ({ ...prev, description: e.target.value }))}
@@ -117,7 +117,7 @@ const MediaCMS = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8' }}>Origem do Arquivo</label>
                <div style={{ display: 'flex', gap: '12px' }}>
                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
@@ -137,7 +137,7 @@ const MediaCMS = () => {
                   style={inputStyle}
                  />
                ) : (
-                 <div style={{ border: '2px dashed #CBD5E1', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
+                 <div style={{ border: '2px dashed var(--border-color)', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
                    <input 
                     type="file" 
                     onChange={(e) => setUploadFile(e.target.files[0])}
@@ -146,20 +146,20 @@ const MediaCMS = () => {
                    />
                    <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                      <Upload size={24} color="#64748B" />
-                     <span style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>{uploadFile ? uploadFile.name : 'Clique para selecionar arquivo'}</span>
+                     <span style={{ fontSize: '13px', fontWeight: '700', color: '#CBD5E1' }}>{uploadFile ? uploadFile.name : 'Clique para selecionar arquivo'}</span>
                    </label>
                  </div>
                )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: newMedia.isLive ? '#FEF2F2' : 'transparent', border: '1px solid ' + (newMedia.isLive ? '#FCA5A5' : '#E2E8F0') }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: newMedia.isLive ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (newMedia.isLive ? '#EF4444' : 'var(--border-color)') }}>
                <input 
                 type="checkbox" 
                 checked={newMedia.isLive} 
                 onChange={(e) => setNewMedia(prev => ({ ...prev, isLive: e.target.checked }))}
                 id="is-live"
                />
-               <label htmlFor="is-live" style={{ fontSize: '13px', fontWeight: '700', color: newMedia.isLive ? '#F87171' : '#94A3B8', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+               <label htmlFor="is-live" style={{ fontSize: '13px', fontWeight: '700', color: newMedia.isLive ? '#F87171' : '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                  <Radio size={16} /> Marcar como Transmissão Ao Vivo (Link Principal)
                </label>
             </div>
@@ -177,24 +177,24 @@ const MediaCMS = () => {
       </div>
 
       {/* LISTAGEM */}
-      <div className="white-bg" style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', maxHeight: '800px', overflowY: 'auto' }}>
+      <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', maxHeight: '800px', overflowY: 'auto' }}>
         <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Mídias Cadastradas</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {mediaList.map(item => {
             const isLive = item.is_live_stream;
             return (
-              <div key={item.id} className="white-bg" style={{ 
+              <div key={item.id} style={{ 
                 display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', 
-                border: '1px solid #F1F5F9', background: isLive ? '#FEF2F2' : 'white',
+                border: '1px solid var(--border-color)', background: isLive ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.03)',
                 boxShadow: isLive ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none'
               }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
                   {item.media_type === 'video' ? <Video size={20} /> : <Music size={20} />}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#1E293B' }}>{item.title}</p>
+                    <p style={{ fontWeight: '800', fontSize: '14px', color: '#F1F5F9' }}>{item.title}</p>
                     {isLive && <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900' }}>LIVE</span>}
                   </div>
                   
@@ -223,7 +223,7 @@ const MediaCMS = () => {
                       <Save size={16} color="#B91C1C" style={{ opacity: 0.5 }} />
                     </div>
                   ) : (
-                    <p style={{ fontSize: '12px', color: '#475569', wordBreak: 'break-all' }}>
+                    <p style={{ fontSize: '12px', color: '#94A3B8', wordBreak: 'break-all' }}>
                       {item.source_type === 'link' ? <LinkIcon size={10} style={{marginRight: 4}}/> : <Upload size={10} style={{marginRight: 4}}/>}
                       {item.url_or_path}
                     </p>
@@ -260,8 +260,8 @@ const ModeButton = ({ active, onClick, icon, label }) => (
 );
 
 const inputStyle = {
-  padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0',
-  fontSize: '14px', outline: 'none', color: '#1E293B', background: 'white'
+  padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)',
+  fontSize: '14px', outline: 'none', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)'
 };
 
 export default MediaCMS;

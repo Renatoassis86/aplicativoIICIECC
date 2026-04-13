@@ -55,20 +55,21 @@ export default function TextContentCMS() {
   return (
     <div style={{ maxWidth: '1000px' }}>
       <header style={{ marginBottom: '32px' }}>
-        <p style={{ color: '#94A3B8', marginBottom: '20px', fontWeight: '600' }}>
+        <p style={{ color: '#CBD5E1', marginBottom: '20px', fontWeight: '600' }}>
           Gerencie aqui todos os textos, títulos e descrições do aplicativo. 
           Use o formato JSON para objetos complexos.
         </p>
         
         <div style={{ position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} />
+          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', opacity: 0.6 }} />
           <input 
             placeholder="Buscar por chave ou seção..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ 
               width: '100%', padding: '16px 16px 16px 48px', borderRadius: '16px', 
-              border: '1px solid #E2E8F0', fontSize: '15px', color: '#1E293B', background: 'white'
+              border: '1px solid var(--border-color)', fontSize: '15px', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)',
+              outline: 'none'
             }}
           />
         </div>
@@ -78,14 +79,14 @@ export default function TextContentCMS() {
         {filteredItems.map(item => (
           <div key={item.id} style={{ 
             background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', 
-            border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--primary)', background: '#FDF2F2', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' }}>
                   {item.section}
                 </span>
-                <code style={{ fontSize: '13px', color: '#64748B', fontWeight: 'bold' }}>{item.key}</code>
+                <code style={{ fontSize: '13px', color: '#CBD5E1', fontWeight: 'bold' }}>{item.key}</code>
               </div>
               <p style={{ fontSize: '11px', color: '#94A3B8' }}>
                 Atualizado: {new Date(item.updated_at).toLocaleDateString()}
@@ -98,7 +99,8 @@ export default function TextContentCMS() {
               style={{ 
                 width: '100%', minHeight: '100px', padding: '16px', borderRadius: '12px', 
                 border: '1px solid var(--border-color)', fontSize: '14px', fontFamily: 'monospace',
-                background: 'rgba(255,255,255,0.05)', color: '#FFFFFF', resize: 'vertical'
+                background: 'rgba(255,255,255,0.02)', color: '#FFFFFF', resize: 'vertical',
+                outline: 'none'
               }}
             />
             

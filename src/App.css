@@ -37,16 +37,16 @@
 /* Mobile Wrapper (Phone Simulation on Small Screen or explicit) */
 @media (max-width: 1024px) {
   .mobile-wrapper {
-    width: 100%;
-    margin: 0 auto;
-    background: white;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-    overscroll-behavior-x: none;
-    display: flex;
-    flex-direction: column;
-  }
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: 100vh;
+  margin: 0 auto;
+  background-color: var(--bg-app);
+  position: relative;
+  overflow-x: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
 }
 
 @media (max-width: 430px) {

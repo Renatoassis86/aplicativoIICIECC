@@ -226,8 +226,8 @@ const ScheduleCMS = () => {
                             <input name="name" placeholder="Nome Completo" defaultValue={editingSpeaker.name} required style={inputStyle} />
                             <input name="institution" placeholder="Instituição / Título" defaultValue={editingSpeaker.institution} style={inputStyle} />
                             
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Foto do Palestrante</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
+                                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#CBD5E1' }}>Foto do Palestrante</label>
                                 <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                                         <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
@@ -239,7 +239,7 @@ const ScheduleCMS = () => {
                                 {photoSource === 'link' ? (
                                     <input name="photo_url" placeholder="URL da Foto (https://...)" defaultValue={editingSpeaker.photo_url} style={inputStyle} />
                                 ) : (
-                                    <div style={{ border: '2px dashed #CBD5E1', padding: '16px', borderRadius: '12px', textAlign: 'center', background: 'white' }}>
+                                    <div style={{ border: '2px dashed var(--border-color)', padding: '16px', borderRadius: '12px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
                                         <input type="file" id="speaker-photo" accept="image/*" onChange={(e) => setUploadFile(e.target.files[0])} style={{ display: 'none' }} />
                                         <label htmlFor="speaker-photo" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                                             <Plus size={20} color="#64748B" />

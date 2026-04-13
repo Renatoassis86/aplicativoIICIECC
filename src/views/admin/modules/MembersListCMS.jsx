@@ -138,12 +138,12 @@ const MembersListCMS = () => {
                                     </td>
                                     <td style={tdStyle}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={12} /> {m.email || '---'}</p>
-                                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={12} /> {m.phone || '---'}</p>
+                                            <p style={{ fontSize: '12px', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={12} /> {m.email || '---'}</p>
+                                            <p style={{ fontSize: '12px', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={12} /> {m.phone || '---'}</p>
                                         </div>
                                     </td>
                                     <td style={tdStyle}>
-                                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <p style={{ fontSize: '12px', color: '#CBD5E1', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <MapPin size={12} /> {m.city ? `${m.city}/${m.state}` : '---'}
                                         </p>
                                     </td>

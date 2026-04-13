@@ -151,7 +151,7 @@ export default function SponsorsCMS() {
             />
           </div>
           <div>
-            <label style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Estande (Local)</label>
+            <label style={{ fontSize: '11px', fontWeight: '800', color: '#CBD5E1', marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Estande (Local)</label>
             <input 
               placeholder="Ex: Pavilhão Sul"
               value={newSponsor.booth}
@@ -161,8 +161,8 @@ export default function SponsorsCMS() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
-            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8' }}>Logo e Website</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#CBD5E1' }}>Logo e Website</label>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                     <input type="radio" checked={photoSource === 'link'} onChange={() => setPhotoSource('link')} /> Link Externo
@@ -276,48 +276,48 @@ export default function SponsorsCMS() {
                     <input 
                       value={sponsor.name}
                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, name: e.target.value } : s))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: '#fff', color: '#000', fontWeight: '700' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '700' }}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Valor da Cota</label>
+                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#CBD5E1', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Valor da Cota</label>
                     <select 
                       value={sponsor.tier}
                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, tier: e.target.value } : s))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: '#fff', color: '#000', fontWeight: '700' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '700' }}
                     >
-                      <option value="diamond">Master & Diamante</option>
-                      <option value="gold">Cota Ouro</option>
-                      <option value="silver">Cota Prata</option>
-                      <option value="bronze">Cota Bronze</option>
+                      <option value="diamond" style={{ background: '#1e293b' }}>Master & Diamante</option>
+                      <option value="gold" style={{ background: '#1e293b' }}>Cota Ouro</option>
+                      <option value="silver" style={{ background: '#1e293b' }}>Cota Prata</option>
+                      <option value="bronze" style={{ background: '#1e293b' }}>Cota Bronze</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Ordem de Exibição</label>
+                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#CBD5E1', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Ordem de Exibição</label>
                     <input 
                       type="number"
                       value={sponsor.order_index}
                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, order_index: parseInt(e.target.value) } : s))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: '#fff', color: '#000', fontWeight: '700' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: '700' }}
                     />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>URL do Logo</label>
+                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#CBD5E1', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>URL do Logo</label>
                     <input 
                       value={sponsor.logo_url || ''}
                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, logo_url: e.target.value } : s))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: '#fff', color: '#000' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Link do Site</label>
+                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#CBD5E1', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Link do Site</label>
                     <input 
                       value={sponsor.website_url || ''}
                       onChange={e => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, website_url: e.target.value } : s))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: '#fff', color: '#000' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.05)', color: '#fff' }}
                     />
                   </div>
                 </div>
