@@ -150,7 +150,7 @@ const StrategicDashboardCMS = () => {
             )}
 
             {/* KPI ROW */}
-            <div className="dash-metrics-grid">
+            <div className="stats-grid">
                 <MetricCard 
                     title="Amostra Analisada" 
                     value={processedStats.activeCount} 
@@ -183,10 +183,10 @@ const StrategicDashboardCMS = () => {
             </div>
 
             {/* CHARTS GRID */}
-            <div className="dash-charts-row">
+            <div className="dashboard-grid">
                 {/* Radar: Parecer de Mercado */}
-                <div className="dash-chart-card" style={{ flex: 1 }}>
-                    <h4 className="chart-title">Análise Multidimensional (Radar)</h4>
+                <div className="dash-chart-card">
+                    <h4 className="chart-title">Análise Multidimensional</h4>
                     <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>Visão holística do parecer de mercado aglutinado</p>
                     <div style={{ height: '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -202,7 +202,7 @@ const StrategicDashboardCMS = () => {
                 </div>
 
                 {/* Composição */}
-                <div className="dash-chart-card" style={{ flex: 1 }}>
+                <div className="dash-chart-card">
                     <h4 className="chart-title">Composição do Cluster</h4>
                     <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>Mix de perfis no agrupamento atual</p>
                     <div style={{ height: '300px' }}>
@@ -228,7 +228,7 @@ const StrategicDashboardCMS = () => {
             </div>
 
             {/* TIMELINE SECTION */}
-            <div className="dash-chart-card" style={{ marginBottom: '32px' }}>
+            <div className="dash-chart-card" style={{ marginBottom: '32px', marginTop: '24px' }}>
                 <h4 className="chart-title">Intensidade de Onboarding de Mercado</h4>
                 <div style={{ height: '250px', marginTop: '24px' }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -263,12 +263,7 @@ const StrategicDashboardCMS = () => {
             </div>
 
             <style>{`
-                .dash-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px; }
-                .dash-metric-card { background: rgba(255,255,255,0.02); padding: 24px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; transition: all 0.3s; }
-                .dash-metric-card:hover { border-color: var(--brand); background: rgba(255,255,255,0.04); transform: translateY(-3px); }
-                
-                .chart-title { fontSize: 13px; fontWeight: 900; color: white; textTransform: uppercase; letterSpacing: 1px; marginBottom: 4px; }
-                .dash-charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px; }
+                .chart-title { fontSize: 13px; fontWeight: 900; color: white; textTransform: uppercase; letter-spacing: 1px; marginBottom: 4px; }
                 .dash-chart-card { background: rgba(0,0,0,0.25); padding: 24px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.06); }
                 
                 .dash-action-btn { padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: white; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }

@@ -90,7 +90,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
     );
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
+        <div className="responsive-grid">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ 
                     background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', 

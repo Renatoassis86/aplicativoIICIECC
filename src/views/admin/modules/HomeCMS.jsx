@@ -61,7 +61,7 @@ const HomeCMS = () => {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
           <InputGroup 
             label="Badge Superior" 
             value={content.home_badge_text} 

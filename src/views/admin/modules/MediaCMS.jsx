@@ -9,6 +9,7 @@ import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
 
 const MediaCMS = () => {
+    const fileRef = React.useRef(null);
     const [mediaItems, setMediaItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -63,7 +64,8 @@ const MediaCMS = () => {
 
             if (uploadError) throw uploadError;
             
-            return filePath;
+            const { data: { publicUrl } } = supabase.storage.from('app_media').getPublicUrl(filePath);
+            return publicUrl;
         } catch (error) {
             alert('Erro no upload: ' + error.message);
             return null;
@@ -82,9 +84,9 @@ const MediaCMS = () => {
             let finalUrl = data.url;
 
             // Se for upload de arquivo
-            if (sourceType === 'file' && e.target.file_upload.files[0]) {
-                const uploadedPath = await handleFileUpload(e.target.file_upload.files[0]);
-                if (uploadedPath) finalUrl = uploadedPath;
+            if (sourceType === 'file' && fileRef.current?.files[0]) {
+                const uploadedUrl = await handleFileUpload(fileRef.current.files[0]);
+                if (uploadedUrl) finalUrl = uploadedUrl;
                 else { setLoading(false); return; }
             }
 
@@ -108,6 +110,7 @@ const MediaCMS = () => {
                 loadMedia();
                 triggerSuccess(editingItem?.id ? 'Conteúdo atualizado!' : 'Novo conteúdo adicionado!');
                 e.target.reset();
+                if (fileRef.current) fileRef.current.value = '';
             } else {
                 throw error;
             }
@@ -157,7 +160,7 @@ const MediaCMS = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px', alignItems: 'start' }}>
+            <div className="responsive-grid">
                 
                 {/* COLUNA ESQUERDA: FORMULÁRIO */}
                 <div style={{ 
@@ -220,9 +223,16 @@ const MediaCMS = () => {
                                 </div>
                             ) : (
                                 <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
-                                   <input type="file" name="file_upload" id="file_upload" style={{ display: 'none' }} onChange={(e) => {
-                                       if(e.target.files[0]) triggerSuccess(`Arquivo selecionado: ${e.target.files[0].name}`);
-                                   }} />
+                                   <input 
+                                     type="file" 
+                                     ref={fileRef}
+                                     name="file_upload" 
+                                     id="file_upload" 
+                                     style={{ display: 'none' }} 
+                                     onChange={(e) => {
+                                        if(e.target.files[0]) triggerSuccess(`Arquivo selecionado: ${e.target.files[0].name}`);
+                                     }} 
+                                   />
                                    <label htmlFor="file_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                                       <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
                                          <Upload size={20} />

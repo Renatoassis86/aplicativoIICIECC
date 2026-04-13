@@ -294,14 +294,13 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
       <style dangerouslySetInnerHTML={{__html: `
         :root {
-          --sidebar-width: 280px;
+          --sidebar-width: 260px;
           --primary: #6B141A; /* Burgundy */
           --primary-glow: rgba(107, 20, 26, 0.4);
           --secondary: #1e293b; 
           --bg-dark: #0A0A0A; 
           --card-bg: rgba(25, 25, 25, 0.7); 
           --border-color: rgba(255, 255, 255, 0.08); 
-          --text-main: #f8fafc; 
           --text-main: #FFFFFF; 
           --text-muted: #CBD5E1; 
           --brand: #D4C19C; 
@@ -317,7 +316,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
         .admin-container {
           display: flex;
-          height: 100vh;
+          min-height: 100vh;
           background: var(--bg-dark);
           color: #E2E8F0;
           font-family: 'Inter', system-ui, sans-serif;
@@ -326,6 +325,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
         .admin-sidebar {
           width: var(--sidebar-width);
+          min-width: var(--sidebar-width);
           background: linear-gradient(180deg, #4A101D 0%, #6B141A 100%);
           display: flex;
           flex-direction: column;
@@ -338,36 +338,55 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           flex: 1;
           display: flex;
           flex-direction: column;
+          overflow-x: hidden;
           overflow-y: auto;
           position: relative;
           background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 600px);
         }
 
         .content-container {
-          padding: 40px;
-          max-width: 1400px;
+          padding: 32px;
           width: 100%;
+          max-width: 1600px;
           margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 1400px) {
+           .content-container { padding: 24px; }
         }
 
         @media (max-width: 1024px) {
           .content-container {
-            padding: 20px 16px;
+            padding: 16px;
           }
         }
 
-        /* Stats Grid */
+        /* Classes para Grids Responsivos em Módulos */
+        .responsive-grid {
+          display: grid;
+          grid-template-columns: 1fr 2fr;
+          gap: 24px;
+        }
+
+        @media (max-width: 1300px) {
+          .responsive-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        /* Estilos de Componentes */
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 24px;
-          margin-bottom: 40px;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 20px;
+          margin-bottom: 32px;
         }
 
         .stat-card {
           background: var(--card-bg);
           padding: 24px;
-          border-radius: 24px;
+          border-radius: 20px;
           border: 1px solid var(--border-color);
           position: relative;
           overflow: hidden;
@@ -375,15 +394,17 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
         .stat-card:hover { transform: translateY(-4px); border-color: var(--brand); }
 
-        .stat-label { fontSize: 13px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-        .stat-value { fontSize: 32px; fontWeight: 900; color: white; letter-spacing: -1px; }
-        .stat-trend { fontSize: 11px; fontWeight: 800; padding: 4px 8px; borderRadius: 6px; }
+        .stat-label { fontSize: 13px; color: rgba(255,255,255,0.8) !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .stat-value { fontSize: 32px !important; fontWeight: 900 !important; color: white !important; letter-spacing: -1px; }
 
-        /* Dashboard Grid */
         .dashboard-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
           gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+          .dashboard-grid { grid-template-columns: 1fr; }
         }
 
         .card-main { 
@@ -393,21 +414,6 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           border: 1px solid var(--border-color);
           backdrop-filter: blur(10px);
         }
-        .card-alert { 
-          background: linear-gradient(180deg, #4A101D 0%, #6B141A 100%); 
-          border-radius: 24px; padding: 32px; color: white; position: relative; overflow: hidden; 
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        }
-
-        .link-btn { color: var(--brand); border: none; background: none; font-size: 13px; fontWeight: 700; cursor: pointer; }
-
-        .log-item { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .log-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justifyContent: center; }
-
-        .alert-textarea { width: 100%; background: #FFFFFF; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; color: #000000; margin-bottom: 16px; resize: none; outline: none; transition: border-color 0.3s; font-weight: 600; }
-        .alert-btn { width: 100%; background: var(--brand); color: #FFF; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s; }
-        .alert-btn:hover { transform: scale(1.02); }
 
         .menu-item {
           width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.5); font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 4px; font-size: 14px; text-align: left;
@@ -420,17 +426,13 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .footer-btn.logout { background: transparent; color: #F87171; border: none; }
 
         .search-bar { background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 12px; display: flex; alignItems: center; gap: 12px; border: 1px solid var(--border-color); }
-        .search-bar input { border: none; outline: none; background: transparent; font-size: 14px; width: 180px; color: white; }
+        .search-bar input { border: none; outline: none; background: transparent; font-size: 14px; width: 150px; color: white; }
 
-        .sync-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: white; padding: 10px 20px; borderRadius: 10px; fontWeight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .sync-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--brand); }
+        .topbar {
+            flex-shrink: 0;
+        }
 
-        .view-title { font-size: 28px; font-weight: 900; color: white; letter-spacing: -1px; }
-        .status-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-        .online-indicator { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; box-shadow: 0 0 10px #22C55E; }
-        .status-text { color: rgba(255,255,255,0.8); font-size: 13px; }
-
-        .mobile-only { display: none; }
+        .mobile-menu-toggle { display: none; }
 
         @media (max-width: 1024px) {
           .admin-sidebar {
@@ -439,17 +441,30 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
             top: 0;
             height: 100%;
             transform: translateX(-100%);
-            background: #0A0F1A;
+            background: #4A101D;
+            min-width: 280px;
           }
           .admin-sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
-          .mobile-only { display: flex; }
+          .mobile-menu-toggle { display: block !important; }
           .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 90; backdrop-filter: blur(4px); }
-          .dashboard-grid { grid-template-columns: 1fr; }
-          .main-header { padding: 20px; }
-          .content-container { padding: 20px; }
-          .header-actions { display: none; }
-          .sidebar-logo-text { flex: 1; }
         }
+
+        /* Estilização Geral para consistência */
+        .btn-primary {
+            background: var(--brand);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
 
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
