@@ -254,7 +254,7 @@ export default function SponsorsCMS() {
                             <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '900', textTransform: 'uppercase', background: 'rgba(212,193,156,0.1)', padding: '2px 8px', borderRadius: '4px' }}>{sponsor.tier}</span>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '12px' }}>
                         <button 
                             onClick={() => {
                                 setIsEditing(true);
@@ -262,11 +262,26 @@ export default function SponsorsCMS() {
                                 setNewSponsor({...sponsor});
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }} 
-                            style={{ padding: '8px', color: 'var(--brand)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                            style={{ 
+                                display: 'flex', alignItems: 'center', gap: '8px', 
+                                padding: '10px 16px', color: 'var(--brand)', 
+                                background: 'rgba(212,193,156,0.1)', border: '1px solid rgba(212,193,156,0.2)', 
+                                borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '900' 
+                            }}
                         >
-                            <Edit2 size={18} />
+                            <Edit2 size={14} /> EDITAR
                         </button>
-                        <button onClick={() => handleDelete(sponsor.id)} style={{ padding: '8px', color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                        <button 
+                            onClick={() => handleDelete(sponsor.id)} 
+                            style={{ 
+                                display: 'flex', alignItems: 'center', gap: '8px', 
+                                padding: '10px 16px', color: '#EF4444', 
+                                background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+                                borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '900' 
+                            }}
+                        >
+                            <Trash2 size={14} /> EXCLUIR
+                        </button>
                     </div>
                 </div>
             </div>
