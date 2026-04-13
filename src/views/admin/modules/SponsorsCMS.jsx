@@ -21,6 +21,8 @@ export default function SponsorsCMS() {
   const [uploadFile, setUploadFile] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   
   const [newSponsor, setNewSponsor] = useState({
     name: '',
@@ -93,8 +95,10 @@ export default function SponsorsCMS() {
 
         setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
         setUploadFile(null);
+        setIsEditing(false);
+        setEditingId(null);
         fetchSponsors();
-        triggerSuccess(id ? 'Dados empresariais atualizados!' : 'Novo parceiro integrado com sucesso!');
+        triggerSuccess(editingId ? 'Dados empresariais atualizados!' : 'Novo parceiro integrado com sucesso!');
     } catch (err) {
         alert('Erro ao salvar: ' + err.message);
     } finally {
@@ -105,11 +109,17 @@ export default function SponsorsCMS() {
   const handleDelete = async (id) => {
     if (!window.confirm('Excluir este patrocinador permanentemente?')) return;
     setSaving(true);
-    await supabase.from('sponsors').delete().eq('id', id);
-    fetchSponsors();
-    triggerSuccess('Parceiro removido do sistema.');
+    try {
+        const { error } = await supabase.from('sponsors').delete().eq('id', id);
+        if (error) throw error;
+        fetchSponsors();
+        triggerSuccess('Parceiro removido do sistema.');
+    } catch (err) {
+        alert('Erro ao excluir: ' + err.message);
+    }
     setSaving(false);
   };
+
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '100px', color: 'var(--gold)', fontWeight: '800' }}>Sincronizando Rede de Parceiros...</div>;
 
@@ -119,7 +129,8 @@ export default function SponsorsCMS() {
 
       <div style={{ background: 'rgba(255,255,255,0.02)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border-color)' }}>
         <h3 style={{ fontWeight: '900', color: '#FFFFFF', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px', fontSize: '24px' }}>
-          <Plus size={28} color="var(--secondary)" /> Novo Expositor / Patrocinador
+          {isEditing ? <Edit2 size={28} color="var(--brand)" /> : <Plus size={28} color="var(--brand)" />} 
+          {isEditing ? 'Editar Patrocinador' : 'Novo Expositor / Patrocinador'}
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '24px' }}>
@@ -206,12 +217,25 @@ export default function SponsorsCMS() {
          </div>
 
         <button 
-          onClick={() => handleSave(newSponsor)}
+          onClick={() => handleSave(newSponsor, editingId)}
           disabled={saving}
           style={btnSaveStyle}
         >
-          {saving ? 'PROCESSANDO...' : <><Save size={20} /> INTEGRAR PARCEIRO NO FRONTEND</>}
+          {saving ? 'PROCESSANDO...' : <><Save size={20} /> {isEditing ? 'SALVAR ALTERAÇÕES' : 'INTEGRAR PARCEIRO NO FRONTEND'}</>}
         </button>
+
+        {isEditing && (
+            <button 
+                onClick={() => {
+                    setIsEditing(false);
+                    setEditingId(null);
+                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
+                }}
+                style={{ width: '100%', marginTop: '12px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: '800', cursor: 'pointer' }}
+            >
+                CANCELAR EDIÇÃO
+            </button>
+        )}
       </div>
 
       <div style={{ display: 'grid', gap: '24px' }}>
@@ -231,6 +255,17 @@ export default function SponsorsCMS() {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            onClick={() => {
+                                setIsEditing(true);
+                                setEditingId(sponsor.id);
+                                setNewSponsor({...sponsor});
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }} 
+                            style={{ padding: '8px', color: 'var(--brand)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        >
+                            <Edit2 size={18} />
+                        </button>
                         <button onClick={() => handleDelete(sponsor.id)} style={{ padding: '8px', color: '#EF4444', background: 'transparent', border: 'none', cursor: 'pointer' }}><Trash2 size={18} /></button>
                     </div>
                 </div>
