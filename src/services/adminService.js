@@ -131,3 +131,21 @@ export const createOrUpdateAdminUser = async (userData) => {
 
     return { success: true };
 };
+
+/**
+ * Exclui um membro e seu perfil
+ */
+export const deleteMember = async (cpf) => {
+    // A deleção em cascata deve lidar com profiles se configurado no Postgres, 
+    // mas aqui fazemos manual por segurança
+    const cleanCpf = stripCPF(cpf);
+    
+    // Deletar perfil primeiro (FK)
+    await supabase.from('profiles').delete().eq('cpf', cleanCpf);
+    
+    // Deletar membro
+    const { error } = await supabase.from('members').delete().eq('cpf', cleanCpf);
+    
+    if (error) throw error;
+    return { success: true };
+};

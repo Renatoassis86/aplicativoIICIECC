@@ -45,7 +45,6 @@ import ScheduleCMS from './modules/ScheduleCMS';
 import UserManagementCMS from './modules/UserManagementCMS';
 import SponsorsCMS from './modules/SponsorsCMS';
 import TextContentCMS from './modules/TextContentCMS';
-import FileManagementCMS from './modules/FileManagementCMS';
 import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
 

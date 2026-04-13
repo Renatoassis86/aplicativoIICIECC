@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw } from 'lucide-react';
-import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser } from '../../../services/adminService';
+import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck } from 'lucide-react';
+import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
 const UserManagementCMS = () => {
@@ -54,6 +54,20 @@ const UserManagementCMS = () => {
             loadData();
         } catch (e) {
             alert('Erro: ' + e.message);
+        }
+        setLoading(false);
+    };
+
+    const handleDelete = async (cpf, name) => {
+        if (!window.confirm(`Tem certeza que deseja excluir permanentemente ${name}? Esta ação não pode ser desfeita.`)) return;
+        
+        setLoading(true);
+        try {
+            await deleteMember(cpf);
+            alert('Usuário excluído com sucesso.');
+            loadData();
+        } catch (e) {
+            alert('Erro ao excluir: ' + e.message);
         }
         setLoading(false);
     };
@@ -182,20 +196,28 @@ const UserManagementCMS = () => {
                                             <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
                                         </div>
                                     </div>
-                                    <button 
-                                        onClick={() => {
-                                            setNewUser({
-                                                name: u.name || '',
-                                                cpf: u.cpf || '',
-                                                email: u.email || '',
-                                                user_type: u.user_type || 'congressista'
-                                            });
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                        style={{ background: 'rgba(212, 193, 156, 0.1)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: 'none', cursor: 'pointer' }}
-                                    >
-                                        EDITAR UX
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button 
+                                            onClick={() => {
+                                                setNewUser({
+                                                    name: u.name || '',
+                                                    cpf: u.cpf || '',
+                                                    email: u.email || '',
+                                                    user_type: u.user_type || 'congressista'
+                                                });
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            style={{ background: 'rgba(212, 193, 156, 0.1)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: 'none', cursor: 'pointer' }}
+                                        >
+                                            GERENCIAR
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDelete(u.cpf, u.name)}
+                                            style={{ background: 'rgba(229, 62, 62, 0.1)', color: '#E53E3E', padding: '6px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
                             </div>
