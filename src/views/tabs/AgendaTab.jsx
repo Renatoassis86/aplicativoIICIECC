@@ -8,6 +8,7 @@ import {
   LayoutGrid
 } from 'lucide-react';
 import SessionDetailModal from '../../components/agenda/SessionDetailModal';
+import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import { supabase } from '../../lib/supabase';
 import { useContent } from '../../hooks/useContent';
 import { fetchUserFavorites, toggleFavoriteSession } from '../../services/agenda/agendaService';
@@ -27,6 +28,7 @@ const AgendaTab = ({ userCpf }) => {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [selectedSpeaker, setSelectedSpeaker] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
@@ -324,7 +326,29 @@ const AgendaTab = ({ userCpf }) => {
         session={selectedSession} 
         isFavorite={selectedSession ? favorites.includes(selectedSession.id) : false}
         onToggleFavorite={toggleFavorite}
+        onOpenSpeaker={(speaker) => {
+           if (!speaker) return;
+           const mappedSpeaker = {
+             id: speaker.id,
+             name: speaker.name,
+             desc: speaker.institution,
+             img: speaker.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
+             category: speaker.category || 'Palestrante',
+             longBio: speaker.bio,
+             websiteUrl: speaker.website_url
+           };
+           setSelectedSpeaker(mappedSpeaker);
+           setSelectedSession(null);
+        }}
       />
+
+      {selectedSpeaker && (
+        <SpeakerDetailModal 
+          speaker={selectedSpeaker} 
+          onClose={() => setSelectedSpeaker(null)}
+          onSaveFavorite={(s) => alert(`${s.name} salvo nos seus favoritos!`)}
+        />
+      )}
     </div>
   );
 };

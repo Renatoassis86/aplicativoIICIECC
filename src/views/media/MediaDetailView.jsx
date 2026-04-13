@@ -182,9 +182,17 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
       <div style={{ position: 'relative', width: '100%', minHeight: isPodcast || isVideo ? '90vh' : '70vh', background: '#000', display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isYouTube ? (
-            <iframe width="100%" height="100%" src={`${videoUrl.replace('watch?v=', 'embed/')}${videoUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0`} title={media.title} frameBorder="0" allowFullScreen style={{ position: 'absolute', inset: 0 }}></iframe>
+            <iframe 
+              width="100%" 
+              height="100%" 
+              src={`${(videoUrl || '').replace('watch?v=', 'embed/')}${(videoUrl || '').includes('?') ? '&' : '?'}autoplay=1&mute=0`} 
+              title={media.title} 
+              frameBorder="0" 
+              allowFullScreen 
+              style={{ position: 'absolute', inset: 0 }}
+            ></iframe>
           ) : isVideo ? (
-            <video ref={videoRef} src={videoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} autoPlay onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+            <video ref={videoRef} src={videoUrl || ''} style={{ width: '100%', height: '100%', objectFit: 'contain' }} autoPlay onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
           ) : isPodcast ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #2d1b42 0%, #000 100%)', padding: '60px 20px' }}>
                <audio ref={audioRef} src={media.audioUrl || media.videoUrl} onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />

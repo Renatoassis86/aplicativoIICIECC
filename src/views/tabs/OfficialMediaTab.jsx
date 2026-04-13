@@ -61,8 +61,9 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
 
   const getImageUrl = (item) => {
     if (item.source_type === 'link') {
-      if (item.url_or_path.includes('youtube.com') || item.url_or_path.includes('youtu.be')) {
-        const id = item.url_or_path.split('v=')[1] || item.url_or_path.split('/').pop();
+      const url = item.url_or_path || '';
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const id = url.split('v=')[1] || url.split('/').pop();
         return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
       }
       return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop'; // Default
@@ -136,7 +137,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            }}>
              {liveStream ? (
                <iframe 
-                 width="100%" height="100%" src={liveStream.url_or_path.includes('youtube') && !liveStream.url_or_path.includes('embed') ? `https://www.youtube.com/embed/${liveStream.url_or_path.split('v=')[1]}` : liveStream.url_or_path} 
+                 width="100%" height="100%" src={liveStream.url_or_path?.includes('youtube') && !liveStream.url_or_path?.includes('embed') ? `https://www.youtube.com/embed/${liveStream.url_or_path.split('v=')[1]}` : liveStream.url_or_path} 
                  title="Live" frameBorder="0" allowFullScreen
                ></iframe>
              ) : (

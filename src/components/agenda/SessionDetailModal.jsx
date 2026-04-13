@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { fetchSessionMaterials, isSessionLiveOrFinished } from '../../services/agenda/agendaService';
 
-const SessionDetailModal = ({ isOpen, onClose, session, isFavorite, onToggleFavorite }) => {
+const SessionDetailModal = ({ isOpen, onClose, session, isFavorite, onToggleFavorite, onOpenSpeaker }) => {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
@@ -134,14 +134,25 @@ const SessionDetailModal = ({ isOpen, onClose, session, isFavorite, onToggleFavo
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', padding: '16px', background: '#F8FAFC', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
-            <div style={{ width: '40px', height: '40px', background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-              <User size={20} />
+          <div 
+            onClick={() => onOpenSpeaker && onOpenSpeaker(session.fullSpeaker)}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', 
+              padding: '16px', background: '#F8FAFC', borderRadius: '20px', 
+              border: '1px solid #E2E8F0', cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#F1F5F9'}
+            onMouseLeave={e => e.currentTarget.style.background = '#F8FAFC'}
+          >
+            <div style={{ width: '40px', height: '40px', background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', overflow: 'hidden' }}>
+              {session.photo ? <img src={session.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <User size={20} />}
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Palestrante</p>
               <p style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)' }}>{session.speaker || session.name}</p>
             </div>
+            <ChevronRight size={16} color="var(--border)" />
           </div>
 
           {/* Repository Section */}

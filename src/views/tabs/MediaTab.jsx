@@ -256,13 +256,13 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
               {/* MEDIA RENDER */}
               <div 
-                onClick={() => post.mediaType === 'reel' && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
-                style={{ width: '100%', background: '#000', borderRadius: '0' }}
+                onClick={() => post.mediaType === 'reel' && post.mediaUrls?.[0] && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
+                style={{ width: '100%', background: '#000', borderRadius: '0', cursor: post.mediaType === 'reel' ? 'pointer' : 'default' }}
               >
                 {post.mediaType === 'reel' ? (
-                   <video src={post.mediaUrls[0]} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} muted playsInline autoPlay loop />
+                   <video src={post.mediaUrls?.[0]} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} muted playsInline autoPlay loop />
                 ) : (
-                   <img src={post.mediaUrls[0] || post.imageUrl} alt="" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} />
+                   <img src={post.mediaUrls?.[0] || post.imageUrl} alt="" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} />
                 )}
               </div>
 
