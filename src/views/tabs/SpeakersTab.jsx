@@ -45,7 +45,8 @@ const SpeakersTab = ({ onNavigate }) => {
         desc: s.institution,
         img: s.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
         category: s.category || 'Palestrante',
-        longBio: s.bio
+        longBio: s.bio,
+        websiteUrl: s.website_url
       })));
     }
     setLoading(false);

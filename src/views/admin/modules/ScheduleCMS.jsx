@@ -63,7 +63,8 @@ const ScheduleCMS = () => {
             name: data.name,
             bio: data.bio,
             photo_url: data.photo_url,
-            institution: data.institution
+            institution: data.institution,
+            website_url: data.website_url
         });
 
         // Lógica de upload se necessário (a ser integrada com cmsService ou supabase direct)
@@ -250,6 +251,8 @@ const ScheduleCMS = () => {
                             </div>
 
                             <textarea name="bio" placeholder="Mini Bio" defaultValue={editingSpeaker.bio} style={{ ...inputStyle, minHeight: '120px' }} />
+                            
+                            <input name="website_url" placeholder="Site Oficial / Bio (https://...)" defaultValue={editingSpeaker.website_url} style={inputStyle} />
                             
                             <button type="submit" disabled={loading} style={btnSaveStyle}>
                                 <Save size={18} /> SALVAR PALESTRANTE

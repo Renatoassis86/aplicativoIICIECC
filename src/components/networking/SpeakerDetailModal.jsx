@@ -78,9 +78,26 @@ export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite })
             {speaker.longBio || `Doutor em Educação com foco em abordagens clássicas. Possui mais de 20 anos de experiência na implementação de currículos de artes liberais em escolas ao redor do mundo. É autor de diversas obras fundamentais para a Educação Cristã Clássica moderna.\n\nSua palestra no II CIECC abordará as nuances da Trivium e como aplicá-las em um contexto contemporâneo sem perder a essência da sabedoria antiga.`}
           </div>
 
+          {speaker.websiteUrl && (
+            <button 
+              onClick={() => window.open(speaker.websiteUrl, '_blank')}
+              className="btn-primary" 
+              style={{ 
+                width: '100%', 
+                marginTop: '20px',
+                background: 'white',
+                color: 'var(--primary)',
+                border: '2px solid var(--primary)',
+                boxShadow: 'none'
+              }}
+            >
+              SABER MAIS / SITE OFICIAL
+            </button>
+          )}
+
           <button className="btn-primary" style={{ 
             width: '100%', 
-            marginTop: '40px',
+            marginTop: '16px',
             boxShadow: '0 10px 20px rgba(107, 20, 26, 0.2)'
           }}>
             ADICIONAR À MINHA AGENDA 
