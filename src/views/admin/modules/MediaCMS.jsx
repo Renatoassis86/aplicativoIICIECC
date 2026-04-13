@@ -160,69 +160,85 @@ const MediaCMS = () => {
                     </form>
                 </div>
 
-                {/* COLUNA DIREITA: LISTA GRUPADA */}
-                <div>
-                    <div style={{ background: 'var(--card-bg)', padding: '16px 24px', borderRadius: '20px', border: '1px solid var(--border-color)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {/* COLUNA DIREITA: LISTA SEPARADA POR CAIXAS */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    
+                    {/* BUSCA */}
+                    <div style={{ background: 'var(--card-bg)', padding: '16px 24px', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <LinkIcon size={20} color="var(--brand)" />
                         <input 
-                            placeholder="Pesquisar no acervo..." 
+                            placeholder="Pesquisar em todo o acervo..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={{ background: 'none', border: 'none', color: 'white', outline: 'none', width: '100%', fontSize: '16px', fontWeight: '500' }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {filteredItems.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '100px', color: 'rgba(255,255,255,0.2)' }}>
-                                <PlayCircle size={48} style={{ margin: '0 auto 16px', opacity: 0.1 }} />
-                                <p>Nenhuma mídia encontrada com este critério.</p>
-                            </div>
-                        ) : (
-                            filteredItems.map(item => (
-                                <div key={item.id} style={{ 
-                                    background: item.is_live_stream ? 'linear-gradient(90deg, #6B141A 0%, #1e1e1e 100%)' : 'var(--card-bg)', 
-                                    padding: '24px', borderRadius: '24px', border: item.is_live_stream ? '1px solid var(--primary)' : '1px solid var(--border-color)',
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                                }}>
-                                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flex: 1 }}>
-                                        <div style={{ 
-                                            width: '56px', height: '56px', borderRadius: '16px', 
-                                            background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: item.is_live_stream ? 'white' : 'var(--brand)'
-                                        }}>
-                                            {item.is_live_stream ? <Radio className="animate-pulse" /> : item.media_type === 'video' ? <Clapperboard /> : <Podcast />}
-                                        </div>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                                {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '10px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>LIVE</span>}
-                                                <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.category}</span>
-                                            </div>
-                                            <h4 style={{ fontWeight: '800', color: 'white', fontSize: '17px' }}>{item.title}</h4>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.url}</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                    {categories.map(cat => {
+                        const catItems = filteredItems.filter(item => item.category === cat);
+                        if (catItems.length === 0 && searchTerm) return null;
 
-                                    <div style={{ display: 'flex', gap: '12px' }}>
-                                        <button 
-                                            onClick={() => {
-                                                setEditingItem(item);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }} 
-                                            style={iconBtnStyle} title="Editar"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button onClick={() => deleteItem(item.id)} style={iconBtnDeleteStyle} title="Excluir">
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                        return (
+                            <div key={cat} style={{ 
+                                background: 'rgba(255,255,255,0.02)', 
+                                borderRadius: '32px', 
+                                padding: '24px', 
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '12px' }}>
+                                    <h4 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        {cat === 'Flash 2026' && <Video size={20} />}
+                                        {cat === 'Podcast' && <Podcast size={20} />}
+                                        {cat === 'Entrevistas Exclusivas' && <PlayCircle size={20} />}
+                                        {cat === 'Memórias' && <ImageIcon size={20} />}
+                                        {cat === 'Palestras' && <Monitor size={20} />}
+                                        {cat === 'Outros' && <Plus size={20} />}
+                                        {cat}
+                                    </h4>
+                                    <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.4)' }}>
+                                        {catItems.length} ITENS
+                                    </span>
                                 </div>
-                            ))
-                        )}
-                    </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {catItems.length === 0 ? (
+                                        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px', textAlign: 'center', padding: '20px' }}>Nenhuma mídia vinculada.</p>
+                                    ) : (
+                                        catItems.map(item => (
+                                            <div key={item.id} style={{ 
+                                                background: item.is_live_stream ? 'linear-gradient(90deg, #4A101D 0%, #1A1A1A 100%)' : 'rgba(255,255,255,0.03)', 
+                                                padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)',
+                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            }}>
+                                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1 }}>
+                                                    <div style={{ 
+                                                        width: '44px', height: '44px', borderRadius: '12px', 
+                                                        background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        color: item.is_live_stream ? '#EF4444' : 'var(--brand)'
+                                                    }}>
+                                                        {item.is_live_stream ? <Radio className="animate-pulse" size={20} /> : item.media_type === 'video' ? <Clapperboard size={20} /> : item.media_type === 'image' ? <ImageIcon size={20} /> : <Podcast size={20} />}
+                                                    </div>
+                                                    <div style={{ overflow: 'hidden' }}>
+                                                        <h5 style={{ fontWeight: '800', color: 'white', fontSize: '15px', marginBottom: '2px' }}>{item.title}</h5>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '1px 4px', borderRadius: '3px' }}>LIVE</span>}
+                                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.url}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+                                                    <button onClick={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ ...iconBtnStyle, width: '36px', height: '36px' }}><Edit2 size={14} /></button>
+                                                    <button onClick={() => deleteItem(item.id)} style={{ ...iconBtnDeleteStyle, width: '36px', height: '36px' }}><Trash2 size={14} /></button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
