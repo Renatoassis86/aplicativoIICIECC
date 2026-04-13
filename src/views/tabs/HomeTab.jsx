@@ -121,7 +121,7 @@ const HomeTab = ({
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
         padding: 'calc(env(safe-area-inset-top, 20px) + 60px) 20px 48px', 
-        background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
         color: 'white',
@@ -130,7 +130,7 @@ const HomeTab = ({
       }}>
         {/* Background Pattern - Símbolo Acadêmico (Coluna) */}
         <div style={{ position: 'absolute', top: '10%', right: '-5%', opacity: 0.1, transform: 'rotate(15deg)' }}>
-          <img src="/logo.png" alt="" style={{ height: '280px', filter: 'invert(1)' }} />
+          <div style={{ width: '280px', height: '280px', background: 'white', borderRadius: '40px', opacity: 0.05 }}></div>
         </div>
 
         <div style={{ position: 'relative', zIndex: 10 }}>
@@ -139,15 +139,10 @@ const HomeTab = ({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
             {/* LOGO (ESQUERDA) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img 
-                src="/logo.png" 
-                alt="CIECC" 
-                style={{ 
-                  height: '42px', 
-                  objectFit: 'contain',
-                  filter: 'brightness(0) invert(1)'
-                }} 
-              />
+              <div style={{ width: '36px', height: '36px', background: 'var(--brand)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(14, 165, 233, 0.3)' }}>
+                <span style={{ color: 'white', fontWeight: '900', fontSize: '18px' }}>A</span>
+              </div>
+              <span style={{ fontWeight: '900', fontSize: '16px', letterSpacing: '1px' }}>ARKOS</span>
             </div>
 
             {/* AÇÕES (DIREITA) */}
@@ -223,7 +218,7 @@ const HomeTab = ({
           }} id="video-container">
             <img 
               src={homeVideoUrl ? `https://img.youtube.com/vi/${homeVideoUrl.split('/').pop()}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=2000&auto=format&fit=crop'} 
-              alt="Preview II CIECC" 
+              alt="Preview ARKOS" 
               style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
             />
             <div style={{ 
@@ -419,9 +414,9 @@ const HomeTab = ({
 
       {/* Rodapé da Home (Placeholder Institucional) */}
       <footer style={{ marginTop: '60px', padding: '32px 20px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.05)', background: 'white' }}>
-        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>II CIECC 2026</p>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>ARKOS Digital Hub</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Criado por</span>
+          <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Operado por</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
               <path d="M8 32L20 8L32 32" stroke="var(--primary)" strokeWidth="3" />

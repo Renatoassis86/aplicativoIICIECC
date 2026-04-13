@@ -208,8 +208,8 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                            onClick={() => setBroadcastAudience(opt.id)}
                            style={{ 
                              flex: 1, padding: '10px 4px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', border: '1px solid rgba(255,255,255,0.2)',
-                             background: broadcastAudience === opt.id ? 'var(--gold)' : 'rgba(0,0,0,0.2)',
-                             color: broadcastAudience === opt.id ? '#000' : '#fff'
+                             background: broadcastAudience === opt.id ? 'var(--brand)' : 'rgba(0,0,0,0.2)',
+                             color: '#fff'
                            }}
                          >
                            {opt.label}
@@ -280,13 +280,16 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       {/* SIDEBAR */}
       <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div style={{ padding: '40px 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px', padding: '0 8px' }}>
+          <div style={{ width: '48px', height: '48px', background: 'var(--brand)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--primary-glow)' }}>
+            <span style={{ color: 'white', fontWeight: '900', fontSize: '24px' }}>A</span>
+          </div>
+          <div>
+            <h1 style={{ color: '#FFFFFF', fontSize: '20px', fontWeight: '900', letterSpacing: '1px', margin: 0 }}>ARKOS</h1>
+            <p style={{ color: 'var(--brand)', fontSize: '10px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '2px' }}>Intelligence</p>
+          </div>
+        </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <div style={{ width: '32px', height: '32px', background: 'var(--gold)', borderRadius: '8px', minWidth: '32px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)' }}>
-            </div>
-            <div className="sidebar-logo-text">
-              <h1 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white', fontFamily: 'var(--font-serif)' }}>CIECC</h1>
-              <p style={{ fontSize: '9px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>ADMIN CONSOLE</p>
-            </div>
             <button className="mobile-only sidebar-close" onClick={() => setIsSidebarOpen(false)}>
               <LogOut size={20} color="white" />
             </button>
@@ -303,12 +306,12 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
               }}
               className={`menu-item ${activeMenu === item.id ? 'active' : ''}`}
             >
-              <div style={{ color: activeMenu === item.id ? 'var(--gold)' : 'rgba(255,255,255,0.4)' }}>
+              <div style={{ color: activeMenu === item.id ? 'var(--brand)' : 'rgba(255,255,255,0.4)' }}>
                 {item.icon}
               </div>
               <span className="menu-label">{item.label}</span>
               {activeMenu === item.id && (
-                <div style={{ marginLeft: 'auto', width: '4px', height: '16px', borderRadius: '4px', background: 'var(--gold)', boxShadow: '0 0 10px var(--gold)' }}></div>
+                <div style={{ marginLeft: 'auto', width: '4px', height: '16px', borderRadius: '4px', background: 'var(--brand)', boxShadow: '0 0 10px var(--brand)' }}></div>
               )}
             </button>
           ))}
@@ -339,6 +342,10 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                 <div style={{ width: '20px', height: '2px', background: 'white' }}></div>
              </button>
              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                    <div style={{ width: '4px', height: '24px', background: 'var(--brand)', borderRadius: '2px' }}></div>
+                    <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF' }}>Infraestrutura de Inteligência</h2>
+                </div>
                 <h2 className="view-title">
                   {menuItems.find(i => i.id === activeMenu)?.label}
                 </h2>
@@ -367,15 +374,18 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       <style dangerouslySetInnerHTML={{__html: `
         :root {
           --sidebar-width: 280px;
-          --primary: #6B141A;
-          --primary-light: #8E1C24;
-          --secondary: #D4AF37;
-          --gold: #D4AF37;
-          --bg-dark: #0A0F1A;
-          --card-bg: rgba(255, 255, 255, 0.03);
-          --card-hover: rgba(255, 255, 255, 0.06);
-          --border-color: rgba(255, 255, 255, 0.08);
-          --font-serif: 'Playfair Display', serif;
+          /* ARKOS Palette - Infrastructure of the New Economy */
+          --primary: #0ea5e9; /* Sky Blue */
+          --primary-glow: rgba(14, 165, 233, 0.4);
+          --secondary: #1e293b; /* Slate 800 */
+          --bg-dark: #020617; /* Deepest Navy */
+          --card-bg: rgba(30, 41, 59, 0.7); /* Slate 800 semi-transparent */
+          --border-color: rgba(148, 163, 184, 0.1); /* Slate 400 very soft */
+          --text-main: #f8fafc; /* Slate 50 */
+          --text-muted: #94a3b8; /* Slate 400 */
+          --brand: #0ea5e9;
+          --success: #10b981; /* Emerald */
+          --font-sans: 'Inter', system-ui, sans-serif;
         }
 
         .admin-container {
@@ -403,7 +413,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           flex-direction: column;
           overflow-y: auto;
           position: relative;
-          background: radial-gradient(circle at top right, rgba(74, 16, 29, 0.15), transparent 600px);
+          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 600px);
         }
 
         .main-header {
@@ -443,7 +453,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           overflow: hidden;
           transition: transform 0.3s ease, border-color 0.3s ease;
         }
-        .stat-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+        .stat-card:hover { transform: translateY(-4px); border-color: var(--brand); }
 
         .stat-label { fontSize: 13px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
         .stat-value { fontSize: 32px; fontWeight: 900; color: white; letter-spacing: -1px; }
@@ -464,20 +474,19 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           backdrop-filter: blur(10px);
         }
         .card-alert { 
-          background: linear-gradient(135deg, var(--primary) 0%, #2A080F 100%); 
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
           border-radius: 24px; padding: 32px; color: white; position: relative; overflow: hidden; 
           border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
-        .link-btn { color: var(--gold); border: none; background: none; font-size: 13px; fontWeight: 700; cursor: pointer; }
+        .link-btn { color: var(--brand); border: none; background: none; font-size: 13px; fontWeight: 700; cursor: pointer; }
 
         .log-item { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .log-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justifyContent: center; }
 
         .alert-textarea { width: 100%; background: #FFFFFF; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; color: #000000; margin-bottom: 16px; resize: none; outline: none; transition: border-color 0.3s; font-weight: 600; }
-        .alert-textarea:focus { border-color: var(--gold); }
-        .alert-btn { width: 100%; background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s; }
+        .alert-btn { width: 100%; background: var(--brand); color: #FFF; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s; }
         .alert-btn:hover { transform: scale(1.02); }
 
         .menu-item {
@@ -494,9 +503,9 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .search-bar input { border: none; outline: none; background: transparent; font-size: 14px; width: 180px; color: white; }
 
         .sync-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: white; padding: 10px 20px; borderRadius: 10px; fontWeight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .sync-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); }
+        .sync-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--brand); }
 
-        .view-title { font-size: 28px; font-weight: 900; color: white; letter-spacing: -1px; font-family: var(--font-serif); }
+        .view-title { font-size: 28px; font-weight: 900; color: white; letter-spacing: -1px; }
         .status-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
         .online-indicator { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; box-shadow: 0 0 10px #22C55E; }
         .status-text { color: rgba(255,255,255,0.8); font-size: 13px; }
@@ -531,7 +540,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
 
         /* Global Theme Consistency */
         .white-bg, .card-main {

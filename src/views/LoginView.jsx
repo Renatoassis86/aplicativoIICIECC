@@ -82,19 +82,17 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         <div className="login-hero-side">
           <div className="hero-overlay"></div>
           <div className="hero-content">
-            <img 
-              src="/logo.png" 
-              alt="CIECC" 
-              className="desktop-logo"
-            />
+            <div style={{ width: '80px', height: '80px', background: '#0ea5e9', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 0 30px rgba(14, 165, 233, 0.3)' }}>
+              <span style={{ color: 'white', fontWeight: '900', fontSize: '40px' }}>A</span>
+            </div>
             <div className="hero-text">
-              <h1 className="hero-title">{useContent('home', 'home_title').content || 'Educação que permanece.'}</h1>
-              <p className="hero-subtitle">{useContent('home', 'home_subtitle').content || 'II Congresso Internacional de Educação Cristã Clássica'}</p>
+              <h1 className="hero-title">ARKOS 360</h1>
+              <p className="hero-subtitle">Infraestrutura de Inteligência para a Nova Economia</p>
             </div>
             
             <div className="hero-footer">
-               <div className="location-badge">São Paulo, SP</div>
-               <div className="date-badge">01 e 02 de Maio, 2026</div>
+               <div className="location-badge">Digital Hub</div>
+               <div className="date-badge">Enterprise Console</div>
             </div>
           </div>
         </div>
@@ -104,12 +102,14 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
           <div className="login-form-card fade-in">
             
             <div className="mobile-only-header">
-              <img src="/logo.png" alt="CIECC" className="mobile-logo" />
+              <div style={{ width: '60px', height: '60px', background: 'var(--brand)', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(14, 165, 233, 0.3)' }}>
+                <span style={{ color: 'white', fontWeight: '900', fontSize: '30px' }}>A</span>
+              </div>
             </div>
 
             <header style={{ marginBottom: '32px' }}>
-              <h2 className="form-title">Bem-vindo,</h2>
-              <p className="form-subtitle">{useContent('home', 'home_subtitle').content || 'Acesse o Hub Digital do Congresso'}</p>
+              <h2 className="form-title">Console,</h2>
+              <p className="form-subtitle">Gerenciamento Seguro e Inteligente</p>
             </header>
 
             <form onSubmit={handleSubmit}>
@@ -167,8 +167,8 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
                 <p className="created-by">Criado por</p>
                 <div className="arkos-brand">
                   <svg width="18" height="18" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 32L20 8L32 32" stroke="#D4C19C" strokeWidth="3" />
-                    <path d="M4 21H36" stroke="#D4C19C" strokeWidth="3" />
+                    <path d="M8 32L20 8L32 32" stroke="var(--brand)" strokeWidth="3" />
+                    <path d="M4 21H36" stroke="var(--brand)" strokeWidth="3" />
                   </svg>
                   <span className="arkos-text">ARKOS</span>
                 </div>
@@ -207,7 +207,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         .hero-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(74, 16, 29, 0.9) 0%, rgba(10, 15, 26, 0.8) 100%);
+          background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(2, 6, 23, 0.95) 100%);
         }
 
         .hero-content {
@@ -234,7 +234,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
         .hero-subtitle {
           font-size: 20px;
-          color: var(--gold);
+          color: #0ea5e9;
           font-weight: 500;
           margin-bottom: 40px;
           opacity: 0.9;
@@ -307,9 +307,9 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         }
 
         .input-field-custom:focus {
-          border-color: var(--gold);
+          border-color: #0ea5e9;
           background: rgba(255,255,255,0.08);
-          box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+          box-shadow: 0 0 15px rgba(14, 165, 233, 0.1);
         }
 
         .login-submit-btn {
@@ -328,12 +328,12 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
           gap: 12px;
           transition: all 0.3s;
           margin-top: 10px;
-          box-shadow: 0 10px 20px rgba(74, 16, 29, 0.3);
+          box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
         }
 
         .login-submit-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 15px 25px rgba(74, 16, 29, 0.4);
+          box-shadow: 0 15px 25px rgba(14, 165, 233, 0.2);
         }
 
         .login-actions {
@@ -352,8 +352,8 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
           transition: color 0.2s;
         }
 
-        .action-link:hover { color: white; }
-        .admin-link { color: var(--gold); }
+        .action-link:hover { color: #0ea5e9; }
+        .admin-link { color: #0ea5e9; }
 
         .form-footer {
           margin-top: 60px;
@@ -375,7 +375,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
         .created-by { color: rgba(212, 193, 156, 0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
         .arkos-brand { display: flex; align-items: center; gap: 6px; }
-        .arkos-text { color: #D4C19C; font-size: 14px; font-weight: 800; opacity: 0.6; }
+        .arkos-text { color: #0ea5e9; font-size: 14px; font-weight: 800; opacity: 0.8; }
 
         .mobile-only-header { display: none; }
 

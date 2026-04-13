@@ -1,18 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 
 :root {
-  /* Color Palette - CIECC Identity */
-  --primary: #6B141A; /* Deep Burgundy / Wine */
-  --primary-hover: #500D11;
-  --secondary: #111111; /* Deep Charcoal/Black */
-  --bg-app: #F7F8FA;
+  /* Color Palette - Neutral White-Label / Arkos Inspired */
+  --primary: #0ea5e9; /* Arkos Sky Blue */
+  --primary-hover: #0284c7;
+  --secondary: #0f172a; /* Slate 900 */
+  --bg-app: #F8FAFC;
   --bg-card: #FFFFFF;
-  --text-main: #1A1A1A;
-  --text-muted: #718096;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
   --white: #FFFFFF;
-  --border: #EDF2F7;
-  --accent: #FDF2F2; /* Soft red tint */
-  --gold: #D4C19C; /* Academic Gold */
+  --border: #E2E8F0;
+  --accent: #F0F9FF; /* Soft Blue tint */
+  --brand: #0ea5e9;
+  --gold: #0ea5e9; /* Map Gold to Brand Blue for White-Label consistency */
   
   /* Typography */
   --font-main: 'Inter', sans-serif;

@@ -55,7 +55,7 @@ const HomeCMS = () => {
           <button 
             disabled={loading}
             onClick={loadContent}
-            style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
+            style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700' }}
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Recarregar Atual
           </button>
@@ -147,7 +147,7 @@ const InputGroup = ({ label, value, onChange, placeholder, fullWidth = false }) 
         color: '#FFFFFF', background: 'rgba(255,255,255,0.05)'
       }}
       onFocus={(e) => {
-        e.target.style.borderColor = 'var(--gold)';
+        e.target.style.borderColor = 'var(--brand)';
         e.target.style.background = 'rgba(255,255,255,0.1)';
       }}
       onBlur={(e) => {

@@ -93,7 +93,7 @@ const AdminImportView = ({ onBackToApp }) => {
         ticket_type: columns.find(c => c.toLowerCase().trim() === 'tipo')
     };
     setMapping(forumMap);
-    alert('Layout "Fórum/Moodle" aplicado! Verifique se o CNPJ está mapeado como identificador principal (CPF).');
+    alert('Layout "Fórum/Moodle" aplicado! Verifique se o identificador está mapeado como CPF/CNPJ.');
   };
 
   // 2. Etapa de Validação
@@ -184,7 +184,7 @@ const AdminImportView = ({ onBackToApp }) => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "modelo_importacao_ciecc.csv");
+    link.setAttribute("download", "modelo_importacao_hub.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -196,7 +196,7 @@ const AdminImportView = ({ onBackToApp }) => {
       background: 'var(--bg-app)',
       paddingBottom: '60px'
     }}>
-      {/* Header Premium Borgonha */}
+      {/* Header Premium Arkos Slate */}
       <header style={{ 
         background: 'var(--primary)', 
         padding: '24px 20px',
@@ -207,10 +207,21 @@ const AdminImportView = ({ onBackToApp }) => {
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <img src="/logo.png" alt="CIECC" style={{ height: '40px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            background: 'var(--primary)', 
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: '900',
+            fontSize: '18px'
+          }}>A</div>
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>Portal Admin</h1>
-            <p style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: '600' }}>Importação Massiva ('members')</p>
+            <h1 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-sans)', color: 'white' }}>Portal Administrativo</h1>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Gestão de Dados</p>
           </div>
         </div>
         <button onClick={onBackToApp} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>

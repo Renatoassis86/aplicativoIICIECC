@@ -89,7 +89,7 @@ export default function SponsorsCMS() {
     <div className="sponsors-cms-container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       <div style={{ maxWidth: '1000px' }}>
         <h3 style={{ fontWeight: '900', color: '#FFFFFF', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '24px' }}>
-          <Plus size={28} color="var(--gold)" /> Adicionar Novo Patrocinador
+          <Plus size={28} color="var(--brand)" /> Adicionar Novo Patrocinador
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 0.5fr', gap: '16px', marginBottom: '16px' }}>
@@ -233,7 +233,7 @@ export default function SponsorsCMS() {
                 ) : (
                   <ImageIcon size={24} color="#64748B" />
                 )}
-                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--gold)', color: '#000', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '900', border: '2px solid #000' }}>
+                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--brand)', color: '#FFFFFF', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '900', border: '2px solid #000' }}>
                   {sponsor.order_index}
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function SponsorsCMS() {
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                   <h5 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>{sponsor.name}</h5>
-                  <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(212, 175, 55, 0.2)', color: 'var(--gold)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sponsor.tier}</span>
+                  <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(14, 165, 233, 0.2)', color: 'var(--brand)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{sponsor.tier}</span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ExternalLink size={12} /> {sponsor.website_url || 'Nenhum site cadastrado'}
@@ -251,7 +251,7 @@ export default function SponsorsCMS() {
               <div style={{ display: 'flex', gap: '12px' }}>
                  <button 
                   onClick={() => setSponsors(prev => prev.map(s => s.id === sponsor.id ? { ...s, isEditing: !s.isEditing } : s))}
-                  style={{ background: 'rgba(212, 175, 55, 0.1)', color: 'var(--gold)', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '10px 18px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  style={{ background: 'rgba(14, 165, 233, 0.1)', color: 'var(--brand)', border: '1px solid rgba(14, 165, 233, 0.2)', padding: '10px 18px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
                   {sponsor.isEditing ? 'Fechar Edição' : 'Editar Patrocinador'}
                 </button>

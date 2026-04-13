@@ -311,9 +311,11 @@ class ErrorBoundary extends React.Component {
 
   if (authStatus === 'loading') {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
-        <img src="/logo.png" alt="" style={{ height: '60px', marginBottom: '24px', opacity: 0.8, filter: 'grayscale(1) invert(1)' }} />
-        <p style={{ color: '#D4C19C', fontFamily: 'serif', letterSpacing: '2px', fontSize: '10px' }}>CARREGANDO HUB...</p>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#020617' }}>
+        <div style={{ width: '60px', height: '60px', background: '#0ea5e9', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: '0 0 20px rgba(14, 165, 233, 0.3)' }}>
+          <span style={{ color: 'white', fontWeight: '900', fontSize: '30px' }}>A</span>
+        </div>
+        <p style={{ color: '#0ea5e9', fontWeight: '800', letterSpacing: '2px', fontSize: '10px' }}>ARKOS INTELLIGENCE</p>
       </div>
     );
   }
