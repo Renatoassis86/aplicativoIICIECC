@@ -50,6 +50,7 @@ import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 import ProfileCMS from './modules/ProfileCMS';
+import AdminBroadcastModal from './AdminBroadcastModal';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -58,9 +59,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [stats, setStats] = useState({ attendees: 0, posts: 0, notifications: 0 });
   const [loading, setLoading] = useState(true);
   const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
-  const [emergencyText, setEmergencyText] = useState('');
-  const [broadcastTitle, setBroadcastTitle] = useState('');
-  const [broadcastAudience, setBroadcastAudience] = useState('all');
+  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   // Materials state
   const [selectedSessionForMaterials, setSelectedSessionForMaterials] = useState(null);
   const [sessionMaterials, setSessionMaterials] = useState([]);
@@ -144,6 +143,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 size={20} />, color: '#D4C19C' },
+    { id: 'broadcast', label: 'Comunicados & Alertas', icon: <Send size={20} />, color: '#D4C19C' },
     { id: 'home', label: 'Editar Página Inicial', icon: <Layout size={20} />, color: '#D4C19C' },
     { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#D4C19C' },
     { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#D4C19C' },
@@ -158,6 +158,27 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const renderContent = () => {
     switch(activeMenu) {
       case 'dashboard': return <StrategicDashboardCMS />;
+      case 'broadcast': return (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <div style={{ background: 'var(--card-bg)', padding: '60px 40px', borderRadius: '32px', border: '1px solid var(--border-color)', maxWidth: '600px', margin: '0 auto' }}>
+             <div style={{ width: '80px', height: '80px', background: 'rgba(212, 193, 156, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <Send size={40} color="var(--gold)" />
+             </div>
+             <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '12px' }}>Disparo de Alertas Global</h2>
+             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', marginBottom: '32px', lineHeight: '1.6' }}>
+                Envie mensagens instantâneas para todos os congressistas ou grupos específicos. 
+                Os alertas aparecerão na central de notificações do app mobile.
+             </p>
+             <button 
+                onClick={() => setIsBroadcastOpen(true)}
+                className="btn-primary" 
+                style={{ width: '100%', padding: '18px', fontSize: '16px' }}
+             >
+                ABRIR PAINEL DE COMUNICADOS
+             </button>
+          </div>
+        </div>
+      );
       case 'home': return <HomeCMS />;
       case 'media': return <MediaCMS />;
       case 'schedule': return <ScheduleCMS />;
@@ -262,6 +283,14 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           {renderContent()}
         </div>
       </main>
+
+      {isBroadcastOpen && (
+        <AdminBroadcastModal 
+          onClose={() => setIsBroadcastOpen(false)} 
+          staffCpf={userCpf}
+          userName={userName}
+        />
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         :root {
