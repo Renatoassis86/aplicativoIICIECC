@@ -12,6 +12,14 @@ import { fetchUserFavorites, toggleFavoriteSession } from '../../services/agenda
 
 const AgendaTab = ({ userCpf }) => {
   const { content: agendaTitle } = useContent('titles', 'page_agenda');
+  
+  const displaySafe = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && val.text) return val.text;
+    if (typeof val === 'object' && val.rendered) return val.rendered;
+    return String(val);
+  };
   const [selectedDay, setSelectedDay] = useState('01/05');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -32,26 +40,33 @@ const AgendaTab = ({ userCpf }) => {
 
   const fetchSessions = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('agenda_sessions')
-      .select('*, speakers(*)');
-    
-    if (data) {
-      // Formatar dados para o padrão esperado pelo componente
-      const formatted = data.map(s => ({
-        id: s.id,
-        date: s.session_date.split('-').reverse().slice(0, 2).join('/'), // '2026-05-01' -> '01/05'
-        time: s.start_time.slice(0, 5),
-        title: s.title,
-        speaker: s.speakers?.name || 'A confirmar',
-        room: s.room || 'Auditório Principal',
-        category: s.category || 'Palestra',
-        description: s.description,
-        fullSpeaker: s.speakers
-      }));
-      setSessions(formatted);
+    try {
+      const { data, error } = await supabase
+        .from('agenda_sessions')
+        .select('*, speakers(*)');
+      
+      if (error) throw error;
+
+      if (data) {
+        // Formatar dados para o padrão esperado pelo componente
+        const formatted = data.map(s => ({
+          id: s.id,
+          date: s.session_date ? s.session_date.split('-').reverse().slice(0, 2).join('/') : '01/05',
+          time: s.start_time ? s.start_time.slice(0, 5) : '00:00',
+          title: s.title || 'Sem título',
+          speaker: Array.isArray(s.speakers) ? (s.speakers[0]?.name || 'A confirmar') : (s.speakers?.name || 'A confirmar'),
+          room: s.room || 'Auditório Principal',
+          category: s.category || 'Palestra',
+          description: s.description || '',
+          fullSpeaker: Array.isArray(s.speakers) ? s.speakers[0] : s.speakers
+        }));
+        setSessions(formatted);
+      }
+    } catch (err) {
+      console.error('Error fetching sessions:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Garantindo as 3 abas principais solicitadas
@@ -88,7 +103,7 @@ const AgendaTab = ({ userCpf }) => {
         borderBottomRightRadius: '24px'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>{agendaTitle || 'Agenda Oficial'}</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>{displaySafe(agendaTitle) || 'Agenda Oficial'}</h2>
           <button 
             onClick={() => setOnlyFavorites(!onlyFavorites)}
             style={{

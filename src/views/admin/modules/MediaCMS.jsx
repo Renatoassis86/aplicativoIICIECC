@@ -64,7 +64,6 @@ const MediaCMS = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Excluir esta mídia permanentemente?')) return;
     try {
-      // Nota: O método deleteMedia deve estar presente no cmsService
       const { error } = await cmsService.deleteMedia(id); 
       if (error) throw error;
       loadMedia();
@@ -199,28 +198,31 @@ const MediaCMS = () => {
                   </div>
                   
                   {isLive ? (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
                       <input 
                         type="text" 
                         defaultValue={item.url_or_path}
-                        onBlur={async (e) => {
-                          if (e.target.value !== item.url_or_path) {
-                            try {
-                              setLoading(true);
-                              await cmsService.updateMedia(item.id, { url_or_path: e.target.value });
-                              alert('Link da transmissão atualizado!');
-                              loadMedia();
-                            } catch (err) {
-                              alert('Erro ao atualizar: ' + err.message);
-                              e.target.value = item.url_or_path;
-                            } finally {
-                              setLoading(false);
-                            }
-                          }
-                        }}
+                        id={`live-url-${item.id}`}
                         style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', flex: 1 }}
                       />
-                      <Save size={16} color="#B91C1C" style={{ opacity: 0.5 }} />
+                      <button 
+                        onClick={async () => {
+                          const val = document.getElementById(`live-url-${item.id}`).value;
+                          try {
+                            setLoading(true);
+                            await cmsService.updateMedia(item.id, { url_or_path: val });
+                            alert('Link da transmissão atualizado com sucesso!');
+                            loadMedia();
+                          } catch (err) {
+                            alert('Erro ao atualizar: ' + err.message);
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        style={{ background: 'var(--gold)', color: '#000', border: 'none', padding: '6px 20px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      >
+                        SALVAR LINK
+                      </button>
                     </div>
                   ) : (
                     <p style={{ fontSize: '12px', color: '#94A3B8', wordBreak: 'break-all' }}>

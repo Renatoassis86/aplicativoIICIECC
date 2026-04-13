@@ -42,6 +42,9 @@ export default function TextContentCMS() {
     
     if (!error) {
       setItems(prev => prev.map(item => item.id === id ? { ...item, value: finalValue } : item));
+      alert('Alteração salva com sucesso!');
+    } else {
+      alert('Erro ao salvar: ' + error.message);
     }
   };
 
@@ -93,20 +96,32 @@ export default function TextContentCMS() {
               </p>
             </div>
 
-            <textarea 
-              defaultValue={typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : item.value}
-              onBlur={(e) => updateItem(item.id, e.target.value)}
-              style={{ 
-                width: '100%', minHeight: '100px', padding: '16px', borderRadius: '12px', 
-                border: '1px solid var(--border-color)', fontSize: '14px', fontFamily: 'monospace',
-                background: 'rgba(255,255,255,0.02)', color: '#FFFFFF', resize: 'vertical',
-                outline: 'none'
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <textarea 
+                defaultValue={typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : item.value}
+                id={`textarea-${item.id}`}
+                style={{ 
+                  width: '100%', minHeight: '100px', padding: '16px', borderRadius: '12px', 
+                  border: '1px solid var(--border-color)', fontSize: '14px', fontFamily: 'monospace',
+                  background: 'rgba(255,255,255,0.02)', color: '#FFFFFF', resize: 'vertical',
+                  outline: 'none', marginBottom: '12px'
+                }}
+              />
+              <button 
+                onClick={() => {
+                  const val = document.getElementById(`textarea-${item.id}`).value;
+                  updateItem(item.id, val);
+                }}
+                className="btn-primary"
+                style={{ width: 'auto', padding: '8px 24px', fontSize: '12px', borderRadius: '8px' }}
+              >
+                <Save size={14} /> SALVAR ALTERAÇÃO
+              </button>
+            </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#94A3B8', fontSize: '11px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: '#94A3B8', fontSize: '11px' }}>
               <AlertCircle size={12} />
-              <span>O salvamento é automático ao sair do campo (onBlur).</span>
+              <span>Clique em Salvar para persistir as mudanças no banco de dados e no aplicativo.</span>
             </div>
           </div>
         ))}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Filter, Mail, Phone, MapPin, Tag, RefreshCw, FileSpreadsheet } from 'lucide-react';
+import { Users, Search, Mail, Phone, MapPin, RefreshCw, Edit2 } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
-const MembersListCMS = () => {
+const MembersListCMS = ({ onEditUser = () => {} }) => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeType, setActiveType] = useState('all');
@@ -73,7 +73,6 @@ const MembersListCMS = () => {
                 </button>
             </header>
 
-            {/* FILTROS POR TIPO */}
             <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 {userTypes.map(type => (
                     <button 
@@ -91,7 +90,6 @@ const MembersListCMS = () => {
                 ))}
             </div>
 
-            {/* BUSCA */}
             <div style={{ position: 'relative', marginBottom: '32px' }}>
                 <Search size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
                 <input 
@@ -106,7 +104,6 @@ const MembersListCMS = () => {
                 />
             </div>
 
-            {/* TABELA DE MEMBROS */}
             <div className="card-main" style={{ padding: 0, overflow: 'hidden' }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -117,6 +114,7 @@ const MembersListCMS = () => {
                                 <th style={thStyle}>Contato</th>
                                 <th style={thStyle}>Localização</th>
                                 <th style={thStyle}>Tipo de Inscrito</th>
+                                <th style={thStyle}>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -129,7 +127,9 @@ const MembersListCMS = () => {
                                             </div>
                                             <div>
                                                 <p style={{ fontWeight: '800', color: 'white', fontSize: '14px' }}>{m.name}</p>
-                                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>ID: {m.id.substring(0,8)}</p>
+                                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
+                                                  ID: {m.id ? String(m.id).substring(0, 8) : '---'}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>

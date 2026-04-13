@@ -54,6 +54,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState({ attendees: 0, posts: 0, notifications: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
   const [emergencyText, setEmergencyText] = useState('');
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastAudience, setBroadcastAudience] = useState('all');
@@ -271,11 +272,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'home': return <HomeCMS />;
       case 'media': return <MediaCMS />;
       case 'schedule': return <ScheduleCMS />;
-      case 'users': return <UserManagementCMS />;
+      case 'users': return <UserManagementCMS initialUser={selectedUserForEdit} onClearSelection={() => setSelectedUserForEdit(null)} />;
       case 'sponsors': return <SponsorsCMS />;
       case 'texts': return <TextContentCMS />;
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
-      case 'members': return <MembersListCMS />;
+      case 'members': return <MembersListCMS onEditUser={(u) => { setSelectedUserForEdit(u); setActiveMenu('users'); }} />;
       default: return null;
     }
   };
@@ -372,11 +373,17 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           --card-bg: rgba(25, 25, 25, 0.7); 
           --border-color: rgba(255, 255, 255, 0.08); 
           --text-main: #f8fafc; 
-          --text-muted: #94a3b8; 
-          --brand: #D4C19C; /* Gold */
+          --text-main: #FFFFFF; 
+          --text-muted: #CBD5E1; 
+          --brand: #D4C19C; 
           --gold: #D4C19C;
           --success: #10b981;
           --font-sans: 'Outfit', sans-serif;
+        }
+
+        .admin-mode input, .admin-mode select, .admin-mode textarea {
+          color: #000000 !important;
+          background-color: #FFFFFF !important;
         }
 
         .admin-container {
@@ -541,6 +548,12 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           color: #FFFFFF !important;
           font-weight: 900 !important;
         }
+
+        /* Corrigir visibilidade de textos secundários */
+        .stat-label { color: rgba(255,255,255,0.9) !important; }
+        .menu-label { color: rgba(255,255,255,0.8) !important; }
+        .menu-item.active .menu-label { color: #FFFFFF !important; }
+        p, span { color: rgba(255,255,255,0.8); }
       `}} />
     </div>
   );

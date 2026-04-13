@@ -34,6 +34,13 @@ const HomeTab = ({
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
   onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, userCpf
 }) => {
+  const displaySafe = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && val.text) return val.text;
+    if (typeof val === 'object' && val.rendered) return val.rendered;
+    return String(val);
+  };
   const { content: shortcutsData } = useContent('home', 'home_shortcuts');
   const { content: confirmedSpeakersData } = useContent('home', 'home_confirmed_speakers');
   const { content: homeBadge } = useContent('home', 'home_badge_text');
@@ -195,7 +202,7 @@ const HomeTab = ({
           {/* Removido o logo centralizado para dar espaço ao vídeo */}
 
           <div style={{ marginBottom: '12px' }}>
-            <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>{homeBadge}</span>
+            <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>{displaySafe(homeBadge)}</span>
           </div>
           <h1 style={{ 
             fontFamily: 'var(--font-serif)', 
@@ -205,16 +212,16 @@ const HomeTab = ({
             marginBottom: '16px',
             color: 'white'
           }}>
-            {homeTitle} <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>{homeSubtitle}</span>
+            {displaySafe(homeTitle)} <br/>
+            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>{displaySafe(homeSubtitle)}</span>
           </h1>
           
           <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <MapPin size={12} color="var(--gold)" /> {homeLocation}
+              <MapPin size={12} color="var(--gold)" /> {displaySafe(homeLocation)}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <Calendar size={12} color="var(--gold)" /> {homeDateRange}
+              <Calendar size={12} color="var(--gold)" /> {displaySafe(homeDateRange)}
             </div>
           </div>
 
@@ -371,17 +378,38 @@ const HomeTab = ({
       <CarouselSection 
          title="Patrocinadores Master"
          items={sponsors}
-         renderItem={(s) => (
-           <div 
-             onClick={() => setSelectedSponsor(s)}
-             style={{ 
-               width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
-               borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-               boxShadow: 'var(--shadow-sm)'
-             }}>
-             <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-           </div>
-         )}
+         renderItem={(s) => {
+           if (s) {
+             // Formatar dados para o padrão esperado pelo componente
+             const formatted = sponsors.map(s => {
+               let dateStr = '01/05';
+               try {
+                 if (s.session_date) {
+                    const [y, m, d] = s.session_date.split('-');
+                    dateStr = `${d}/${m}`;
+                 }
+               } catch(e) { console.error(e); }
+
+               return {
+                 id: s.id,
+                 date: dateStr,
+                 time: s.start_time ? s.start_time.slice(0, 5) : '00:00',
+                 title: s.title || 'Sem título'
+               };
+             });
+           }
+           return (
+             <div 
+               onClick={() => setSelectedSponsor(s)}
+               style={{ 
+                 width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
+                 borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                 boxShadow: 'var(--shadow-sm)'
+               }}>
+               <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+             </div>
+           );
+         }}
        />
 
        {/* OFICINAS - CARROSSEL */}
@@ -427,7 +455,9 @@ const HomeTab = ({
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{session.title}</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{session.speakers?.name || 'A confirmar'}</p>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    {Array.isArray(session.speakers) ? (session.speakers[0]?.name || 'A confirmar') : (session.speakers?.name || 'A confirmar')}
+                  </p>
                 </div>
                 <ChevronRight size={18} color="#CBD5E0" />
               </div>

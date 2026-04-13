@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck } from 'lucide-react';
+import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
-const UserManagementCMS = () => {
+const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
     const [newUser, setNewUser] = useState({
         name: '',
         cpf: '',
@@ -18,13 +19,19 @@ const UserManagementCMS = () => {
         loadData();
     }, []);
 
+    useEffect(() => {
+        if (initialUser) {
+            setNewUser(initialUser);
+            setIsEditing(true);
+        }
+    }, [initialUser]);
+
     const loadData = async () => {
         setLoading(true);
         try {
             const members = await fetchAllMembers();
             const profiles = await fetchAllProfiles();
             
-            // Cruzar dados para pegar o user_type do perfil
             const combined = members.map(m => {
                 const profile = profiles.find(p => p.cpf === m.cpf);
                 return {
@@ -49,8 +56,10 @@ const UserManagementCMS = () => {
         setLoading(true);
         try {
             await createOrUpdateAdminUser(newUser);
-            alert('Usuário configurado com sucesso!');
+            alert(isEditing ? 'Perfil atualizado com sucesso!' : 'Novo usuário configurado!');
             setNewUser({ name: '', cpf: '', email: '', user_type: 'staff' });
+            setIsEditing(false);
+            onClearSelection();
             loadData();
         } catch (e) {
             alert('Erro: ' + e.message);
@@ -79,13 +88,19 @@ const UserManagementCMS = () => {
 
     return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
-            {/* CRIAR USUÁRIO */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
+                <div style={{ 
+                    background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', 
+                    border: isEditing ? '2px solid var(--gold)' : '1px solid var(--border-color)', 
+                    backdropFilter: 'blur(10px)', position: 'relative' 
+                }}>
                     <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
-                        <UserPlus size={20} color="var(--gold)" /> Configurar Acesso
+                        {isEditing ? <Shield size={20} color="var(--gold)" /> : <UserPlus size={20} color="var(--gold)" />}
+                        {isEditing ? 'Edição de Perfil' : 'Configurar Acesso'}
                     </h3>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>Adicione ou atualize permissões de usuários.</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '24px' }}>
+                        {isEditing ? `Alterando dados de ${newUser.name}` : 'Adicione ou atualize permissões de usuários.'}
+                    </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div style={inputGroupStyle}>
@@ -142,20 +157,37 @@ const UserManagementCMS = () => {
                             onClick={handleCreateUser}
                             disabled={loading}
                             className="btn-primary"
-                            style={{ width: '100%', textTransform: 'uppercase' }}
+                            style={{ 
+                                width: '100%', textTransform: 'uppercase', height: '48px', 
+                                background: isEditing ? 'var(--gold)' : 'var(--primary)',
+                                color: isEditing ? '#000' : '#FFF'
+                             }}
                         >
-                            <Save size={18} /> SALVAR USUÁRIO
+                            {isEditing ? <Save size={18} /> : <UserPlus size={18} />} 
+                            {isEditing ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR ACESSO'}
                         </button>
+
+                        {isEditing && (
+                            <button 
+                                onClick={() => {
+                                    setIsEditing(false);
+                                    setNewUser({ name: '', cpf: '', email: '', user_type: 'staff' });
+                                    onClearSelection();
+                                }}
+                                style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                            >
+                                <X size={14} /> CANCELAR EDIÇÃO
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* LISTAGEM */}
             <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#FFFFFF' }}>Gerenciamento de Usuários</h3>
                     <button 
-                        type="submit" 
+                        type="button" 
                         disabled={loading}
                         onClick={loadData}
                         style={{ width: 'auto', padding: '12px 20px', borderRadius: '12px', background: 'var(--primary)', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
@@ -172,8 +204,6 @@ const UserManagementCMS = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{ ...inputStyle, paddingLeft: '40px' }}
-                        onFocus={(e) => { e.target.style.borderColor = 'var(--gold)'; e.target.style.background = 'rgba(255,255,255,0.1)'; }}
-                        onBlur={(e) => { e.target.style.borderColor = 'var(--border-color)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                     />
                 </div>
 
@@ -205,11 +235,12 @@ const UserManagementCMS = () => {
                                                     email: u.email || '',
                                                     user_type: u.user_type || 'congressista'
                                                 });
+                                                setIsEditing(true);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
                                             style={{ background: 'rgba(212, 193, 156, 0.1)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: 'none', cursor: 'pointer' }}
                                         >
-                                            GERENCIAR
+                                            EDITAR
                                         </button>
                                         <button 
                                             onClick={() => handleDelete(u.cpf, u.name)}

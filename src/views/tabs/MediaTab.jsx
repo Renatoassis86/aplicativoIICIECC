@@ -4,6 +4,7 @@ import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteComm
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
 import PostOptionsModal from '../../components/networking/PostOptionsModal';
 import CommentsSheet from '../../components/networking/CommentsSheet';
+import MediaPlayerModal from '../../components/media/MediaPlayerModal';
 
 import { useContent } from '../../hooks/useContent';
 
@@ -61,8 +62,17 @@ export default function MediaTab({ userType, userName, userCpf }) {
   // Helper para evitar erro #31 (objetos no JSX)
   const displaySafe = (val, fallback = '') => {
     if (!val) return fallback;
-    if (typeof val === 'object') return fallback;
-    return val;
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && val.text) return val.text;
+    if (typeof val === 'object' && val.rendered) return val.rendered;
+    return fallback;
+  };
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   const [posts, setPosts] = useState([]);
@@ -78,6 +88,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
   const [hiddenPosts, setHiddenPosts] = useState([]);
+  const [selectedAsset, setSelectedAsset] = useState(null);
 
   // Determina metadados do autor para postagem
   const getAuthorMetaData = (type) => {
@@ -367,7 +378,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
                 title="🎙️ Podcast CIECC"
                 items={mediaAssets.filter(a => a.media_type === 'audio' || a.title.toLowerCase().includes('podcast'))}
                 renderItem={(a) => (
-                  <div style={{ width: '150px', background: 'var(--primary)', color: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div 
+                    onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'audio' })}
+                    style={{ width: '150px', background: 'var(--primary)', color: 'white', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
                     <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '50%' }}><Play size={16} fill="white" /></div>
                     <p style={{ fontSize: '11px', fontWeight: '700', lineHeight: '1.2' }}>{a.title}</p>
                   </div>
@@ -379,12 +393,19 @@ export default function MediaTab({ userType, userName, userCpf }) {
               <MovingCarousel 
                 title="🎥 Entrevistas & Bastidores"
                 items={mediaAssets.filter(a => a.media_type === 'video')}
-                renderItem={(a) => (
-                  <div style={{ width: '200px', height: '112px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-                    <img src={`https://img.youtube.com/vi/${a.url_or_path.split('/').pop()}/mqdefault.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}><Play size={20} color="white" fill="white" /></div>
-                  </div>
-                )}
+                renderItem={(a) => {
+                  const yid = getYoutubeId(a.url_or_path);
+                  const thumb = yid ? `https://img.youtube.com/vi/${yid}/mqdefault.jpg` : 'https://via.placeholder.com/200x112';
+                  return (
+                    <div 
+                      onClick={() => setSelectedAsset({ title: a.title, url: a.url_or_path, description: a.description, media_type: 'video' })}
+                      style={{ width: '200px', height: '112px', borderRadius: '16px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}
+                    >
+                      <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '50%' }}><Play size={20} color="white" fill="white" /></div>
+                    </div>
+                  );
+                }}
               />
             )}
 
@@ -558,6 +579,13 @@ export default function MediaTab({ userType, userName, userCpf }) {
            onAddComment={handleAddComment}
            onDeleteComment={handleDeleteComment}
            onLike={handleLikeComment}
+        />
+      )}
+
+      {selectedAsset && (
+        <MediaPlayerModal 
+          media={selectedAsset}
+          onClose={() => setSelectedAsset(null)}
         />
       )}
 
