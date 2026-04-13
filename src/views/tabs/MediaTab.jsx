@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, ShieldCheck, RefreshCw, MoreHorizontal, PlusSquare, ChevronRight, BookmarkCheck, Play, Pin, Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, toggleLikePost, toggleSavePost, postComment, deleteCommentApi, deletePostApi, toggleLikeComment, togglePinPost, toggleArchivePost } from '../../services/social/socialService';
 import SocialPostCreator from '../../components/networking/SocialPostCreator';
@@ -11,25 +11,46 @@ import { useContent } from '../../hooks/useContent';
 
 /**
  * SOCIAL / MEDIA TAB
- * Feed Institucional estilo Instagram com Algoritmo de Patrocínios.
- * Suporta Carrossel, Imagem Única e Reels.
+ * Feed Institucional estilo Instagram + Acervo Digital (Flash, Podcasts, etc)
  */
 
-const NativeCarousel = ({ title, items, renderItem }) => {
+const NativeCarousel = ({ title, items, onSelect }) => {
+  if (items.length === 0) return null;
+  
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <h5 style={{ padding: '0 20px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>{title}</h5>
+    <div style={{ marginBottom: '32px' }}>
+      <div style={{ padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <h5 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</h5>
+        <div style={{ padding: '2px 8px', background: 'rgba(0,0,0,0.05)', borderRadius: '6px', fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)' }}>{items.length} ITENS</div>
+      </div>
       <div 
         style={{ 
-          display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 20px 10px',
-          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-          scrollSnapType: 'x mandatory'
+          display: 'flex', gap: '14px', overflowX: 'auto', padding: '0 20px 10px',
+          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
         }}
         className="no-scrollbar"
       >
-        {items.map((item, i) => (
-          <div key={i} style={{ flexShrink: 0, scrollSnapAlign: 'start' }}>
-            {renderItem(item)}
+        {items.map((item) => (
+          <div 
+            key={item.id} 
+            onClick={() => onSelect(item)}
+            style={{ 
+              flexShrink: 0, width: '160px', cursor: 'pointer',
+              background: 'white', borderRadius: '20px', overflow: 'hidden',
+              boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.03)'
+            }}
+          >
+            <div style={{ width: '100%', height: '100px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                {item.media_type === 'video' ? <Clapperboard color="white" size={32} opacity={0.3} /> : <Podcast color="white" size={32} opacity={0.3} />}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%)' }}></div>
+                <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--primary)', padding: '6px', borderRadius: '50%' }}>
+                    <Play size={12} color="white" fill="white" />
+                </div>
+            </div>
+            <div style={{ padding: '12px' }}>
+               <h6 style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', height: '32px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.2' }}>{item.title}</h6>
+               <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', fontWeight: '700' }}>{item.media_type === 'video' ? 'Vídeo' : 'Áudio'}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -40,19 +61,8 @@ const NativeCarousel = ({ title, items, renderItem }) => {
 export default function MediaTab({ userType, userName, userCpf }) {
   const { content: mediaTitle } = useContent('titles', 'page_media');
   
-  // Helper para evitar erro #31 (objetos no JSX)
-  const displaySafe = (val, fallback = '') => {
-    if (!val) return fallback;
-    if (typeof val === 'string') return val;
-    if (typeof val === 'object' && val.text) return val.text;
-    if (typeof val === 'object' && val.rendered) return val.rendered;
-    return fallback;
-  };
-
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [speakers, setSpeakers] = useState([]);
-  const [allSponsors, setAllSponsors] = useState([]);
   const [mediaAssets, setMediaAssets] = useState([]);
   
   // UI States
@@ -64,47 +74,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const [hiddenPosts, setHiddenPosts] = useState([]);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
-  // Determina metadados do autor para postagem
-  const getAuthorMetaData = (type) => {
-    const roleId = (type || 'congressista').toLowerCase();
-    
-    // Organizadores / Admins / Staff
-    if (['organizador', 'admin', 'staff', 'master'].some(r => roleId.includes(r))) {
-      return { role: 'Organizador', tier: 4 }; // Nível Diamante para destaque
-    }
-
-    // Patrocinadores
-    if (roleId.includes('diamante') || roleId.includes('master')) return { role: 'Patrocinador Diamante', tier: 4 };
-    if (roleId.includes('ouro') || roleId.includes('gold')) return { role: 'Patrocinador Ouro', tier: 3 };
-    if (roleId.includes('prata') || roleId.includes('silver')) return { role: 'Patrocinador Prata', tier: 2 };
-    if (roleId.includes('bronze')) return { role: 'Patrocinador Bronze', tier: 1 };
-    
-    // Patrocinador Genérico
-    if (roleId.includes('patrocinador') || roleId.includes('sponsor')) return { role: 'Patrocinador', tier: 1 };
-
-    return { 
-      role: type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Congressista', 
-      tier: 0 
-    };
-  };
-
-  const authorMeta = getAuthorMetaData(userType);
-  const privilegedRoles = ['organizador', 'admin', 'staff', 'master', 'patrocinador', 'sponsor', 'mantenedor', 'expositor', 'parceiro'];
-  const canPost = privilegedRoles.some(r => (userType || '').toLowerCase().includes(r));
-
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [postsData, spkData, spnData, astData] = await Promise.all([
+      const [postsData, astData] = await Promise.all([
         fetchFeedPosts(userCpf),
-        supabase.from('speakers').select('*').limit(15),
-        supabase.from('sponsors').select('*').eq('active', true).order('order_index'),
-        supabase.from('media_assets').select('*').limit(20)
+        supabase.from('media_assets').select('*').order('created_at', { ascending: false })
       ]);
       
       setPosts(postsData || []);
-      setSpeakers(spkData.data || []);
-      setAllSponsors(spnData.data || []);
       setMediaAssets(astData.data || []);
     } catch (e) {
       console.error("[MediaTab] Error loading data:", e);
@@ -116,33 +94,15 @@ export default function MediaTab({ userType, userName, userCpf }) {
     loadInitialData();
   }, [userCpf]);
 
-  const handlePinPost = async (postId, currentPinState) => {
-    try {
-      await togglePinPost(postId, currentPinState);
-      loadInitialData(); 
-    } catch (e) {
-      console.error("[handlePinPost]", e);
-    }
-  };
+  // Agrupamento por Categorias para o Acervo Digital
+  const groupedAssets = mediaAssets.reduce((acc, asset) => {
+    const cat = asset.category || 'Outros';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(asset);
+    return acc;
+  }, {});
 
-  const handleArchivePost = async (postId, currentArchiveState) => {
-    try {
-      await toggleArchivePost(postId, currentArchiveState);
-      loadInitialData(); 
-    } catch (e) {
-      console.error("[handleArchivePost]", e);
-    }
-  };
-
-  const handleEditPost = (post) => {
-    setEditingPost(post);
-    setActiveOptionsPost(null);
-  };
-
-  const handleHidePost = (postId) => {
-    setHiddenPosts(prev => [...prev, postId]);
-    setActiveOptionsPost(null);
-  };
+  const liveStreams = mediaAssets.filter(a => a.is_live_stream);
 
   const handleLike = async (postId, currentState) => {
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likedByMe: !currentState, likes: currentState ? p.likes - 1 : p.likes + 1 } : p));
@@ -157,40 +117,12 @@ export default function MediaTab({ userType, userName, userCpf }) {
   const handleAddComment = async (postId, text, parentId = null) => {
     const newComment = await postComment(postId, text, userName || 'Congressista', userCpf, parentId);
     if (!newComment) return;
-
-    const findAndAddRecursive = (list) => (list || []).map(c => {
-      if (c.id === parentId) return { ...c, replies: [...(c.replies || []), newComment] };
-      if (c.replies?.length > 0) return { ...c, replies: findAndAddRecursive(c.replies) };
-      return c;
-    });
-
-    setPosts(prev => prev.map(p => {
-      if (p.id !== postId) return p;
-      if (!parentId) return { ...p, comments: [...(p.comments || []), newComment], comments_count: (p.comments_count || 0) + 1 };
-      return { ...p, comments: findAndAddRecursive(p.comments), comments_count: (p.comments_count || 0) + 1 };
-    }));
+    loadInitialData();
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    const removeRecursive = (list) => (list || []).filter(c => c.id !== commentId).map(c => ({
-      ...c, replies: removeRecursive(c.replies)
-    }));
-
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: removeRecursive(p.comments) } : p));
     await deleteCommentApi(commentId);
-  };
-
-  const handleLikeComment = async (postId, commentId, currentState) => {
-    const updateLikeRecursive = (list) => (list || []).map(c => {
-      if (c.id === commentId) {
-        return { ...c, likedByMe: !currentState, likes: currentState ? (c.likes || 0) - 1 : (c.likes || 0) + 1 };
-      }
-      if (c.replies?.length > 0) return { ...c, replies: updateLikeRecursive(c.replies) };
-      return c;
-    });
-
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: updateLikeRecursive(p.comments) } : p));
-    await toggleLikeComment(commentId, currentState, userCpf);
+    loadInitialData();
   };
 
   const handleDeletePost = async (postId) => {
@@ -199,65 +131,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
   };
 
   const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
-    .filter(p => !hiddenPosts.includes(p.id))
-    .filter(p => !p.isArchived || viewingSaved);
-
-  const [muted, setMuted] = useState(true);
-
-  const renderMedia = (post) => {
-    if (post.mediaType === 'reel' || (post.mediaUrls[0]?.endsWith('.mp4'))) {
-      return (
-        <div 
-          onClick={() => setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
-          style={{ width: '100%', maxHeight: '600px', background: '#000', position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
-        >
-          <video 
-            src={post.mediaUrls[0]} 
-            style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} 
-            autoPlay loop muted={muted} playsInline 
-          />
-          <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '8px', color: 'white' }}>
-            <Play size={16} />
-          </div>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '50%' }}>
-            <Play size={32} color="white" fill="white" />
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <div style={{ 
-        width: '100%', 
-        minHeight: '200px', 
-        maxHeight: '600px',
-        background: '#000', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        overflow: 'hidden'
-      }}>
-        {post.mediaType === 'carousel' ? (
-           <div style={{ width: '100%', display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}>
-            {post.mediaUrls.map((url, i) => (
-              <div key={i} style={{ minWidth: '100%', scrollSnapAlign: 'start', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src={url} alt="carousel" style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} />
-                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800' }}>
-                  {i + 1} / {post.mediaUrls.length}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <img 
-             src={post.mediaUrls[0] || post.imageUrl} 
-             alt="feed" 
-             style={{ width: '100%', maxHeight: '600px', objectFit: 'contain' }} 
-          />
-        )}
-      </div>
-    );
-  };
+    .filter(p => !hiddenPosts.includes(p.id));
 
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px', background: '#F8F9FA' }}>
@@ -266,39 +140,73 @@ export default function MediaTab({ userType, userName, userCpf }) {
       <section style={{ 
         padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 20px', 
         background: 'var(--primary)', borderBottom: '1px solid rgba(255,255,255,0.1)',
-        position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        position: 'sticky', top: 0, zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         color: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {viewingSaved && <button onClick={() => setViewingSaved(false)} style={{ background: 'none', border: 'none', padding: 0 }}><ChevronRight size={24} color="white" style={{ transform: 'rotate(180deg)' }} /></button>}
-          <img src="/logo.png" alt="" style={{ height: '24px', marginRight: '4px', filter: 'brightness(0) invert(1)' }} />
+          <img src="/logo.png" alt="" style={{ height: '24px', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: '800', color: 'white' }}>
-            {viewingSaved ? 'Itens Salvos' : displaySafe(mediaTitle, 'CONECTAR')}
+            {viewingSaved ? 'Itens Salvos' : 'CONECTAR'}
           </h1>
         </div>
 
         <div style={{ display: 'flex', gap: '20px', color: 'white' }}>
-          {canPost && !viewingSaved && (
-            <button onClick={() => setShowCreator(true)} style={{ background: 'none', border: 'none', padding: 0, position: 'relative' }}>
-              <PlusSquare size={24} color="white" />
+            <button onClick={() => setViewingSaved(!viewingSaved)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                {viewingSaved ? <BookmarkCheck size={24} color="white" /> : <Bookmark size={24} color="white" />}
             </button>
-          )}
-          <button onClick={() => setViewingSaved(!viewingSaved)} style={{ background: 'none', border: 'none', padding: 0 }}>
-            {viewingSaved ? <BookmarkCheck size={24} color="white" /> : <Bookmark size={24} color="white" />}
-          </button>
         </div>
       </section>
 
-      {/* FEED */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
-        
-        {!viewingSaved && !loading && (
-          <div style={{ padding: '8px 0' }}>
-            {/* Feed Social - Espaço para as Stories ou Destaques do Feed se necessário, 
-                mas mantendo o foco total nas postagens do feed validado */}
-          </div>
-        )}
+      {/* AO VIVO / DESTAQUE */}
+      {liveStreams.length > 0 && !viewingSaved && (
+        <section style={{ padding: '20px 20px 0' }}>
+            {liveStreams.map(live => (
+                <div key={live.id} onClick={() => setSelectedAsset(live)} style={{ 
+                    background: 'linear-gradient(90deg, #4A101D 0%, #6B141A 100%)', 
+                    borderRadius: '24px', padding: '20px', color: 'white', display: 'flex', gap: '16px', alignItems: 'center',
+                    boxShadow: '0 8px 24px var(--primary-glow)', border: '1px solid rgba(255,255,255,0.1)',
+                    marginBottom: '24px', cursor: 'pointer'
+                }}>
+                    <div style={{ position: 'relative' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Radio size={28} className="animate-pulse" />
+                        </div>
+                        <span style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>LIVE</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>Transmissão em Tempo Real</p>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginTop: '4px' }}>{live.title}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', opacity: 0.8 }}>
+                            <MonitorPlay size={14} /> <span style={{ fontSize: '12px', fontWeight: '600' }}>Toque para assistir agora</span>
+                        </div>
+                    </div>
+                    <ChevronRight size={20} color="var(--gold)" />
+                </div>
+            ))}
+        </section>
+      )}
 
+      {/* ACERVO DIGITAL (Flash, Podcasts, etc) */}
+      {!viewingSaved && (
+        <div style={{ paddingTop: '20px' }}>
+          {Object.entries(groupedAssets).filter(([k]) => k !== 'Outros').map(([category, items]) => (
+            <NativeCarousel 
+              key={category} 
+              title={category} 
+              items={items} 
+              onSelect={setSelectedAsset} 
+            />
+          ))}
+        </div>
+      )}
+
+      {/* FEED SOCIAL */}
+      <h5 style={{ padding: '20px 20px 10px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        {viewingSaved ? 'Galeria de Salvos' : 'Feed da Comunidade'}
+      </h5>
+      
+      <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {loading ? (
           <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
             <RefreshCw size={32} color="var(--primary)" className="spin" style={{ marginBottom: '16px' }} />
@@ -308,19 +216,18 @@ export default function MediaTab({ userType, userName, userCpf }) {
            <div style={{ padding: '80px 20px', textAlign: 'center' }}>
              <Bookmark size={48} color="rgba(0,0,0,0.1)" style={{ margin: '0 auto 16px' }} />
              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>{viewingSaved ? 'Nenhum item salvo' : 'Sem Publicações'}</h3>
-             <p style={{ color: 'var(--text-muted)' }}>{viewingSaved ? 'Suas publicações favoritas aparecerão aqui.' : 'Nenhuma conexão feita ainda. Seja o primeiro!'}</p>
            </div>
         ) : (
           visiblePosts.map(post => (
-            <article key={post.id} className="fade-in" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+            <article key={post.id} className="fade-in" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '12px' }}>
               <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ 
                     width: '42px', height: '42px', borderRadius: '50%',
-                    background: post.tier ? 'white' : 'var(--gold)', color: post.tier ? post.tier.color : 'var(--primary)',
+                    background: post.isSponsor ? 'white' : 'var(--gold)', color: 'var(--primary)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'var(--font-serif)', fontWeight: '900', fontSize: '18px',
-                    border: post.tier ? `2px solid ${post.tier.color}` : '2px solid rgba(212, 193, 156, 0.3)'
+                    border: post.isSponsor ? `2px solid var(--gold)` : 'none'
                   }}>
                     {post.sponsorAvatar}
                   </div>
@@ -328,13 +235,8 @@ export default function MediaTab({ userType, userName, userCpf }) {
                     <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {post.sponsorName}
                       {post.isSponsor && <ShieldCheck size={14} color="#38A169" />}
-                      {post.isPinned && <Pin size={14} color="var(--primary)" fill="var(--primary)" />}
                     </h4>
-                    {post.tier ? (
-                       <p style={{ fontSize: '11px', color: post.tier.color, fontWeight: '800', textTransform: 'uppercase' }}>{post.tier.name}</p>
-                    ) : (
-                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>{post.sponsorRole}</p>
-                    )}
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>{post.sponsorRole}</p>
                   </div>
                 </div>
                 <button onClick={() => setActiveOptionsPost(post)} style={{ background: 'none', border: 'none', padding: '4px' }}>
@@ -342,62 +244,51 @@ export default function MediaTab({ userType, userName, userCpf }) {
                 </button>
               </div>
 
-              {renderMedia(post)}
-
-              <div style={{ padding: '12px 16px 4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <button onClick={() => handleLike(post.id, post.likedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
-                    <Heart size={26} color={post.likedByMe ? "#E53E3E" : "var(--text-main)"} fill={post.likedByMe ? "#E53E3E" : "none"} />
-                  </button>
-                  <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0 }}>
-                    <MessageCircle size={26} color="var(--text-main)" />
-                  </button>
-                </div>
-                <button onClick={() => handleSave(post.id, post.savedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
-                   <Bookmark size={26} color={post.savedByMe ? "var(--primary)" : "var(--text-main)"} fill={post.savedByMe ? "var(--primary)" : "none"} />
-                </button>
+              {/* MEDIA RENDER */}
+              <div 
+                onClick={() => post.mediaType === 'reel' && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
+                style={{ width: '100%', background: '#000', borderRadius: '0' }}
+              >
+                {post.mediaType === 'reel' ? (
+                   <video src={post.mediaUrls[0]} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} muted playsInline autoPlay loop />
+                ) : (
+                   <img src={post.mediaUrls[0] || post.imageUrl} alt="" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} />
+                )}
               </div>
 
-              <div style={{ padding: '0 16px 16px 16px' }}>
-                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px' }}>{post.likes.toLocaleString()} curtidas</p>
-                <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.4', marginBottom: '8px' }}>
+              <div style={{ padding: '12px 16px 16px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <button onClick={() => handleLike(post.id, post.likedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                            <Heart size={26} color={post.likedByMe ? "#E53E3E" : "var(--text-main)"} fill={post.likedByMe ? "#E53E3E" : "none"} />
+                        </button>
+                        <button onClick={() => setActiveCommentsPost(post)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                            <MessageCircle size={26} color="var(--text-main)" />
+                        </button>
+                    </div>
+                    <button onClick={() => handleSave(post.id, post.savedByMe)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                        <Bookmark size={26} color={post.savedByMe ? "var(--primary)" : "var(--text-main)"} fill={post.savedByMe ? "var(--primary)" : "none"} />
+                    </button>
+                </div>
+                <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '4px' }}>{post.likes.toLocaleString()} curtidas</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.4' }}>
                   <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{post.sponsorName}</span>
                   {post.caption}
                 </p>
-                {post.taggedUsers?.length > 0 && (
-                  <p style={{ fontSize: '13px', color: '#0095F6', fontWeight: '700', marginBottom: '8px' }}>Com: {post.taggedUsers.map(name => `@${name}`).join(', ')}</p>
-                )}
-                {post.comments?.length > 0 && (
-                  <div style={{ marginBottom: '8px' }}>
-                    {post.comments.slice(0, 3).map(c => (
-                      <p key={c.id} style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: '700', marginRight: '6px' }}>{c.authorName}</span>{c.text}
-                      </p>
-                    ))}
-                  </div>
-                )}
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>{post.timeAgo}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600', marginTop: '8px' }}>{post.timeAgo}</p>
               </div>
             </article>
           ))
         )}
       </section>
 
-      {(showCreator || editingPost) && (
-        <SocialPostCreator 
-          isEdit={!!editingPost} initialPost={editingPost}
-          sponsorName={userName || 'Expositor'} sponsorRole={authorMeta.role} sponsorTier={authorMeta.tier}
-          userId={userCpf} onClose={() => { setShowCreator(false); setEditingPost(null); }} 
-          onSuccess={() => { setShowCreator(false); setEditingPost(null); loadInitialData(); }} 
-        />
-      )}
-
+      {/* MODALS */}
+      {selectedAsset && <MediaPlayerModal media={selectedAsset} onClose={() => setSelectedAsset(null)} />}
+      
       {activeOptionsPost && (
         <PostOptionsModal 
            post={activeOptionsPost} userType={userType} userName={userName} 
            onClose={() => setActiveOptionsPost(null)} onDelete={handleDeletePost}
-           onHide={handleHidePost} onPin={handlePinPost} onArchive={handleArchivePost}
-           onSave={handleSave} onEdit={handleEditPost}
         />
       )}
 
@@ -409,8 +300,6 @@ export default function MediaTab({ userType, userName, userCpf }) {
            onDeleteComment={handleDeleteComment} onLike={handleLikeComment}
         />
       )}
-
-      {selectedAsset && <MediaPlayerModal media={selectedAsset} onClose={() => setSelectedAsset(null)} />}
 
       <style dangerouslySetInnerHTML={{__html: `
         .spin { animation: spin 1s linear infinite; }
