@@ -60,6 +60,8 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
   const getDriveUrl = (id) => `https://lh3.googleusercontent.com/d/${id}`;
 
   const getImageUrl = (item) => {
+    if (!item) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
+    
     if (item.source_type === 'link') {
       const url = item.url_or_path || '';
       if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -69,12 +71,17 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop'; // Default
     }
     // Para uploads, pegar URL pública do Supabase
+    if (!item.url_or_path) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
+    
     const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
     return data.publicUrl;
   };
 
   const getMediaUrl = (item) => {
-    if (item.source_type === 'link') return item.url_or_path;
+    if (!item) return '';
+    if (item.source_type === 'link') return item.url_or_path || '';
+    if (!item.url_or_path) return '';
+    
     const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
     return data.publicUrl;
   };

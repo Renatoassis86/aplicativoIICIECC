@@ -7,6 +7,7 @@ import {
   Clock, 
   MapPin, 
   User,
+  Heart,
   ExternalLink,
   FileText
 } from 'lucide-react';
