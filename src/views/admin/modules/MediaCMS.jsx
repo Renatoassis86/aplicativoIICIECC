@@ -96,7 +96,7 @@ const MediaCMS = () => {
                 description: data.description,
                 url: finalUrl,
                 media_type: data.media_type,
-                category: data.category,
+                category: data.category || editingItem?.category || 'Outros',
                 source_type: sourceType,
                 is_live_stream: data.is_live_stream === 'on',
                 updated_at: new Date().toISOString()

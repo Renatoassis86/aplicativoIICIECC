@@ -200,7 +200,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
       {/* ACERVO DIGITAL (Flash, Podcasts, etc) */}
       {!viewingSaved && (
         <div style={{ paddingTop: '20px' }}>
-          {Object.entries(groupedAssets).filter(([k]) => k !== 'Outros').map(([category, items]) => (
+          {Object.entries(groupedAssets).map(([category, items]) => (
             <NativeCarousel 
               key={category} 
               title={category} 

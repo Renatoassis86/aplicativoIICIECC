@@ -46,6 +46,7 @@ import ScheduleCMS from './modules/ScheduleCMS';
 import UserManagementCMS from './modules/UserManagementCMS';
 import SponsorsCMS from './modules/SponsorsCMS';
 import TextContentCMS from './modules/TextContentCMS';
+import SocialManagementCMS from './modules/SocialManagementCMS';
 import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
@@ -147,6 +148,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'home', label: 'Editar Página Inicial', icon: <Layout size={20} />, color: '#D4C19C' },
     { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#D4C19C' },
     { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#D4C19C' },
+    { id: 'social', label: 'Conectar (Social Feed)', icon: <MessageSquare size={20} />, color: '#D4C19C' },
     { id: 'users', label: 'Gestão de Usuários', icon: <ShieldCheck size={20} />, color: '#D4C19C' },
     { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} />, color: '#D4C19C' },
     { id: 'texts', label: 'Textos & Objetos', icon: <FileText size={20} />, color: '#D4C19C' },
@@ -173,7 +175,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
                 onClick={() => setIsBroadcastOpen(true)}
                 className="btn-primary" 
                 style={{ width: '100%', padding: '18px', fontSize: '16px' }}
-             >
+              >
                 ABRIR PAINEL DE COMUNICADOS
              </button>
           </div>
@@ -181,6 +183,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       );
       case 'home': return <HomeCMS />;
       case 'media': return <MediaCMS />;
+      case 'social': return <SocialManagementCMS />;
       case 'schedule': return <ScheduleCMS />;
       case 'users': return <UserManagementCMS initialUser={selectedUserForEdit} onClearSelection={() => setSelectedUserForEdit(null)} />;
       case 'sponsors': return <SponsorsCMS />;
