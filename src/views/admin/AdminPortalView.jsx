@@ -65,6 +65,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   const [newMaterialUrl, setNewMaterialUrl] = useState('');
 
   useEffect(() => {
+    document.body.classList.add('admin-mode');
+    return () => document.body.classList.remove('admin-mode');
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, []);
 

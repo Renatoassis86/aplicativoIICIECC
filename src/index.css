@@ -52,31 +52,25 @@ body {
    ==========================================================================
 */
 
-/* 1. REGRA PARA FUNDOS CLAROS (Cards, CMS) -> TEXTO PRETO PURO */
-.white-bg, 
-.card,
-[style*="background: white"],
-[style*="background-color: white"],
-[style*="background:white"],
-[style*="background-color:white"],
-[style*="background: #fff"],
-[style*="background:#fff"] {
+/* 1. REGRA PARA FUNDOS CLAROS (App Mobile) -> TEXTO PRETO PURO */
+body:not(.admin-mode) .white-bg, 
+body:not(.admin-mode) .card {
     background-color: #FFFFFF !important;
 }
 
-/* Enfatizar Títulos em Fundos Brancos */
-.white-bg h1, .white-bg h2, .white-bg h3, .white-bg h4, .white-bg h5, .white-bg h6,
-.card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+/* Enfatizar Títulos em Fundos Brancos (Mobile Only) */
+body:not(.admin-mode) .white-bg h1, body:not(.admin-mode) .white-bg h2, body:not(.admin-mode) .white-bg h3, 
+body:not(.admin-mode) .white-bg h4, body:not(.admin-mode) .white-bg h5, body:not(.admin-mode) .white-bg h6,
+body:not(.admin-mode) .card h1, body:not(.admin-mode) .card h2, body:not(.admin-mode) .card h3, 
+body:not(.admin-mode) .card h4, body:not(.admin-mode) .card h5, body:not(.admin-mode) .card h6 {
     color: #000000 !important;
     font-weight: 800 !important;
 }
 
-/* Enfatizar Labels e Textos em Fundos Brancos - Sem afetar botões ou áreas propositalmente escuras */
-.white-bg *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]), 
-.card:not([style*="background"]):not([style*="linear-gradient"]) *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]), 
-[style*="background: white"] *:not(button):not(button *), 
-[style*="background-color: white"] *:not(button):not(button *) {
-    color: #1A202C !important; /* Quase preto para corpo */
+/* Enfatizar Labels e Textos em Fundos Brancos (Mobile Only) */
+body:not(.admin-mode) .white-bg *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]), 
+body:not(.admin-mode) .card:not([style*="background"]):not([style*="linear-gradient"]) *:not(button):not(button *):not([style*="color: white"]):not([style*="color:white"]) {
+    color: #1A202C !important;
 }
 
 /* 2. REGRA PARA FUNDOS ESCUROS (Portal Shell) -> TEXTO BRANCO PURO */
