@@ -6,7 +6,7 @@ import {
 import { 
   TrendingUp, Users, FileText, CheckCircle, AlertCircle, 
   ArrowUpRight, ArrowDownRight, Zap, Target, PieChart as PieIcon,
-  Filter, Download, Calendar, Search, Layers, Brain
+  Filter, Download, Calendar, Search, Layers, Brain, RefreshCw
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -268,8 +268,8 @@ const StrategicDashboardCMS = () => {
                 .dash-metric-card:hover { border-color: var(--brand); background: rgba(255,255,255,0.04); transform: translateY(-3px); }
                 
                 .chart-title { fontSize: 13px; fontWeight: 900; color: white; textTransform: uppercase; letterSpacing: 1px; marginBottom: 4px; }
-                .dash-charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px; }
-                .dash-chart-card { background: rgba(0,0,0,0.25); padding: 32px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.06); }
+                .dash-charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px; }
+                .dash-chart-card { background: rgba(0,0,0,0.25); padding: 24px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.06); }
                 
                 .dash-action-btn { padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: white; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
                 .dash-action-btn.primary { background: var(--brand); color: #000; border: none; }
