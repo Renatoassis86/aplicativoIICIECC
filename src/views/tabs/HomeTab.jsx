@@ -103,7 +103,7 @@ const HomeTab = ({
         // 1. Agenda Favorites
         const { data: agendaFavs } = await supabase
           .from('agenda_favorites')
-          .select('session_id')
+          .select('session_id, created_at')
           .eq('user_cpf', userCpf);
         
         // 2. Social Saves (Garantindo post_save)
@@ -129,7 +129,18 @@ const HomeTab = ({
             .from('agenda_sessions')
             .select('*, speakers(*)')
             .in('id', ids);
-          if (sessions) sessions.forEach(s => unifiedResults.push({ ...s, itemType: 'agenda' }));
+          
+          if (sessions) {
+            sessions.forEach(s => {
+              // Buscar o timestamp original do favorito se possível, ou usar agora
+              const favData = agendaFavs.find(f => f.session_id === s.id);
+              unifiedResults.push({ 
+                ...s, 
+                itemType: 'agenda',
+                created_at: favData?.created_at || new Date().toISOString() 
+              });
+            });
+          }
         }
 
         // Detalhes do Feed Social
@@ -154,7 +165,12 @@ const HomeTab = ({
 
         if (isMounted) {
           // Ordenar por data (mais recentes primeiro)
-          setFavoriteItems(unifiedResults.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+          const sorted = unifiedResults.sort((a, b) => {
+            const dateA = new Date(a.created_at || 0).getTime();
+            const dateB = new Date(b.created_at || 0).getTime();
+            return dateB - dateA;
+          });
+          setFavoriteItems(sorted);
         }
       } catch (err) {
         console.error("[HomeTab] Error fetching unified favorites:", err);

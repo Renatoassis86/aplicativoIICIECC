@@ -227,21 +227,19 @@ const AgendaTab = ({ userCpf }) => {
                  gap: '16px' 
                }}>
                 {dayEvents.map(event => (
-                  <div 
-                    key={event.id} 
-                    className="card" 
-                    style={{ 
-                        padding: '20px', 
-                        display: 'flex', 
-                        flexDirection: viewMode === 'grid' ? 'column' : 'row',
-                        gap: '16px', 
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }} 
-                    onClick={() => setSelectedSession(event)}
-                  >
+                    <div 
+                      key={event.id} 
+                      className="card" 
+                      style={{ 
+                          padding: '20px', 
+                          display: 'flex', 
+                          flexDirection: viewMode === 'grid' ? 'column' : 'row',
+                          gap: '16px', 
+                          transition: 'transform 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden'
+                      }} 
+                    >
                     {/* Borda lateral colorida por categoria se for lista */}
                     {viewMode === 'list' && (
                         <div style={{ 
@@ -295,27 +293,12 @@ const AgendaTab = ({ userCpf }) => {
                       <h4 style={{ fontWeight: '800', fontSize: '17px', lineHeight: '1.3', color: 'var(--secondary)', marginBottom: '8px' }}>{event.title}</h4>
                       
                       <div 
-                        onClick={(e) => {
-                           e.stopPropagation();
-                           if (!event.fullSpeaker) return;
-                           const speaker = event.fullSpeaker;
-                           const mappedSpeaker = {
-                             id: speaker.id,
-                             name: speaker.name,
-                             desc: speaker.institution,
-                             img: speaker.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
-                             category: speaker.category || 'Palestrante',
-                             longBio: speaker.bio,
-                             websiteUrl: speaker.website_url
-                           };
-                           setSelectedSpeaker(mappedSpeaker);
-                        }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', position: 'relative', zIndex: 10 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                       >
                          {event.photo && (
                             <img src={event.photo} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
                          )}
-                         <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textDecoration: 'underline', textDecorationColor: 'var(--gold)' }}>{event.speaker}</p>
+                         <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700' }}>{event.speaker}</p>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
@@ -324,11 +307,7 @@ const AgendaTab = ({ userCpf }) => {
                       </div>
                     </div>
 
-                    {viewMode === 'list' && (
-                        <div style={{ display: 'flex', alignItems: 'center', color: 'var(--border)' }}>
-                            <ChevronRight size={20} />
-                        </div>
-                    )}
+                    {/* Seta removida conforme pedido */}
                   </div>
                 ))}
               </div>
