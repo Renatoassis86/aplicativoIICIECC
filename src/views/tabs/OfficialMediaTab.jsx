@@ -62,39 +62,57 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
   const getImageUrl = (item) => {
     if (!item) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     
-    if (item.source_type === 'link') {
-      const url = item.url_or_path || '';
-      if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        const id = url.split('v=')[1] || url.split('/').pop();
+    // Prioridade para URL do banco
+    const urlValue = item.url || item.url_or_path || '';
+    
+    if (item.source_type === 'link' || urlValue.startsWith('http')) {
+      if (urlValue.includes('youtube.com') || urlValue.includes('youtu.be')) {
+        let id = '';
+        if (urlValue.includes('v=')) {
+          id = urlValue.split('v=')[1].split('&')[0];
+        } else {
+          id = urlValue.split('/').pop();
+        }
         return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
       }
-      return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop'; // Default
+      return urlValue || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     }
-    // Para uploads, pegar URL pública do Supabase
-    if (!item.url_or_path) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     
-    const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
+    // Fallback para storage se não for link direto
+    if (!urlValue) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
+    const { data } = supabase.storage.from('app_media').getPublicUrl(urlValue);
     return data.publicUrl;
   };
 
   const getMediaUrl = (item) => {
     if (!item) return '';
-    if (item.source_type === 'link') return item.url_or_path || '';
-    if (!item.url_or_path) return '';
+    const urlValue = item.url || item.url_or_path || '';
     
-    const { data } = supabase.storage.from('app_media').getPublicUrl(item.url_or_path);
+    if (item.source_type === 'link' || urlValue.startsWith('http')) {
+      return urlValue;
+    }
+    
+    if (!urlValue) return '';
+    const { data } = supabase.storage.from('app_media').getPublicUrl(urlValue);
     return data.publicUrl;
   };
 
-  // FOTOS EM TEMPO REAL (II CIECC 2026)
-  const livePhotos = [
+  // FOTOS EM TEMPO REAL (II CIECC 2026) - Prioridade para o banco
+  const dbLivePhotos = mediaList.filter(m => m.category === 'Flash 2026').map(m => ({
+    id: m.id,
+    label: m.title || 'Flash 2026',
+    url: getImageUrl(m),
+    type: 'image'
+  }));
+
+  const livePhotos = dbLivePhotos.length > 0 ? dbLivePhotos : [
     { id: '1hARrE4k2CfTM43whKs2J1cqNScrA93IN', label: 'AO VIVO: Credenciamento', url: getDriveUrl('1hARrE4k2CfTM43whKs2J1cqNScrA93IN') },
     { id: '1bGzCaUZpCaaIVWH7OA0i1HBNrgPYvYqj', label: 'AO VIVO: Auditório Lotado', url: getDriveUrl('1bGzCaUZpCaaIVWH7OA0i1HBNrgPYvYqj') },
     { id: '1W2B8z36PPgHHoZn4EMVF9Sjf8vCZB7G-', label: 'AO VIVO: Palestra Principal', url: getDriveUrl('1W2B8z36PPgHHoZn4EMVF9Sjf8vCZB7G-') },
     { id: '1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx', label: 'AO VIVO: Coffee Break', url: getDriveUrl('1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx') }
   ];
 
-  const interviews = mediaList.filter(m => m.media_type === 'video' && !m.is_live_stream).map(m => ({
+  const interviews = mediaList.filter(m => m.category === 'Entrevistas Exclusivas' || (m.media_type === 'video' && !m.is_live_stream && m.category !== 'Flash 2026')).map(m => ({
     id: m.id,
     url: getImageUrl(m),
     videoUrl: getMediaUrl(m),
@@ -102,13 +120,22 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     type: 'video'
   }));
 
-  const podcasts = mediaList.filter(m => m.media_type === 'audio').map(m => ({
+  const podcasts = mediaList.filter(m => m.category === 'Podcast' || m.media_type === 'audio').map(m => ({
     id: m.id,
     url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=200&h=200&fit=crop',
     audioUrl: getMediaUrl(m),
     title: m.title,
     type: 'podcast'
   }));
+
+  // Memórias: Unir hardcoded com DB
+  const dbMemories = mediaList.filter(m => m.category === 'Memórias').map(m => ({
+    id: m.id,
+    label: m.title || 'Memória 2025',
+    url: getImageUrl(m),
+    type: 'photo'
+  }));
+  const allMemories = [...dbMemories, ...memories2025];
 
   const liveStream = mediaList.find(m => m.is_live_stream);
 
@@ -143,10 +170,13 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
              boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.05)'
            }}>
              {liveStream ? (
-               <iframe 
-                 width="100%" height="100%" src={liveStream.url_or_path?.includes('youtube') && !liveStream.url_or_path?.includes('embed') ? `https://www.youtube.com/embed/${liveStream.url_or_path.split('v=')[1]}` : liveStream.url_or_path} 
-                 title="Live" frameBorder="0" allowFullScreen
-               ></iframe>
+                <iframe 
+                  width="100%" height="100%" 
+                  src={(liveStream.url)?.includes('youtube') && !(liveStream.url)?.includes('embed') 
+                    ? `https://www.youtube.com/embed/${(liveStream.url).split('v=')[1]?.split('&')[0] || (liveStream.url).split('/').pop()}` 
+                    : (liveStream.url)} 
+                  title="Live" frameBorder="0" allowFullScreen
+                ></iframe>
              ) : (
                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
                   <Radio size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
@@ -213,11 +243,11 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         {/* 5. MEMÓRIAS I CIECC 2025 (CARROSSEL) */}
         <CarouselSection 
           title="Memórias 2025"
-          items={memories2025}
+          items={allMemories}
           renderItem={(img, index) => (
             <div 
               onClick={() => onOpenMedia({ 
-                ...img, type: 'gallery', photos: memories2025, startIndex: index, title: 'I CIECC • Memórias 2025' 
+                ...img, type: 'gallery', photos: allMemories, startIndex: index, title: 'I CIECC • Memórias 2025' 
               })}
               style={{ 
                 width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',

@@ -131,32 +131,21 @@ export const createOrUpdateAdminUser = async (userData) => {
 
 
 /**
- * Exclui um membro e todos os seus dados vinculados em outras tabelas
+ * Exclui um membro e todos os seus dados vinculados usando RPC administrativo
  */
 export const deleteMember = async (cpf) => {
     const cleanCpf = stripCPF(cpf);
-    
-    // Deletar em cascata manual (para tabelas que não possuem FK oficial ou CASCADE)
-    // 1. Favoritos de Agenda
-    await supabase.from('agenda_favorites').delete().eq('user_cpf', cleanCpf);
-    
-    // 2. Comentários e Engajamento de Mídia
-    await supabase.from('media_comments').delete().eq('user_cpf', cleanCpf);
-    await supabase.from('media_engagements').delete().eq('user_cpf', cleanCpf);
-    
-    // 3. Respostas de Pesquisa (Survey)
-    await supabase.from('survey_responses').delete().eq('user_cpf', cleanCpf);
+    const adminCpf = localStorage.getItem('current_user_cpf');
 
-    // 4. Engajamento Social (Likes/Comentários)
-    await supabase.from('social_engagements').delete().eq('user_id', cleanCpf);
-    await supabase.from('social_comments').delete().eq('user_id', cleanCpf);
+    if (!adminCpf) throw new Error("Acesso negado: Administrador não identificado.");
 
-    // 5. Deletar perfil primeiro (FK)
-    await supabase.from('profiles').delete().eq('cpf', cleanCpf);
-    
-    // 6. Deletar membro (Principal)
-    const { error } = await supabase.from('members').delete().eq('cpf', cleanCpf);
-    
+    const { data, error } = await supabase.rpc('admin_delete_user', {
+        p_admin_cpf: adminCpf,
+        p_target_cpf: cleanCpf
+    });
+
     if (error) throw error;
+    if (data && !data.success) throw new Error(data.message);
+    
     return { success: true };
 };

@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Video, Music, Plus, Trash2, Edit2, Save, X, Link as LinkIcon, Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay } from 'lucide-react';
+import { 
+  Video, Music, Plus, Trash2, Edit2, Save, X, Link as LinkIcon, 
+  Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay, 
+  Upload, Image as ImageIcon, Search, Filter, 
+  ChevronRight, MoreHorizontal, Globe, Shield
+} from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
 
 const MediaCMS = () => {
     const [mediaItems, setMediaItems] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState('ALL');
+    const [sourceType, setSourceType] = useState('link'); // 'link' ou 'file'
 
     const categories = [
         "Flash 2026",
@@ -41,40 +49,83 @@ const MediaCMS = () => {
         setShowSuccess(true);
     };
 
+    const handleFileUpload = async (file) => {
+        if (!file) return null;
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `uploads/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('app_media')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+            
+            return filePath;
+        } catch (error) {
+            alert('Erro no upload: ' + error.message);
+            return null;
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
         
         setLoading(true);
-        const payload = {
-            id: editingItem?.id || undefined,
-            title: data.title,
-            description: data.description,
-            url: data.url,
-            media_type: data.media_type,
-            category: data.category,
-            source_type: 'link', // Campo obrigatório no banco
-            is_live_stream: data.is_live_stream === 'on',
-            updated_at: new Date().toISOString()
-        };
+        try {
+            let finalUrl = data.url;
 
-        const { error } = await supabase.from('media_assets').upsert(payload);
+            // Se for upload de arquivo
+            if (sourceType === 'file' && e.target.file_upload.files[0]) {
+                const uploadedPath = await handleFileUpload(e.target.file_upload.files[0]);
+                if (uploadedPath) finalUrl = uploadedPath;
+                else { setLoading(false); return; }
+            }
 
-        if (!error) {
-            setEditingItem(null);
-            loadMedia();
-            triggerSuccess(editingItem?.id ? 'Conteúdo atualizado!' : 'Novo conteúdo adicionado!');
-            e.target.reset();
-        } else {
-            alert('Erro ao salvar: ' + error.message);
+            const payload = {
+                id: editingItem?.id || undefined,
+                title: data.title,
+                description: data.description,
+                url: finalUrl,
+                media_type: data.media_type,
+                category: data.category,
+                source_type: sourceType,
+                is_live_stream: data.is_live_stream === 'on',
+                updated_at: new Date().toISOString()
+            };
+
+            const { error } = await supabase.from('media_assets').upsert(payload);
+
+            if (!error) {
+                setEditingItem(null);
+                setSourceType('link');
+                loadMedia();
+                triggerSuccess(editingItem?.id ? 'Conteúdo atualizado!' : 'Novo conteúdo adicionado!');
+                e.target.reset();
+            } else {
+                throw error;
+            }
+        } catch (err) {
+            alert('Erro ao salvar: ' + err.message);
         }
         setLoading(false);
     };
 
-    const deleteItem = async (id) => {
+    const deleteItem = async (id, filePath) => {
         if (!window.confirm('Excluir este item permanentemente?')) return;
         setLoading(true);
+        
+        // Se for arquivo, tentar deletar do storage tb
+        if (filePath && !filePath.startsWith('http')) {
+            await supabase.storage.from('app_media').remove([filePath]);
+        }
+
         const { error } = await supabase.from('media_assets').delete().eq('id', id);
         if (!error) {
             loadMedia();
@@ -83,182 +134,248 @@ const MediaCMS = () => {
         setLoading(false);
     };
 
-    const filteredItems = mediaItems.filter(item => 
-        item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredItems = mediaItems.filter(item => {
+        const matchesSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             item.category?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesTab = activeTab === 'ALL' || item.category === activeTab;
+        return matchesSearch && matchesTab;
+    });
 
     return (
         <div style={{ paddingBottom: '60px' }}>
             {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
 
-            <div style={{ marginBottom: '40px' }}>
-                <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'white', letterSpacing: '-0.5px' }}>Acervo de Mídia & Transmissão</h3>
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', marginTop: '4px' }}>Gerencie lives, podcasts, entrevistas e memórias do II CIECC.</p>
+            {/* HEADER */}
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                    <h3 style={{ fontWeight: '900', fontSize: '32px', color: 'white', letterSpacing: '-1px' }}>Gestão de Mídia</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', marginTop: '4px' }}>Controle total sobre vídeos, podcasts e fotos do evento.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                   <div style={tagStyle}>TOTAL: {mediaItems.length}</div>
+                   <div style={{ ...tagStyle, background: 'var(--brand)', color: 'black' }}>LIVES: {mediaItems.filter(m => m.is_live_stream).length}</div>
+                </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '32px', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px', alignItems: 'start' }}>
                 
                 {/* COLUNA ESQUERDA: FORMULÁRIO */}
                 <div style={{ 
-                    background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', 
-                    border: '1px solid var(--border-color)', position: 'sticky', top: '20px'
+                    background: 'var(--card-bg)', padding: '32px', borderRadius: '32px', 
+                    border: '1px solid var(--border-color)', position: 'sticky', top: '20px',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                        <h4 style={{ fontWeight: '800', fontSize: '18px', color: 'var(--brand)' }}>
-                            {editingItem?.id ? 'Editar Conteúdo' : 'Adicionar Novo'}
-                        </h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                           <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(212, 193, 156, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
+                              <Plus size={20} />
+                           </div>
+                           <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>
+                               {editingItem?.id ? 'Editar Mídia' : 'Novo Material'}
+                           </h4>
+                        </div>
                         {editingItem?.id && (
-                            <button onClick={() => { setEditingItem(null); document.querySelector('form').reset(); }} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}>CANCELAR</button>
+                            <button onClick={() => { setEditingItem(null); setSourceType('link'); }} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: '11px', fontWeight: '900', cursor: 'pointer', letterSpacing: '1px' }}>CANCELAR</button>
                         )}
                     </div>
 
                     <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div>
-                            <label style={labelStyle}>Título</label>
-                            <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Ex: Podcast #01 - Chris Schlect" />
+                            <label style={labelStyle}>Título do Conteúdo</label>
+                            <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Ex: Podcast de Encerramento" />
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                             <div>
-                                <label style={labelStyle}>Tipo</label>
+                                <label style={labelStyle}>Formato</label>
                                 <select name="media_type" defaultValue={editingItem?.media_type || 'video'} style={inputStyle}>
-                                    <option value="video">🎞️ Vídeo</option>
-                                    <option value="audio">🎙️ Áudio</option>
-                                    <option value="image">📸 Foto</option>
+                                    <option value="video">🎞️ Vídeo / Entrevista</option>
+                                    <option value="audio">🎙️ Podcast / Áudio</option>
+                                    <option value="image">📸 Foto / Galeria</option>
                                 </select>
                             </div>
                             <div>
-                                <label style={labelStyle}>Categoria</label>
+                                <label style={labelStyle}>Segmento</label>
                                 <select name="category" defaultValue={editingItem?.category || 'Flash 2026'} style={inputStyle}>
                                     {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                 </select>
                             </div>
                         </div>
 
-                        <div>
-                            <label style={labelStyle}>URL do Link (YouTube / Spotify / Drive)</label>
-                            <input name="url" defaultValue={editingItem?.url} required style={inputStyle} placeholder="https://..." />
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+                            <label style={labelStyle}>Origem do Arquivo</label>
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                                <button type="button" onClick={() => setSourceType('link')} style={{ ...tabSmallStyle, background: sourceType === 'link' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'link' ? 'black' : 'white' }}>
+                                   <LinkIcon size={14} /> LINK EXTERNO
+                                </button>
+                                <button type="button" onClick={() => setSourceType('file')} style={{ ...tabSmallStyle, background: sourceType === 'file' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'file' ? 'black' : 'white' }}>
+                                   <Upload size={14} /> UPLOAD DIRETO
+                                </button>
+                            </div>
+
+                            {sourceType === 'link' ? (
+                                <div>
+                                   <input name="url" defaultValue={editingItem?.url} required={sourceType === 'link'} style={inputStyle} placeholder="YouTube, Spotify ou Drive Link" />
+                                   <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>Dica: Para YouTube, use o link da barra de endereços.</p>
+                                </div>
+                            ) : (
+                                <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
+                                   <input type="file" name="file_upload" id="file_upload" style={{ display: 'none' }} onChange={(e) => {
+                                       if(e.target.files[0]) triggerSuccess(`Arquivo selecionado: ${e.target.files[0].name}`);
+                                   }} />
+                                   <label htmlFor="file_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
+                                         <Upload size={20} />
+                                      </div>
+                                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.7)' }}>Clique para selecionar arquivo</span>
+                                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Máx 50MB (PNG, JPG, MP3)</span>
+                                   </label>
+                                </div>
+                            )}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <input type="checkbox" name="is_live_stream" defaultChecked={editingItem?.is_live_stream} style={{ width: '20px', height: '20px' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(212, 193, 156, 0.05)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(212, 193, 156, 0.1)' }}>
+                            <input type="checkbox" name="is_live_stream" defaultChecked={editingItem?.is_live_stream} style={{ width: '22px', height: '22px', cursor: 'pointer' }} />
                             <div>
-                                <label style={{ ...labelStyle, marginBottom: 0 }}>Destaque de Transmissão Ao Vivo</label>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>Aparecerá com a tag 'LIVE' e destaque no App.</p>
+                                <label style={{ ...labelStyle, marginBottom: 0, color: '#FFFFFF' }}>Marcar como TRANSMISSÃO AO VIVO</label>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Ativa o selo 'LIVE' e destaque na página de mídia.</p>
                             </div>
                         </div>
 
                         <div>
-                            <label style={labelStyle}>Descrição Breve</label>
-                            <textarea name="description" defaultValue={editingItem?.description} style={{ ...inputStyle, minHeight: '80px', resize: 'none' }} placeholder="..." />
+                            <label style={labelStyle}>Descrição (Opcional)</label>
+                            <textarea name="description" defaultValue={editingItem?.description} style={{ ...inputStyle, minHeight: '80px', resize: 'none' }} placeholder="Detalhes que aparecerão no player..." />
                         </div>
 
-                        <button type="submit" disabled={loading} style={btnSaveStyle}>
-                            {loading ? 'PROCESSANDO...' : <><Save size={20} /> {editingItem?.id ? 'SALVAR ALTERAÇÕES' : 'ADICIONAR AO ACERVO'}</>}
+                        <button type="submit" disabled={loading || uploading} style={{ ...btnSaveStyle, opacity: (loading || uploading) ? 0.7 : 1 }}>
+                            {loading || uploading ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    {uploading ? 'FAZENDO UPLOAD...' : 'SALVANDO...'}
+                                </div>
+                            ) : (
+                                <><Save size={20} /> {editingItem?.id ? 'SALVAR ALTERAÇÕES' : 'PUBLICAR NO ACERVO'}</>
+                            )}
                         </button>
                     </form>
                 </div>
 
-                {/* COLUNA DIREITA: LISTA SEPARADA POR CAIXAS */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                {/* COLUNA DIREITA: LISTAGEM SEGMENTADA */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     
-                    {/* BUSCA */}
-                    <div style={{ background: 'var(--card-bg)', padding: '16px 24px', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <LinkIcon size={20} color="var(--brand)" />
-                        <input 
-                            placeholder="Pesquisar em todo o acervo..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ background: 'none', border: 'none', color: 'white', outline: 'none', width: '100%', fontSize: '16px', fontWeight: '500' }}
-                        />
+                    {/* FILTROS E BUSCA */}
+                    <div style={{ background: 'var(--card-bg)', padding: '20px 24px', borderRadius: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <Search size={20} color="var(--brand)" />
+                            <input 
+                                placeholder="Pesquisar título ou categoria..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ background: 'none', border: 'none', color: 'white', outline: 'none', width: '100%', fontSize: '16px', fontWeight: '500' }}
+                            />
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                            <button onClick={() => setActiveTab('ALL')} style={{ ...tabStyle, background: activeTab === 'ALL' ? 'var(--brand)' : 'transparent', color: activeTab === 'ALL' ? 'black' : 'white' }}>TODOS</button>
+                            {categories.map(cat => (
+                                <button key={cat} onClick={() => setActiveTab(cat)} style={{ ...tabStyle, background: activeTab === cat ? 'var(--brand)' : 'transparent', color: activeTab === cat ? 'black' : 'white' }}>{cat.toUpperCase()}</button>
+                            ))}
+                        </div>
                     </div>
 
-                    {categories.map(cat => {
-                        const catItems = filteredItems.filter(item => item.category === cat);
-                        if (catItems.length === 0 && searchTerm) return null;
-
-                        return (
-                            <div key={cat} style={{ 
-                                background: 'rgba(255,255,255,0.02)', 
-                                borderRadius: '32px', 
-                                padding: '24px', 
-                                border: '1px solid rgba(255,255,255,0.05)',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '12px' }}>
-                                    <h4 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        {cat === 'Flash 2026' && <Video size={20} />}
-                                        {cat === 'Podcast' && <Podcast size={20} />}
-                                        {cat === 'Entrevistas Exclusivas' && <PlayCircle size={20} />}
-                                        {cat === 'Memórias' && <ImageIcon size={20} />}
-                                        {cat === 'Palestras' && <Monitor size={20} />}
-                                        {cat === 'Outros' && <Plus size={20} />}
-                                        {cat}
-                                    </h4>
-                                    <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.4)' }}>
-                                        {catItems.length} ITENS
-                                    </span>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {catItems.length === 0 ? (
-                                        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px', textAlign: 'center', padding: '20px' }}>Nenhuma mídia vinculada.</p>
-                                    ) : (
-                                        catItems.map(item => (
-                                            <div key={item.id} style={{ 
-                                                background: item.is_live_stream ? 'linear-gradient(90deg, #4A101D 0%, #1A1A1A 100%)' : 'rgba(255,255,255,0.03)', 
-                                                padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)',
-                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                            }}>
-                                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1 }}>
-                                                    <div style={{ 
-                                                        width: '44px', height: '44px', borderRadius: '12px', 
-                                                        background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        color: item.is_live_stream ? '#EF4444' : 'var(--brand)'
-                                                    }}>
-                                                        {item.is_live_stream ? <Radio className="animate-pulse" size={20} /> : item.media_type === 'video' ? <Clapperboard size={20} /> : item.media_type === 'image' ? <ImageIcon size={20} /> : <Podcast size={20} />}
-                                                    </div>
-                                                    <div style={{ overflow: 'hidden' }}>
-                                                        <h5 style={{ fontWeight: '800', color: 'white', fontSize: '15px', marginBottom: '2px' }}>{item.title}</h5>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                            {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '1px 4px', borderRadius: '3px' }}>LIVE</span>}
-                                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.url}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
-                                                    <button onClick={() => { setEditingItem(item); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ ...iconBtnStyle, width: '36px', height: '36px' }}><Edit2 size={14} /></button>
-                                                    <button onClick={() => deleteItem(item.id)} style={{ ...iconBtnDeleteStyle, width: '36px', height: '36px' }}><Trash2 size={14} /></button>
-                                                </div>
+                    {/* LISTA DE ITENS */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                         {filteredItems.length === 0 ? (
+                             <div style={{ textAlign: 'center', padding: '60px', background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                                <Clapperboard size={48} style={{ opacity: 0.1, marginBottom: '16px' }} />
+                                <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '700' }}>Nenhum material encontrado.</p>
+                             </div>
+                         ) : (
+                             filteredItems.map(item => (
+                                <div key={item.id} style={{ 
+                                    background: 'var(--card-bg)', padding: '20px 24px', borderRadius: '24px', 
+                                    border: '1px solid var(--border-color)', transition: 'all 0.2s',
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    position: 'relative', overflow: 'hidden'
+                                }}>
+                                    {item.is_live_stream && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#EF4444' }}></div>}
+                                    
+                                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flex: 1 }}>
+                                        <div style={{ 
+                                            width: '56px', height: '56px', borderRadius: '16px', 
+                                            background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: item.is_live_stream ? '#EF4444' : 'var(--brand)',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            {item.is_live_stream ? <Radio className="animate-pulse" size={24} /> : item.media_type === 'video' ? <Video size={24} /> : item.media_type === 'image' ? <ImageIcon size={24} /> : <Podcast size={24} />}
+                                        </div>
+                                        <div style={{ overflow: 'hidden', flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 8px', borderRadius: '6px' }}>{item.category.toUpperCase()}</span>
+                                                {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '6px' }}>LIVE</span>}
+                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{item.source_type === 'file' ? 'ARQUIVO LOCAL' : 'LINK EXTERNO'}</span>
                                             </div>
-                                        ))
-                                    )}
+                                            <h5 style={{ fontWeight: '800', color: 'white', fontSize: '16px', marginBottom: '2px' }}>{item.title}</h5>
+                                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.url}</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px', marginLeft: '24px' }}>
+                                        <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={actionBtnStyle} title="Editar"><Edit2 size={16} /></button>
+                                        <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444' }} title="Excluir"><Trash2 size={16} /></button>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                             ))
+                         )}
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'var(--brand)', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '1px' };
-const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '15px', outline: 'none', color: '#000', backgroundColor: '#FFF', fontWeight: '600' };
+// ============================================
+// ESTILOS COMPLEMENTARES
+// ============================================
 
-const iconBtnStyle = { 
-    width: '44px', height: '44px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
-    color: 'white', background: 'rgba(255,255,255,0.05)', transition: 'all 0.2s'
+const tagStyle = { 
+    background: 'rgba(255,255,255,0.05)', padding: '6px 14px', borderRadius: '10px', 
+    fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', letterSpacing: '1px' 
 };
-const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)' };
+
+const labelStyle = { 
+    fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', 
+    marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '1.5px' 
+};
+
+const inputStyle = { 
+    width: '100%', padding: '16px', borderRadius: '16px', 
+    border: '1px solid rgba(255,255,255,0.08)', fontSize: '15px', outline: 'none', 
+    color: '#000', backgroundColor: '#FFFFFF', fontWeight: '600',
+    transition: 'border-color 0.2s' 
+};
+
+const tabStyle = {
+    padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+    fontSize: '11px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s',
+    whiteSpace: 'nowrap', letterSpacing: '0.5px'
+};
+
+const tabSmallStyle = {
+    ...tabStyle, padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+};
+
+const actionBtnStyle = { 
+    width: '44px', height: '44px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+    color: 'white', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s'
+};
 
 const btnSaveStyle = { 
-    padding: '20px', borderRadius: '16px', background: 'var(--primary)', color: 'white', border: 'none', 
+    padding: '20px', borderRadius: '18px', background: 'var(--brand)', color: 'black', border: 'none', 
     fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-    gap: '12px', marginTop: '10px', width: '100%', fontSize: '16px', letterSpacing: '0.5px', boxShadow: '0 15px 30px rgba(0,0,0,0.3)'
+    gap: '12px', marginTop: '10px', width: '100%', fontSize: '16px', letterSpacing: '0.5px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.3)', transition: 'transform 0.2s'
 };
 
 export default MediaCMS;

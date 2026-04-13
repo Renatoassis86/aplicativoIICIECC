@@ -156,11 +156,30 @@ const HomeTab = ({
         // Detalhes da Mídia (Fotos/Videos)
         if (mediaSaves && mediaSaves.length > 0) {
           const ids = mediaSaves.map(m => m.media_id);
-          const { data: assets } = await supabase
-            .from('media_assets')
-            .select('*')
-            .in('id', ids);
-          if (assets) assets.forEach(a => unifiedResults.push({ ...a, itemType: 'media' }));
+          const validUuids = ids.filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+          
+          if (validUuids.length > 0) {
+            const { data: assets } = await supabase
+              .from('media_assets')
+              .select('*')
+              .in('id', validUuids);
+            if (assets) assets.forEach(a => unifiedResults.push({ ...a, itemType: 'media' }));
+          }
+          
+          // Detalhes da Mídia (Memórias Estáticas)
+          const staticIds = ids.filter(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+          if (staticIds.length > 0) {
+            const memories2025 = [
+              { id: 'mem-2025-0', title: 'Abertura II CIECC', type: 'video', url: 'https://www.youtube.com/watch?v=kYI9C7tHkQ0', category: 'Memórias 2025' },
+              { id: 'mem-2025-1', title: 'Educação Clássica na Prática', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' },
+              { id: 'mem-2025-2', title: 'Entrevista Exclusiva', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' },
+              { id: 'mem-2025-3', title: 'Paineis de Debate', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' }
+            ];
+            staticIds.forEach(sid => {
+              const found = memories2025.find(m => m.id === sid);
+              if (found) unifiedResults.push({ ...found, itemType: 'media' });
+            });
+          }
         }
 
         if (isMounted) {
@@ -561,8 +580,17 @@ const HomeTab = ({
             {favoriteItems.map(item => (
                 <div 
                   key={`${item.itemType}-${item.id}`} 
+                  onClick={() => {
+                    if (item.itemType === 'agenda') {
+                      onNavigate('agenda'); // Futuro: abrir modal direto
+                    } else if (item.itemType === 'media') {
+                      onOpenMedia(item);
+                    } else if (item.itemType === 'social') {
+                      onNavigate('feed');
+                    }
+                  }}
                   className="card" 
-                  style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}
+                  style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                 >
                 <div style={{ background: 'var(--primary)', color: 'white', padding: '10px', borderRadius: '12px', minWidth: '60px', textAlign: 'center' }}>
                   {item.itemType === 'agenda' ? (
@@ -574,14 +602,14 @@ const HomeTab = ({
                   )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.title}</p>
+                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.title || item.name}</p>
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                     {item.itemType === 'agenda' 
                       ? (Array.isArray(item.speakers) ? (item.speakers[0]?.name || 'A confirmar') : (item.speakers?.name || 'A confirmar'))
-                      : item.itemType === 'social' ? 'Feed Social' : (item.type || 'Mídia Oficial')}
+                      : item.itemType === 'social' ? 'Feed Social' : (item.category || item.type || 'Mídia Oficial')}
                   </p>
                 </div>
-                {/* Seta removida */}
+                <ChevronRight size={18} color="var(--border)" />
               </div>
             ))}
           </div>

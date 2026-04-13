@@ -65,7 +65,7 @@ const AgendaTab = ({ userCpf }) => {
           category: s.category || 'Palestra',
           description: s.description || '',
           photo: Array.isArray(s.speakers) ? (s.speakers[0]?.photo_url) : (s.speakers?.photo_url),
-          fullSpeaker: Array.isArray(s.speakers) ? s.speakers[0] : s.speakers
+          fullSpeaker: Array.isArray(s.speakers) ? s.speakers[0] : (s.speakers || { name: s.speaker, institution: s.location })
         })));
       }
     } catch (err) {
@@ -76,9 +76,9 @@ const AgendaTab = ({ userCpf }) => {
   };
 
   const tabs = [
-    { id: 'Palestras', label: 'Palestras', categories: ['Palestra', 'Debate', 'Mesa Redonda'] },
-    { id: 'Oficinas', label: 'Oficinas', categories: ['Oficina'] },
-    { id: 'Extras', label: 'Solenidades & Outros', categories: ['Check-in', 'Solenidade', 'Intervalo', 'Artigos', 'Fórum', 'Apresentação', 'Networking'] }
+    { id: '1', label: 'Dia 01 (01/05)', date: '2026-05-01' },
+    { id: '2', label: 'Dia 02 (02/05)', date: '2026-05-02' },
+    { id: 'Oficinas', label: 'Oficinas', category: 'Oficina' }
   ];
 
   const toggleFavorite = async (id) => {
@@ -87,11 +87,17 @@ const AgendaTab = ({ userCpf }) => {
   };
 
   // Filtragem dos eventos pela aba ativa
-  const currentTabConfig = tabs.find(t => t.id === activeTab);
-  const filteredEvents = sessions.filter(e => {
-    const matchesCategory = currentTabConfig.categories.includes(e.category);
-    if (!matchesCategory) return false;
-    if (onlyFavorites) return favorites.includes(e.id);
+  const currentTabData = tabs.find(t => t.id === activeTab);
+  const filteredEvents = sessions.filter(event => {
+    let matchesTab = false;
+    if (activeTab === 'Oficinas') {
+      matchesTab = event.category?.toLowerCase() === 'oficina';
+    } else {
+      matchesTab = event.date === currentTabData.date;
+    }
+    
+    if (!matchesTab) return false;
+    if (onlyFavorites) return favorites.includes(event.id);
     return true;
   }).sort((a, b) => {
     if (a.fullDate !== b.fullDate) return a.fullDate.localeCompare(b.fullDate);
@@ -229,6 +235,7 @@ const AgendaTab = ({ userCpf }) => {
                 {dayEvents.map(event => (
                     <div 
                       key={event.id} 
+                      onClick={() => setSelectedSession(event)}
                       className="card" 
                       style={{ 
                           padding: '20px', 
@@ -237,7 +244,8 @@ const AgendaTab = ({ userCpf }) => {
                           gap: '16px', 
                           transition: 'transform 0.2s',
                           position: 'relative',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          cursor: 'pointer'
                       }} 
                     >
                     {/* Borda lateral colorida por categoria se for lista */}

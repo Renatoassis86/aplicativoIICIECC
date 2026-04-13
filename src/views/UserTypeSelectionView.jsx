@@ -3,6 +3,8 @@ import { UserCircle, School, GraduationCap, Users, Heart, ArrowRight } from 'luc
 
 const UserTypeSelectionView = ({ onSelect }) => {
   const types = [
+    { id: 'organizador', label: 'Organizador / Staff', icon: <UserCircle size={24} />, category: 'general' },
+    { id: 'apoio', label: 'Apoio / Voluntário', icon: <Heart size={24} />, category: 'general' },
     { id: 'mantenedor', label: 'Mantenedor de escola', icon: <School size={24} />, category: 'school' },
     { id: 'gestor', label: 'Gestor de escola', icon: <School size={24} />, category: 'school' },
     { id: 'diretor', label: 'Diretor de escola', icon: <School size={24} />, category: 'school' },

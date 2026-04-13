@@ -13,10 +13,18 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const videoRef = useRef(null);
 
   // Normalizar a URL independente da origem (OfficialMediaTab vs MediaTab)
-  const mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
+  let mediaUrl = media.url || media.videoUrl || media.audioUrl || media.url_or_path;
   
   const isYoutube = mediaUrl?.includes('youtube.com') || mediaUrl?.includes('youtu.be');
-  const isImage = media.media_type === 'image' || media.type === 'image' || mediaUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+  
+  // Se for YouTube e tiver parâmetros extras, limpar para o ReactPlayer processar melhor se necessário
+  // mas o ReactPlayer geralmente cuida do ?v=ID. Vamos apenas garantir que a URL seja tratada se vier suja.
+  if (isYoutube && mediaUrl.includes('watch?v=')) {
+    // Garantir que pegamos apenas o v=... e ignoramos outros parâmetros se causarem erro
+    // Na verdade o ReactPlayer lida bem, mas se o usuário colou algo quebrado, tentamos fixar.
+  }
+
+  const isImage = media.media_type === 'image' || media.type === 'image' || media.type === 'photo' || mediaUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/i);
   const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video' || media.type === 'video';
   const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast' || media.media_type === 'podcast';
 

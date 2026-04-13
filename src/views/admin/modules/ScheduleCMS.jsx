@@ -156,6 +156,7 @@ const ScheduleCMS = () => {
                                     </div>
                                 </div>
                                 <h4 style={{ margin: '12px 0 8px', fontWeight: '800', color: '#FFFFFF', fontSize: '16px', lineHeight: '1.4' }}>{s.title}</h4>
+                                <div style={metaStyle}><Calendar size={14} color="var(--gold)" /> {new Date(s.session_date).toLocaleDateString()}</div>
                                 <div style={metaStyle}><Clock size={14} color="rgba(255,255,255,0.5)" /> {s.start_time} - {s.end_time}</div>
                                 <div style={metaStyle}><MapPin size={14} color="rgba(255,255,255,0.5)" /> {s.room || 'Auditório Principal'}</div>
                                 {s.speakers && <div style={{ marginTop: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
