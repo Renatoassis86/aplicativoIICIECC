@@ -77,8 +77,8 @@ const MediaCMS = () => {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
       {/* FORMULÁRIO */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-          <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Adicionar Novo Conteúdo</h3>
+        <div className="white-bg" style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Adicionar Novo Conteúdo</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -97,7 +97,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>Título</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#94A3B8' }}>Título</label>
               <input 
                 type="text" 
                 value={newMedia.title} 
@@ -108,7 +108,7 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>Descrição (Opcional)</label>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#94A3B8' }}>Descrição (Opcional)</label>
               <textarea 
                 value={newMedia.description} 
                 onChange={(e) => setNewMedia(prev => ({ ...prev, description: e.target.value }))}
@@ -118,12 +118,12 @@ const MediaCMS = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-               <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#64748B' }}>Origem do Arquivo</label>
+               <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8' }}>Origem do Arquivo</label>
                <div style={{ display: 'flex', gap: '12px' }}>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                    <input type="radio" checked={newMedia.source === 'link'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'link' }))} /> Link Externo
                  </label>
-                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#1E293B' }}>
+                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#FFFFFF' }}>
                    <input type="radio" checked={newMedia.source === 'upload'} onChange={() => setNewMedia(prev => ({ ...prev, source: 'upload' }))} /> Upload Direto
                  </label>
                </div>
@@ -159,7 +159,7 @@ const MediaCMS = () => {
                 onChange={(e) => setNewMedia(prev => ({ ...prev, isLive: e.target.checked }))}
                 id="is-live"
                />
-               <label htmlFor="is-live" style={{ fontSize: '13px', fontWeight: '700', color: newMedia.isLive ? '#B91C1C' : '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+               <label htmlFor="is-live" style={{ fontSize: '13px', fontWeight: '700', color: newMedia.isLive ? '#F87171' : '#94A3B8', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                  <Radio size={16} /> Marcar como Transmissão Ao Vivo (Link Principal)
                </label>
             </div>
@@ -177,8 +177,8 @@ const MediaCMS = () => {
       </div>
 
       {/* LISTAGEM */}
-      <div className="white-bg" style={{ background: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxHeight: '800px', overflowY: 'auto' }}>
-        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#1E293B' }}>Mídias Cadastradas</h3>
+      <div className="white-bg" style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', maxHeight: '800px', overflowY: 'auto' }}>
+        <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '24px', color: '#FFFFFF' }}>Mídias Cadastradas</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {mediaList.map(item => {
@@ -250,8 +250,8 @@ const ModeButton = ({ active, onClick, icon, label }) => (
     onClick={onClick}
     style={{
       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-      padding: '10px', borderRadius: '10px', border: active ? '1px solid var(--primary)' : '1px solid #E2E8F0',
-      background: active ? 'var(--primary)05' : 'white', color: active ? 'var(--primary)' : '#64748B',
+      padding: '12px', borderRadius: '12px', border: active ? '1px solid var(--brand)' : '1px solid var(--border-color)',
+      background: active ? 'rgba(212, 193, 156, 0.1)' : 'rgba(255,255,255,0.05)', color: active ? 'var(--brand)' : '#94A3B8',
       fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s'
     }}
   >

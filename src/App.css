@@ -38,13 +38,12 @@
 @media (max-width: 1024px) {
   .mobile-wrapper {
     width: 100%;
-    max-width: 430px;
     margin: 0 auto;
     background: white;
     min-height: 100vh;
     position: relative;
-    box-shadow: 0 0 40px rgba(0,0,0,0.1);
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     display: flex;
     flex-direction: column;
   }
@@ -52,7 +51,7 @@
 
 @media (max-width: 430px) {
   .mobile-wrapper {
-    max-width: 100%;
+    width: 100%;
     box-shadow: none;
   }
 }

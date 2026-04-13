@@ -55,7 +55,7 @@ export default function TextContentCMS() {
   return (
     <div style={{ maxWidth: '1000px' }}>
       <header style={{ marginBottom: '32px' }}>
-        <p style={{ color: '#475569', marginBottom: '20px', fontWeight: '600' }}>
+        <p style={{ color: '#94A3B8', marginBottom: '20px', fontWeight: '600' }}>
           Gerencie aqui todos os textos, títulos e descrições do aplicativo. 
           Use o formato JSON para objetos complexos.
         </p>
@@ -77,8 +77,8 @@ export default function TextContentCMS() {
       <div style={{ display: 'grid', gap: '20px' }}>
         {filteredItems.map(item => (
           <div key={item.id} style={{ 
-            background: 'white', padding: '24px', borderRadius: '24px', 
-            border: '1px solid #F1F5F9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+            background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', 
+            border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -97,8 +97,8 @@ export default function TextContentCMS() {
               onBlur={(e) => updateItem(item.id, e.target.value)}
               style={{ 
                 width: '100%', minHeight: '100px', padding: '16px', borderRadius: '12px', 
-                border: '1px solid #E2E8F0', fontSize: '14px', fontFamily: 'monospace',
-                background: '#F8FAFC', color: '#1E293B', resize: 'vertical'
+                border: '1px solid var(--border-color)', fontSize: '14px', fontFamily: 'monospace',
+                background: 'rgba(255,255,255,0.05)', color: '#FFFFFF', resize: 'vertical'
               }}
             />
             

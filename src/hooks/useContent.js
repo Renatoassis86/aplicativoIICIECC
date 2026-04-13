@@ -20,8 +20,12 @@ export function useContent(section = null, key = null) {
       const { data, error } = await query;
 
       if (!error && data) {
-        if (key && data.length > 0) {
-          setContent(data[0].value);
+        if (key) {
+          if (data.length > 0) {
+            setContent(data[0].value);
+          } else {
+            setContent(null); // Key provided but not found
+          }
         } else if (section) {
           // Retorna um objeto mapeado por chaves
           const mapped = data.reduce((acc, curr) => {

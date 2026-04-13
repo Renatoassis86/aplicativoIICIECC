@@ -524,13 +524,13 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
 
         .white-bg h1, .white-bg h2, .white-bg h3, .white-bg h4, .card-main h1, .card-main h2, .card-main h3, .card-main h4 {
-          color: #000000 !important;
+          color: #FFFFFF !important;
           font-weight: 800 !important;
         }
 
         input, select, textarea {
-          color: #000000 !important;
-          background-color: #FFFFFF !important;
+          color: #000000;
+          background-color: #FFFFFF;
         }
 
         .stat-value, .view-title, .sidebar-logo-text h1 {
