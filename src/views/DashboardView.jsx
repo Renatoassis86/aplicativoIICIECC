@@ -112,8 +112,13 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenMap={() => setCurrentPage('map')}
           onOpenGTs={() => setCurrentPage('gts')}
           onOpenProfile={() => setCurrentPage('profile')}
+          onOpenTicket={() => setCurrentPage('ticket')}
           onNavigate={(tab) => { setActiveTab(tab); setCurrentPage(null); }}
+          onAvatarUpdate={onAvatarUpdate}
           userType={userType}
+          userName={userName}
+          userAvatar={userAvatar}
+          userCpf={userCpf}
         />
       );
       default: return null;
