@@ -61,8 +61,8 @@ body:not(.admin-mode) .card {
 /* Enfatizar Títulos em Fundos Brancos (Mobile Only) */
 body:not(.admin-mode) .white-bg h1, body:not(.admin-mode) .white-bg h2, body:not(.admin-mode) .white-bg h3, 
 body:not(.admin-mode) .white-bg h4, body:not(.admin-mode) .white-bg h5, body:not(.admin-mode) .white-bg h6,
-body:not(.admin-mode) .card h1, body:not(.admin-mode) .card h2, body:not(.admin-mode) .card h3, 
-body:not(.admin-mode) .card h4, body:not(.admin-mode) .card h5, body:not(.admin-mode) .card h6 {
+body:not(.admin-mode) .card:not(.dark-card) h1, body:not(.admin-mode) .card:not(.dark-card) h2, body:not(.admin-mode) .card:not(.dark-card) h3, 
+body:not(.admin-mode) .card:not(.dark-card) h4, body:not(.admin-mode) .card:not(.dark-card) h5, body:not(.admin-mode) .card:not(.dark-card) h6 {
     color: #000000 !important;
     font-weight: 800 !important;
 }

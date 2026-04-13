@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
 
 const FAQView = ({ onClose }) => {
   const [activeId, setActiveId] = useState(null);
@@ -54,111 +54,94 @@ const FAQView = ({ onClose }) => {
   );
 
   return (
-    <div style={{ background: '#F7F8FA', minHeight: '100vh' }}>
-      <div style={{ background: '#F7F8FA' }}>
-        {/* Header */}
-        <div style={{ 
-          padding: 'calc(env(safe-area-inset-top, 24px) + 30px) 20px 24px', 
-          background: 'var(--primary)', 
-          color: 'white',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          zIndex: 10,
-          boxShadow: 'var(--shadow-md)'
-        }}>
-          <button onClick={onClose} className="clickable" style={{ padding: '10px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', display: 'flex' }}>
-            <ArrowLeft size={22} color="white" style={{ opacity: 0.8 }} />
-          </button>
-          <div>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-serif)' }}>FAQ & Suporte</h2>
-            <p style={{ fontSize: '11px', opacity: 0.7, fontWeight: '600' }}>Tire suas dúvidas sobre o evento</p>
-          </div>
-        </div>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh', padding: 'calc(env(safe-area-inset-top, 24px) + 60px) 20px 100px' }}>
+      
+      {/* Título Principal */}
+      <div style={{ marginBottom: '32px', textAlign: 'left' }}>
+         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: '900', color: 'var(--primary)' }}>FAQ & Suporte</h2>
+         <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Tire suas dúvidas sobre o evento</p>
+      </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 100px' }}>
-          {/* Search Bar */}
-          <div style={{ position: 'relative', marginBottom: '24px' }}>
-            <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
-            <input 
-              type="text" 
-              placeholder="Pesquisar dúvida..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 14px 14px 44px',
-                borderRadius: '12px',
-                border: '1px solid var(--border)',
-                background: '#F8F9FA',
-                fontSize: '14px'
-              }}
-            />
-          </div>
+      {/* Search Bar */}
+      <div style={{ position: 'relative', marginBottom: '24px' }}>
+        <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
+        <input 
+          type="text" 
+          placeholder="Pesquisar dúvida..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '14px 14px 14px 44px',
+            borderRadius: '12px',
+            border: '1px solid var(--border)',
+            background: '#F8F9FA',
+            fontSize: '14px',
+            outline: 'none'
+          }}
+        />
+      </div>
 
-          <div style={{ display: 'grid', gap: '12px' }}>
-            {filteredFaqs.map(faq => (
-              <div 
-                 key={faq.id} 
-                 className="card" 
-                 style={{ 
-                   padding: '16px', 
-                   cursor: 'pointer',
-                   border: activeId === faq.id ? '1px solid var(--primary)' : '1px solid transparent'
-                 }}
-                 onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', flex: 1, paddingRight: '12px' }}>
-                    {faq.question}
-                  </p>
-                  {activeId === faq.id ? <ChevronUp size={18} color="var(--primary)" /> : <ChevronDown size={18} color="var(--text-muted)" />}
-                </div>
-                {activeId === faq.id && (
-                  <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', opacity: 0.8 }}>
-                      {faq.answer}
-                    </p>
-                  </div>
-                )}
+      <div style={{ display: 'grid', gap: '12px' }}>
+        {filteredFaqs.map(faq => (
+          <div 
+             key={faq.id} 
+             className="card" 
+             style={{ 
+               padding: '16px', 
+               cursor: 'pointer',
+               border: activeId === faq.id ? '1px solid var(--primary)' : '1px solid transparent'
+             }}
+             onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', flex: 1, paddingRight: '12px' }}>
+                {faq.question}
+              </p>
+              {activeId === faq.id ? <ChevronUp size={18} color="var(--primary)" /> : <ChevronDown size={18} color="var(--text-muted)" />}
+            </div>
+            {activeId === faq.id && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', opacity: 0.8 }}>
+                  {faq.answer}
+                </p>
               </div>
-            ))}
+            )}
           </div>
+        ))}
+      </div>
 
-          {/* Contact Support */}
-          <div className="card" style={{ 
-            marginTop: '32px', 
-            padding: '20px', 
-            background: 'var(--secondary)', 
-            color: 'white',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <MessageCircle size={32} color="var(--gold)" />
-            <h4 style={{ fontSize: '16px', fontWeight: '800' }}>Não encontrou o que procurava?</h4>
-            <p style={{ fontSize: '13px', opacity: 0.7 }}>Nossa equipe está online para te ajudar agora mesmo.</p>
-            <button 
-              onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/', '_blank')}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--gold)',
-                color: 'var(--secondary)',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '800',
-                fontSize: '14px',
-                marginTop: '12px'
-              }}
-            >
-              FALAR COM SUPORTE
-            </button>
-          </div>
-        </div>
+      {/* Contact Support */}
+      <div className="card dark-card" style={{ 
+        marginTop: '32px', 
+        padding: '24px', 
+        background: 'var(--secondary)', 
+        color: 'white',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px'
+      }}>
+        <MessageCircle size={32} color="var(--gold)" />
+        <h4 style={{ fontSize: '17px', fontWeight: '800', color: 'var(--gold)' }}>Não encontrou o que procurava?</h4>
+        <p style={{ fontSize: '13px', opacity: 0.8, lineHeight: '1.5' }}>Nossa equipe está online para te ajudar agora mesmo no portal oficial.</p>
+        <button 
+          onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/', '_blank')}
+          style={{
+            width: '100%',
+            padding: '16px',
+            background: 'var(--gold)',
+            color: 'var(--secondary)',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: '900',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          FALAR COM SUPORTE
+        </button>
       </div>
     </div>
   );

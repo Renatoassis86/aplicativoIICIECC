@@ -7,50 +7,50 @@ import { supabase } from '../../lib/supabase';
 
 export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') => {
   try {
-    // 1. Buscar perfis base com joins ou em paralelo
+    // 1. Buscar dados principais da tabela members com join na tabela profiles
     let query = supabase
-      .from('profiles')
-      .select('cpf, user_type, name')
+      .from('members')
+      .select(`
+        cpf, 
+        name, 
+        institution, 
+        position,
+        profiles!inner (
+          user_type,
+          avatar_url,
+          job_title
+        )
+      `)
       .order('name');
 
     if (filterType !== 'all') {
-      // Mapeamento de filtros para user_type do banco
       const typeMap = {
         'palestrante': 'palestrante',
         'congressista': 'congressista',
         'expositor': 'expositor',
         'parceiro': 'parceiro',
-        'staff': 'organizador' // 'staff' na UI é 'organizador' no banco
+        'staff': 'organizador'
       };
-      query = query.eq('user_type', typeMap[filterType] || filterType);
+      query = query.eq('profiles.user_type', typeMap[filterType] || filterType);
     }
 
     if (searchTerm) {
       query = query.ilike('name', `%${searchTerm}%`);
     }
 
-    const { data: profiles, error } = await query;
+    const { data: members, error } = await query;
     if (error) throw error;
 
-    // 2. Buscar detalhes adicionais na tabela members (como instituição/cargo)
-    const cpfs = profiles.map(p => p.cpf);
-    const { data: members } = await supabase
-      .from('members')
-      .select('cpf, institution, position')
-      .in('cpf', cpfs);
-
-    // 3. Mesclar dados
-    return profiles.map(p => {
-      const memberInfo = (members || []).find(m => m.cpf === p.cpf);
-      return {
-        id: p.cpf,
-        name: p.name || 'Participante',
-        role: memberInfo?.position || (p.user_type === 'palestrante' ? 'Palestrante' : 'Congressista'),
-        institution: memberInfo?.institution || '',
-        type: p.user_type === 'organizador' ? 'staff' : p.user_type,
-        verified: p.user_type === 'palestrante' || p.user_type === 'organizador'
-      };
-    });
+    // 2. Mesclar e formatar dados
+    return (members || []).map(m => ({
+      id: m.cpf,
+      name: m.name || 'Participante',
+      role: m.position || m.profiles?.job_title || (m.profiles?.user_type === 'palestrante' ? 'Palestrante' : 'Congressista'),
+      institution: m.institution || '',
+      type: m.profiles?.user_type === 'organizador' ? 'staff' : (m.profiles?.user_type || 'congressista'),
+      verified: m.profiles?.user_type === 'palestrante' || m.profiles?.user_type === 'organizador',
+      avatar: m.profiles?.avatar_url
+    }));
   } catch (error) {
     console.error("Erro ao buscar a rede de contatos real:", error);
     return [];
