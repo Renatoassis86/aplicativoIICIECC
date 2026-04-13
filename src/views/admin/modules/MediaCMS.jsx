@@ -54,6 +54,7 @@ const MediaCMS = () => {
             url: data.url,
             media_type: data.media_type,
             category: data.category,
+            source_type: 'link', // Campo obrigatório no banco
             is_live_stream: data.is_live_stream === 'on',
             updated_at: new Date().toISOString()
         };
