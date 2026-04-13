@@ -3,7 +3,9 @@ import {
   Heart, 
   MapPin, 
   Clock, 
-  ChevronRight
+  ChevronRight,
+  LayoutList,
+  LayoutGrid
 } from 'lucide-react';
 import SessionDetailModal from '../../components/agenda/SessionDetailModal';
 import { supabase } from '../../lib/supabase';
@@ -20,7 +22,9 @@ const AgendaTab = ({ userCpf }) => {
     if (typeof val === 'object' && val.rendered) return val.rendered;
     return String(val);
   };
+
   const [activeTab, setActiveTab] = useState('Palestras');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -58,6 +62,7 @@ const AgendaTab = ({ userCpf }) => {
           room: s.room || 'Auditório Principal',
           category: s.category || 'Palestra',
           description: s.description || '',
+          photo: Array.isArray(s.speakers) ? (s.speakers[0]?.photo_url) : (s.speakers?.photo_url),
           fullSpeaker: Array.isArray(s.speakers) ? s.speakers[0] : s.speakers
         })));
       }
@@ -113,24 +118,42 @@ const AgendaTab = ({ userCpf }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '800', fontFamily: 'var(--font-serif)', color: 'white' }}>{displaySafe(agendaTitle) || 'Agenda Oficial'}</h2>
-          <button 
-            onClick={() => setOnlyFavorites(!onlyFavorites)}
-            style={{
-              background: onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-              padding: '8px 14px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: onlyFavorites ? 'var(--secondary)' : 'white',
-              fontSize: '11px',
-              fontWeight: '900',
-              border: 'none'
-            }}
-          >
-            <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'white'} />
-            MINHA AGENDA
-          </button>
+          
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                padding: '8px',
+                borderRadius: '10px',
+                color: 'white',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              {viewMode === 'list' ? <LayoutGrid size={18} /> : <LayoutList size={18} />}
+            </button>
+
+            <button 
+              onClick={() => setOnlyFavorites(!onlyFavorites)}
+              style={{
+                background: onlyFavorites ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+                padding: '8px 14px',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: onlyFavorites ? 'var(--secondary)' : 'white',
+                fontSize: '11px',
+                fontWeight: '900',
+                border: 'none'
+              }}
+            >
+              <Heart size={14} fill={onlyFavorites ? 'var(--secondary)' : 'none'} color={onlyFavorites ? 'var(--secondary)' : 'white'} />
+              MINHA AGENDA
+            </button>
+          </div>
         </div>
         
         <div style={{ 
@@ -195,29 +218,98 @@ const AgendaTab = ({ userCpf }) => {
                  <div style={{ flex: 1, height: '1px', background: 'var(--border)', opacity: 0.5 }}></div>
                </div>
                
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+               <div style={{ 
+                 display: viewMode === 'grid' ? 'grid' : 'flex', 
+                 gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(280px, 1fr))' : 'none',
+                 flexDirection: viewMode === 'grid' ? 'none' : 'column', 
+                 gap: '16px' 
+               }}>
                 {dayEvents.map(event => (
-                  <div key={event.id} className="card" style={{ padding: '20px', display: 'flex', gap: '16px', cursor: 'pointer' }} onClick={() => setSelectedSession(event)}>
-                    <div style={{ borderRight: '1px solid var(--border)', paddingRight: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: '60px' }}>
-                      <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--secondary)' }}>{event.time}</p>
-                      <Clock size={12} color="var(--text-muted)" style={{ marginTop: '4px' }} />
+                  <div 
+                    key={event.id} 
+                    className="card" 
+                    style={{ 
+                        padding: '20px', 
+                        display: 'flex', 
+                        flexDirection: viewMode === 'grid' ? 'column' : 'row',
+                        gap: '16px', 
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }} 
+                    onClick={() => setSelectedSession(event)}
+                  >
+                    {/* Borda lateral colorida por categoria se for lista */}
+                    {viewMode === 'list' && (
+                        <div style={{ 
+                            position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', 
+                            background: event.category === 'Oficina' ? '#48BB78' : event.category === 'Palestra' ? 'var(--gold)' : '#3182CE'
+                        }}></div>
+                    )}
+
+                    <div style={{ 
+                        borderRight: viewMode === 'list' ? '1px solid var(--border)' : 'none', 
+                        borderBottom: viewMode === 'grid' ? '1px solid var(--border)' : 'none',
+                        paddingRight: viewMode === 'list' ? '16px' : '0', 
+                        paddingBottom: viewMode === 'grid' ? '12px' : '0',
+                        display: 'flex', 
+                        flexDirection: viewMode === 'list' ? 'column' : 'row', 
+                        justifyContent: viewMode === 'list' ? 'center' : 'space-between', 
+                        alignItems: viewMode === 'list' ? 'flex-start' : 'center',
+                        minWidth: viewMode === 'list' ? '60px' : 'auto'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Clock size={14} color="var(--primary)" />
+                        <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)' }}>{event.time}</p>
+                      </div>
+                      
+                      {viewMode === 'grid' && (
+                         <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '900', textTransform: 'uppercase', background: 'rgba(107, 20, 26, 0.05)', padding: '2px 8px', borderRadius: '6px' }}>
+                            {event.category}
+                         </span>
+                      )}
                     </div>
                     
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
-                          {event.category}
-                        </span>
-                        <button onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }} style={{ background: 'none', border: 'none' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        {viewMode === 'list' && (
+                            <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: '900', textTransform: 'uppercase' }}>
+                                {event.category}
+                            </span>
+                        )}
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); toggleFavorite(event.id); }} 
+                            style={{ 
+                                background: 'none', border: 'none', marginLeft: 'auto',
+                                position: viewMode === 'grid' ? 'absolute' : 'static',
+                                top: '20px', right: '20px'
+                            }}
+                        >
                           <Heart size={20} fill={favorites.includes(event.id) ? "var(--primary)" : "none"} color={favorites.includes(event.id) ? "var(--primary)" : "#CBD5E0"} />
                         </button>
                       </div>
-                      <p style={{ fontWeight: '700', fontSize: '16px', lineHeight: '1.2', color: 'var(--secondary)' }}>{event.title}</p>
-                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{event.speaker}</p>
+
+                      <h4 style={{ fontWeight: '800', fontSize: '17px', lineHeight: '1.3', color: 'var(--secondary)', marginBottom: '8px' }}>{event.title}</h4>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         {event.photo && (
+                            <img src={event.photo} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                         )}
+                         <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700' }}>{event.speaker}</p>
+                      </div>
+
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: 'var(--text-muted)' }}>
-                        <MapPin size={12} /><span style={{ fontSize: '11px' }}>{event.room}</span>
+                        <MapPin size={12} fill="var(--text-muted)" style={{ opacity: 0.5 }} />
+                        <span style={{ fontSize: '11px', fontWeight: '600' }}>{event.room}</span>
                       </div>
                     </div>
+
+                    {viewMode === 'list' && (
+                        <div style={{ display: 'flex', alignItems: 'center', color: 'var(--border)' }}>
+                            <ChevronRight size={20} />
+                        </div>
+                    )}
                   </div>
                 ))}
               </div>
