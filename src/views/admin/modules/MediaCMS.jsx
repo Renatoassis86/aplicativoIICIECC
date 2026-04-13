@@ -81,39 +81,55 @@ const MediaCMS = () => {
         
         setLoading(true);
         try {
-            let finalUrl = data.url;
-
-            // Se for upload de arquivo
-            if (sourceType === 'file' && fileRef.current?.files[0]) {
-                const uploadedUrl = await handleFileUpload(fileRef.current.files[0]);
-                if (uploadedUrl) finalUrl = uploadedUrl;
-                else { setLoading(false); return; }
-            }
-
-            const payload = {
-                id: editingItem?.id || undefined,
-                title: data.title,
-                description: data.description,
-                url: finalUrl,
-                media_type: data.media_type,
-                category: data.category || editingItem?.category || 'Outros',
-                source_type: sourceType,
-                is_live_stream: data.is_live_stream === 'on',
-                updated_at: new Date().toISOString()
-            };
-
-            const { error } = await supabase.from('media_assets').upsert(payload);
-
-            if (!error) {
-                setEditingItem(null);
-                setSourceType('link');
-                loadMedia();
-                triggerSuccess(editingItem?.id ? 'Conteúdo atualizado!' : 'Novo conteúdo adicionado!');
-                e.target.reset();
-                if (fileRef.current) fileRef.current.value = '';
+            const files = fileRef.current?.files;
+            
+            // Caso seja upload de arquivo(s)
+            if (sourceType === 'file' && files?.length > 0) {
+                setUploading(true);
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const uploadedUrl = await handleFileUpload(file);
+                    
+                    if (uploadedUrl) {
+                        const payload = {
+                            title: files.length > 1 ? `${data.title} (${i + 1})` : data.title,
+                            description: data.description,
+                            url: uploadedUrl,
+                            media_type: data.media_type,
+                            category: data.category || 'Memórias',
+                            source_type: 'file',
+                            is_live_stream: data.is_live_stream === 'on',
+                            updated_at: new Date().toISOString()
+                        };
+                        await supabase.from('media_assets').insert(payload);
+                    }
+                }
+                setUploading(false);
             } else {
-                throw error;
+                // Caso seja LINK ou EDIÇÃO de item existente (um por vez)
+                const payload = {
+                    id: editingItem?.id || undefined,
+                    title: data.title,
+                    description: data.description,
+                    url: data.url,
+                    media_type: data.media_type,
+                    category: data.category || editingItem?.category || 'Memórias',
+                    source_type: sourceType,
+                    is_live_stream: data.is_live_stream === 'on',
+                    updated_at: new Date().toISOString()
+                };
+
+                const { error } = await supabase.from('media_assets').upsert(payload);
+                if (error) throw error;
             }
+
+            setEditingItem(null);
+            setSourceType('link');
+            loadMedia();
+            triggerSuccess(files?.length > 1 ? `${files.length} arquivos publicados!` : 'Conteúdo salvo com sucesso!');
+            e.target.reset();
+            if (fileRef.current) fileRef.current.value = '';
+            
         } catch (err) {
             alert('Erro ao salvar: ' + err.message);
         }
@@ -228,9 +244,10 @@ const MediaCMS = () => {
                                      ref={fileRef}
                                      name="file_upload" 
                                      id="file_upload" 
+                                     multiple
                                      style={{ display: 'none' }} 
                                      onChange={(e) => {
-                                        if(e.target.files[0]) triggerSuccess(`Arquivo selecionado: ${e.target.files[0].name}`);
+                                        if(e.target.files.length > 0) triggerSuccess(`${e.target.files.length} arquivo(s) selecionado(s)`);
                                      }} 
                                    />
                                    <label htmlFor="file_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
@@ -362,30 +379,30 @@ const inputStyle = {
     width: '100%', padding: '16px', borderRadius: '16px', 
     border: '1px solid rgba(255,255,255,0.08)', fontSize: '15px', outline: 'none', 
     color: '#000', backgroundColor: '#FFFFFF', fontWeight: '600',
-    transition: 'border-color 0.2s' 
+    transition: 'border-color 0.2s', boxSizing: 'border-box'
 };
 
 const tabStyle = {
     padding: '8px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
     fontSize: '11px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s',
-    whiteSpace: 'nowrap', letterSpacing: '0.5px'
+    whiteSpace: 'nowrap', letterSpacing: '0.5px', boxSizing: 'border-box'
 };
 
 const tabSmallStyle = {
-    ...tabStyle, padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+    ...tabStyle, padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxSizing: 'border-box'
 };
 
 const actionBtnStyle = { 
     width: '44px', height: '44px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', 
     display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
-    color: 'white', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s'
+    color: 'white', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s', boxSizing: 'border-box'
 };
 
 const btnSaveStyle = { 
     padding: '20px', borderRadius: '18px', background: 'var(--brand)', color: 'black', border: 'none', 
     fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
     gap: '12px', marginTop: '10px', width: '100%', fontSize: '16px', letterSpacing: '0.5px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.3)', transition: 'transform 0.2s'
+    boxShadow: '0 10px 30px rgba(0,0,0,0.3)', transition: 'transform 0.2s', boxSizing: 'border-box'
 };
 
 export default MediaCMS;

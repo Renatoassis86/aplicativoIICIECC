@@ -345,6 +345,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           overflow-y: auto;
           position: relative;
           background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 600px);
+          min-width: 0;
         }
 
         .content-container {
@@ -353,6 +354,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           max-width: 1600px;
           margin: 0 auto;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
 
         @media (max-width: 1400px) {
@@ -370,6 +372,10 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           display: grid;
           grid-template-columns: 1fr 2fr;
           gap: 24px;
+        }
+
+        .responsive-grid > div {
+          min-width: 0;
         }
 
         @media (max-width: 1300px) {
