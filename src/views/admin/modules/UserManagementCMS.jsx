@@ -74,8 +74,10 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
         setLoading(true);
         try {
             await deleteMember(cpf);
-            alert('Usuário excluído com sucesso.');
-            loadData();
+            alert('Usuário excluído com sucesso do banco de dados.');
+            // Limpa o termo de busca para garantir que a lista atualizada apareça sem filtros que possam confundir
+            setSearchTerm('');
+            await loadData();
         } catch (e) {
             alert('Erro ao excluir: ' + e.message);
         }
@@ -150,6 +152,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                                 <option value="patrocinador_diamante">Patrocinador Diamante</option>
                                 <option value="patrocinador_ouro">Patrocinador Ouro</option>
                                 <option value="palestrante">Palestrante</option>
+                                <option value="apoio">Equipe de Apoio</option>
                                 <option value="congressista">Congressista Comum</option>
                             </select>
                         </div>

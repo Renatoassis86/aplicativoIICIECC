@@ -154,6 +154,8 @@ export default function SponsorsCMS() {
               <option value="gold">Cota Ouro</option>
               <option value="silver">Cota Prata</option>
               <option value="bronze">Cota Bronze</option>
+              <option value="organizador">Organizador</option>
+              <option value="apoio">Apoio</option>
             </select>
           </div>
           <div>
