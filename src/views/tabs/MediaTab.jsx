@@ -57,8 +57,31 @@ export default function MediaTab({ userType, userName, userCpf }) {
   };
 
   const handleAddComment = async (postId, text, parentId = null) => {
+    // Optimistic comment (simplified)
+    const tempId = 'temp-' + Date.now();
+    const optimisticComment = {
+      id: tempId,
+      authorName: userName || 'Você',
+      text,
+      likes: 0,
+      likedByMe: false,
+      replies: [],
+      created_at: new Date().toISOString()
+    };
+    
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        if (parentId) {
+          // Recursive add... simpler to just wait or add to top level for now
+          // For simplicity in this UI, we'll refresh after API
+          return p;
+        }
+        return { ...p, comments: [optimisticComment, ...p.comments] };
+      }
+      return p;
+    }));
+
     const newComment = await postComment(postId, text, userName || 'Congressista', userCpf, parentId);
-    if (!newComment) return;
     loadInitialData();
   };
 
@@ -67,18 +90,44 @@ export default function MediaTab({ userType, userName, userCpf }) {
     loadInitialData();
   };
 
+  const handleLikeComment = async (postId, commentId, currentState) => {
+    // Optimistic UI for comment like
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          comments: p.comments.map(c => {
+             if (c.id === commentId) return { ...c, likedByMe: !currentState, likes: currentState ? c.likes - 1 : c.likes + 1 };
+             return c;
+          })
+        };
+      }
+      return p;
+    }));
+    await toggleLikeComment(commentId, currentState, userCpf);
+    loadInitialData(); // Atualiza contador de likes e estado visual
+  };
+
   const handleDeletePost = async (postId) => {
     setPosts(prev => prev.filter(p => p.id !== postId));
     await deletePostApi(postId);
   };
 
-  const handleLikeComment = async (postId, commentId, currentState) => {
-    await toggleLikeComment(commentId, currentState, userCpf);
-    loadInitialData(); // Atualiza contador de likes e estado visual
+  const handlePin = async (postId, currentPin) => {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, isPinned: !currentPin } : p));
+    await togglePinPost(postId, currentPin);
+    loadInitialData();
+  };
+
+  const handleArchive = async (postId, currentArchive) => {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, isArchived: !currentArchive } : p));
+    await toggleArchivePost(postId, currentArchive);
+    loadInitialData();
   };
 
   const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
-    .filter(p => !hiddenPosts.includes(p.id));
+    .filter(p => !hiddenPosts.includes(p.id))
+    .filter(p => !p.isArchived);
 
   return (
     <div className="tab-content fade-in" style={{ paddingBottom: '40px', background: '#F8F9FA' }}>
@@ -99,6 +148,9 @@ export default function MediaTab({ userType, userName, userCpf }) {
         </div>
 
         <div style={{ display: 'flex', gap: '20px', color: 'white' }}>
+            <button onClick={() => setShowCreator(true)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                <PlusSquare size={24} color="white" />
+            </button>
             <button onClick={() => setViewingSaved(!viewingSaved)} style={{ background: 'none', border: 'none', padding: 0 }}>
                 {viewingSaved ? <BookmarkCheck size={24} color="white" /> : <Bookmark size={24} color="white" />}
             </button>
@@ -214,7 +266,31 @@ export default function MediaTab({ userType, userName, userCpf }) {
       {activeOptionsPost && (
         <PostOptionsModal 
            post={activeOptionsPost} userType={userType} userName={userName} 
-           onClose={() => setActiveOptionsPost(null)} onDelete={handleDeletePost}
+           onClose={() => setActiveOptionsPost(null)} 
+           onDelete={handleDeletePost}
+           onPin={handlePin}
+           onArchive={handleArchive}
+           onSave={handleSave}
+           onEdit={(p) => { setEditingPost(p); setActiveOptionsPost(null); }}
+        />
+      )}
+
+      {editingPost && (
+        <SocialPostCreator 
+          isEdit={true}
+          initialPost={editingPost}
+          userId={userCpf}
+          onClose={() => setEditingPost(null)}
+          onSuccess={() => { setEditingPost(null); loadInitialData(); }}
+        />
+      )}
+
+      {showCreator && (
+        <SocialPostCreator 
+          userId={userCpf}
+          userName={userName}
+          onClose={() => setShowCreator(false)}
+          onSuccess={() => { setShowCreator(false); loadInitialData(); }}
         />
       )}
 
