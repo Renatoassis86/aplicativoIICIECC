@@ -62,6 +62,9 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
   const getImageUrl = (item) => {
     if (!item) return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     
+    // PRIORIDADE 1: Thumbnail capturada manualmente
+    if (item.thumbnail_url) return item.thumbnail_url;
+
     // Prioridade para URL do banco
     const urlValue = item.url || item.url_or_path || '';
     
@@ -75,6 +78,12 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         }
         return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
       }
+      
+      // Se for um vídeo Mp4 direto (sem thumbnail capturada), retorna o default para evitar erro de imagem
+      if (urlValue.toLowerCase().endsWith('.mp4') || urlValue.toLowerCase().endsWith('.mov')) {
+        return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
+      }
+      
       return urlValue || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     }
     

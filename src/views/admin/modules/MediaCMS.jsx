@@ -22,6 +22,51 @@ const MediaCMS = () => {
     const [activeTab, setActiveTab] = useState('ALL');
     const [sourceType, setSourceType] = useState('link'); // 'link' ou 'file'
     const [layoutMode, setLayoutMode] = useState('list'); // 'grid' ou 'list' (Default list for Media)
+    const [capturedThumbnail, setCapturedThumbnail] = useState(null);
+    const videoPreviewRef = useRef(null);
+
+    useEffect(() => {
+        loadMedia();
+    }, []);
+
+    const captureThumbnail = async () => {
+        if (!videoPreviewRef.current) {
+            alert("Aguarde o vídeo carregar para capturar a capa.");
+            return;
+        }
+        const video = videoPreviewRef.current;
+        
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                setLoading(true);
+                try {
+                    const fileName = `thumb_${Date.now()}.jpg`;
+                    const filePath = `thumbnails/${fileName}`;
+                    const { error: uploadError } = await supabase.storage
+                        .from('app_media')
+                        .upload(filePath, blob);
+                    
+                    if (uploadError) throw uploadError;
+                    const { data: { publicUrl } } = supabase.storage.from('app_media').getPublicUrl(filePath);
+                    setCapturedThumbnail(publicUrl);
+                    triggerSuccess('Capa capturada com sucesso!');
+                } catch (err) {
+                    alert('Erro ao capturar capa: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }, 'image/jpeg', 0.8);
+        } catch (err) {
+            alert("Não foi possível capturar a imagem deste vídeo (pode ser restrição de CORS se for link externo). Use um link direto ou upload.");
+        }
+    };
 
     const categories = [
         "Flash 2026",
@@ -104,6 +149,7 @@ const MediaCMS = () => {
                             title: mediaFiles.length > 1 ? `${data.title} (${i + 1})` : data.title,
                             description: data.description,
                             url: result.url,
+                            thumbnail_url: capturedThumbnail,
                             media_type: finalType,
                             category: data.category || 'Memórias',
                             source_type: 'upload',
@@ -117,11 +163,13 @@ const MediaCMS = () => {
                 }
                 triggerSuccess(`${mediaFiles.length} arquivos publicados com sucesso!`);
                 setMediaFiles([]);
+                setCapturedThumbnail(null);
             } else {
                 const payload = {
                     title: data.title,
                     description: data.description,
                     url: data.url,
+                    thumbnail_url: capturedThumbnail || (editingItem?.thumbnail_url),
                     media_type: mediaType,
                     category: data.category || (editingItem ? editingItem.category : 'Memórias'),
                     source_type: sourceType === 'file' ? 'upload' : sourceType,
@@ -141,6 +189,7 @@ const MediaCMS = () => {
                     if (error) throw error;
                     triggerSuccess('Conteúdo publicado com sucesso!');
                 }
+                setCapturedThumbnail(null);
             }
 
             setEditingItem(null);
@@ -283,6 +332,50 @@ const MediaCMS = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* PREVIEW E CAPTURA DE THUMBNAIL */}
+                            {(mediaType === 'video' || (editingItem && editingItem.media_type === 'video')) && (
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <label style={labelStyle}>CAPA / THUMBNAIL (OPCIONAL)</label>
+                                    
+                                    <div style={{ marginBottom: '16px' }}>
+                                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>
+                                            Dica: Dê play no vídeo abaixo e clique em capturar para gerar a capa.
+                                        </p>
+                                        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
+                                            <video 
+                                                ref={videoPreviewRef}
+                                                src={sourceType === 'link' ? editingItem?.url : (mediaFiles[0] ? URL.createObjectURL(mediaFiles[0]) : editingItem?.url)} 
+                                                controls 
+                                                crossOrigin="anonymous"
+                                                style={{ width: '100%', height: '100%' }} 
+                                            />
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={captureThumbnail}
+                                            style={{ 
+                                                marginTop: '12px', width: '100%', padding: '12px', borderRadius: '12px', 
+                                                background: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: '800', 
+                                                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                            }}
+                                        >
+                                            <Camera size={18} /> CAPTURAR CAPA DO VÍDEO
+                                        </button>
+                                    </div>
+
+                                    {(capturedThumbnail || editingItem?.thumbnail_url) && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(212, 193, 156, 0.1)', padding: '12px', borderRadius: '14px', border: '1px solid var(--brand)' }}>
+                                            <img src={capturedThumbnail || editingItem?.thumbnail_url} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} alt="Thumb" />
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--brand)' }}>CAPA ATUAL</p>
+                                                <button type="button" onClick={() => setCapturedThumbnail(null)} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: '10px', fontWeight: '900', cursor: 'pointer', padding: 0 }}>LIMPAR</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '18px' }}>
                                 <input type="checkbox" name="is_live_stream" defaultChecked={editingItem?.is_live_stream} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />

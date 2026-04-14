@@ -152,7 +152,9 @@ export default function MediaTab({ userType, userName, userCpf }) {
                           overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.05)',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                         }}>
-                          {asset.media_type === 'video' ? (
+                          {asset.thumbnail_url ? (
+                             <img src={asset.thumbnail_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                          ) : asset.media_type === 'video' ? (
                             <>
                               <video src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
                               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
@@ -163,7 +165,7 @@ export default function MediaTab({ userType, userName, userCpf }) {
                             <img src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Podcast size={32} color="var(--brand)" />
+                              <Podcast size={32} color="var(--gold)" />
                             </div>
                           )}
                         </div>
