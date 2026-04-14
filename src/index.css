@@ -42,6 +42,9 @@ body {
   min-height: 100vh;
   background-color: var(--bg-app);
   color: var(--secondary);
+}
+
+body:not(.admin-mode) {
   overscroll-behavior-y: none !important;
 }
 
@@ -96,8 +99,17 @@ body:not(.admin-mode) .card:not([style*="background"]):not([style*="linear-gradi
 }
 
 /* 3. EXCEÇÕES NECESSÁRIAS (Botões e Badges) */
-.btn-primary, .btn-primary *, .badge-official {
+.btn-primary, .btn-primary * {
     color: #FFFFFF !important;
+}
+
+.badge-official {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-primary {

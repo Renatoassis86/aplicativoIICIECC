@@ -339,7 +339,14 @@ const HomeTab = ({
           {/* Removido o logo centralizado para dar espaço ao vídeo */}
 
           <div style={{ marginBottom: '12px' }}>
-            <span className="badge-official" style={{ background: 'var(--gold)', color: 'var(--secondary)', fontWeight: '900', fontSize: '9px' }}>{displaySafe(homeBadge)}</span>
+            <span className="badge-official" style={{ 
+              background: 'var(--gold)', 
+              color: '#111111', 
+              fontWeight: '900', 
+              fontSize: '10px' 
+            }}>
+              {displaySafe(homeBadge)}
+            </span>
           </div>
           <h1 style={{ 
             fontFamily: 'var(--font-serif)', 

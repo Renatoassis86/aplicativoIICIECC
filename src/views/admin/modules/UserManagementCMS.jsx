@@ -85,10 +85,20 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
         setLoading(false);
     };
 
-    const filteredUsers = users.filter(u => 
-        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        u.cpf?.includes(searchTerm)
-    );
+    const [filterType, setFilterType] = useState('all');
+
+    const filteredUsers = users.filter(u => {
+        const matchesSearch = u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            u.cpf?.includes(searchTerm);
+        if (!matchesSearch) return false;
+
+        if (filterType === 'all') return true;
+        if (filterType === 'congressista') return u.user_type === 'congressista';
+        if (filterType === 'organizer') return ['admin', 'staff', 'apoio'].includes(u.user_type);
+        if (filterType === 'sponsor') return ['patrocinador_ouro', 'patrocinador_prata', 'patrocinador_bronze'].includes(u.user_type);
+        if (filterType === 'palestrante') return u.user_type === 'palestrante';
+        return true;
+    });
 
     return (
         <div className="responsive-grid">
@@ -219,6 +229,36 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                     >
                         {loading ? <div className="animate-spin">⌛</div> : <><RefreshCw size={16} /> RECARREGAR</>}
                     </button>
+                </div>
+
+                {/* Filtros por Categoria */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                    {[
+                        { id: 'all', label: 'Todos' },
+                        { id: 'congressista', label: 'Congressistas' },
+                        { id: 'organizer', label: 'Organizadores' },
+                        { id: 'sponsor', label: 'Patrocinadores' },
+                        { id: 'palestrante', label: 'Palestras/GTs' }
+                    ].map(f => (
+                        <button
+                            key={f.id}
+                            onClick={() => setFilterType(f.id)}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '100px',
+                                border: '1px solid var(--border-color)',
+                                background: filterType === f.id ? 'var(--gold)' : 'rgba(255,255,255,0.05)',
+                                color: filterType === f.id ? '#000' : 'rgba(255,255,255,0.6)',
+                                fontSize: '11px',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
                 </div>
 
                 <div style={{ position: 'relative', marginBottom: '20px' }}>

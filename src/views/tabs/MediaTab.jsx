@@ -116,6 +116,58 @@ export default function MediaTab({ userType, userName, userCpf }) {
       </section>
 
 
+      {/* ACERVO DIGITAL (GALERIA DE CATEGORIAS) */}
+      {!viewingSaved && (
+        <section style={{ padding: '0 0 20px 0', background: 'white', marginBottom: '12px' }}>
+          {Object.keys(groupedAssets).length === 0 && !loading ? (
+            null
+          ) : (
+            Object.entries(groupedAssets).map(([category, assets]) => (
+              <div key={category} style={{ marginBottom: '24px' }}>
+                <div style={{ padding: '20px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h5 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>{category}</h5>
+                    <span style={{ fontSize: '11px', color: 'var(--brand)', fontWeight: '700' }}>{assets.length} ITENS</span>
+                </div>
+                
+                <div className="no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', padding: '0 20px' }}>
+                  {assets.map(asset => (
+                    <div 
+                      key={asset.id}
+                      onClick={() => setSelectedAsset(asset)}
+                      style={{ flexShrink: 0, width: '160px', cursor: 'pointer' }}
+                    >
+                      <div style={{ 
+                        width: '160px', height: '100px', borderRadius: '16px', background: '#000', 
+                        overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.05)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                      }}>
+                        {asset.media_type === 'video' ? (
+                          <>
+                            <video src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
+                              <Play size={24} color="white" fill="white" />
+                            </div>
+                          </>
+                        ) : asset.media_type === 'image' ? (
+                          <img src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Podcast size={32} color="var(--brand)" />
+                          </div>
+                        )}
+                      </div>
+                      <h6 style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxDirection: 'vertical', overflow: 'hidden' }}>
+                        {asset.title}
+                      </h6>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </section>
+      )}
+
       {/* FEED SOCIAL */}
       <h5 style={{ padding: '20px 20px 10px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
         {viewingSaved ? 'Galeria de Salvos' : 'Feed da Comunidade'}
@@ -134,7 +186,13 @@ export default function MediaTab({ userType, userName, userCpf }) {
            </div>
         ) : (
           visiblePosts.map(post => (
-            <article key={post.id} className="fade-in" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '12px' }}>
+            <article key={post.id} className="fade-in" style={{ 
+              background: 'white', 
+              borderBottom: '1px solid rgba(0,0,0,0.05)', 
+              marginBottom: '12px',
+              maxWidth: '600px', // Limite de largura para Desktop (Padrão Instagram)
+              margin: '0 auto 12px auto' // Centraliza no Desktop
+            }}>
               <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ 
@@ -162,12 +220,28 @@ export default function MediaTab({ userType, userName, userCpf }) {
               {/* MEDIA RENDER */}
               <div 
                 onClick={() => (post.mediaType === 'video' || post.mediaType === 'reel') && post.mediaUrls?.[0] && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
-                style={{ width: '100%', background: '#000', borderRadius: '0', cursor: (post.mediaType === 'video' || post.mediaType === 'reel') ? 'pointer' : 'default' }}
+                style={{ 
+                  width: '100%', 
+                  aspectRatio: '1/1', // Proporção quadrada padrão para consistência
+                  background: '#111', 
+                  borderRadius: '0', 
+                  overflow: 'hidden',
+                  cursor: (post.mediaType === 'video' || post.mediaType === 'reel') ? 'pointer' : 'default',
+                  position: 'relative'
+                }}
               >
                 {(post.mediaType === 'video' || post.mediaType === 'reel') ? (
-                   <video src={post.mediaUrls?.[0]} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} muted playsInline autoPlay loop />
+                   <video 
+                     src={post.mediaUrls?.[0]} 
+                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                     muted playsInline autoPlay loop 
+                   />
                 ) : (
-                   <img src={post.mediaUrls?.[0] || post.imageUrl} alt="" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} />
+                   <img 
+                     src={post.mediaUrls?.[0] || post.imageUrl} 
+                     alt="" 
+                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                   />
                 )}
               </div>
 

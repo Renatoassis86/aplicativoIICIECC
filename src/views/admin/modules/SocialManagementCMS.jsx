@@ -400,6 +400,46 @@ const SocialManagementCMS = () => {
                             {loading ? 'PROCESSANDO...' : editingItem ? 'ATUALIZAR PUBLICAÇÃO' : 'PUBLICAR NO CONECTAR'}
                         </button>
                     </form>
+
+                    {/* GUIA DE POSTAGEM */}
+                    <div style={{ marginTop: '32px', background: 'rgba(212, 193, 156, 0.05)', padding: '24px', borderRadius: '24px', border: '1px solid rgba(212, 193, 156, 0.2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                            <Shield size={20} color="var(--brand)" />
+                            <h5 style={{ fontWeight: '900', fontSize: '14px', color: 'white', letterSpacing: '0.5px' }}>GUIA DE MELHORES PRÁTICAS</h5>
+                        </div>
+                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '16px' }}>
+                            Para garantir que o Feed Conectar fique visualmente profissional e sem barras pretas, recomendamos os seguintes formatos:
+                        </p>
+                        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                                <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <ImageIcon size={18} color="var(--brand)" />
+                                </div>
+                                <div>
+                                    <strong style={{ color: 'white', display: 'block' }}>Fotos Quadradas (1:1)</strong>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>1080 x 1080 px</span>
+                                </div>
+                            </li>
+                            <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                                <div style={{ width: '40px', height: '40px', background: 'rgba(212, 193, 156, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <div style={{ width: '12px', height: '16px', border: '2px solid var(--brand)', borderRadius: '2px' }}></div>
+                                </div>
+                                <div>
+                                    <strong style={{ color: 'white', display: 'block' }}>Fotos Verticais (4:5)</strong>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>1080 x 1350 px (Recomendado para Mobile)</span>
+                                </div>
+                            </li>
+                            <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
+                                <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Video size={18} color="var(--brand)" />
+                                </div>
+                                <div>
+                                    <strong style={{ color: 'white', display: 'block' }}>Vídeos Curtos</strong>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Preferencialmente verticais (9:16) ou 4:5.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 {/* COLUNA DIREITA: MODERAÇÃO */}

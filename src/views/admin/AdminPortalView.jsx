@@ -323,10 +323,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .admin-container {
           display: flex;
           height: 100vh;
+          width: 100vw;
           background: var(--bg-dark);
           color: #E2E8F0;
           font-family: 'Inter', system-ui, sans-serif;
-          overflow: hidden;
+          overflow: hidden; /* Mantém a estrutura fixa */
         }
 
         .admin-sidebar {
@@ -342,14 +343,14 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
         .admin-main {
           flex: 1;
-          display: flex;
-          flex-direction: column;
+          height: 100vh; /* Ocupa exatamente a altura disponível */
+          min-height: 0;
           overflow-x: hidden;
-          overflow-y: auto; /* Garantir que este é o contexto de scroll principal */
+          overflow-y: scroll; /* Força scroll context */
+          display: block; /* Mais seguro para scroll do que flex */
           position: relative;
           background: radial-gradient(circle at top right, rgba(212, 193, 156, 0.05), transparent 600px);
-          min-width: 0;
-          -webkit-overflow-scrolling: touch; /* Scroll suave em iOS */
+          -webkit-overflow-scrolling: touch;
         }
 
         .content-container {
@@ -484,11 +485,16 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Custom scrollbar for Dark Theme */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: rgba(212, 193, 156, 0.4); borderRadius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
+        /* Force scrollbar visibility for Admin */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 10px; border: 2px solid #000; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFFFFF; }
+        
+        .admin-main {
+           scrollbar-width: auto;
+           scrollbar-color: var(--brand) rgba(0,0,0,0.2);
+        }
 
         /* Global Theme Consistency */
         .white-bg, .card-main {

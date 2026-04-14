@@ -93,7 +93,7 @@ const AgendaTab = ({ userCpf }) => {
     if (activeTab === 'Oficinas') {
       matchesTab = event.category?.toLowerCase() === 'oficina';
     } else {
-      matchesTab = event.date === currentTabData.date;
+      matchesTab = event.fullDate === currentTabData.date;
     }
     
     if (!matchesTab) return false;
