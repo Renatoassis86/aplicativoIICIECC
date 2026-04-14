@@ -65,7 +65,7 @@ const HomeTab = ({
   
   const [sponsors, setSponsors] = React.useState([]);
   const [workshops, setWorkshops] = React.useState([]);
-  const [favoriteItems, setFavoriteItems] = React.useState([]);
+  const [newsItems, setNewsItems] = React.useState([]);
   const [speakers, setSpeakers] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
@@ -97,122 +97,65 @@ const HomeTab = ({
       }
     }
     
-    async function fetchFavorites() {
-      if (!userCpf) return;
+    async function fetchNews() {
       try {
-        // 1. Agenda Favorites
-        const { data: agendaFavs } = await supabase
-          .from('agenda_favorites')
-          .select('session_id, created_at')
-          .eq('user_cpf', userCpf);
-        
-        // 2. Social Saves (Garantindo post_save)
-        const { data: socialSaves } = await supabase
-          .from('social_engagements')
-          .select('post_id')
-          .eq('user_id', userCpf)
-          .eq('type', 'post_save');
-
-        // 3. Media Saves (Garantindo save ou favorite)
-        const { data: mediaSaves } = await supabase
-          .from('media_engagements')
-          .select('media_id, media_type')
-          .eq('user_cpf', userCpf)
-          .or('type.eq.save,type.eq.favorite,type.eq.like'); // Incluindo like para garantir que apareça se o usuário curtir
-
         const unifiedResults = [];
 
-        // Detalhes da Agenda
-        if (agendaFavs && agendaFavs.length > 0) {
-          const ids = agendaFavs.map(f => f.session_id);
-          const { data: sessions } = await supabase
-            .from('agenda_sessions')
-            .select('*, speakers(*)')
-            .in('id', ids);
-          
-          if (sessions) {
-            sessions.forEach(s => {
-              // Buscar o timestamp original do favorito se possível, ou usar agora
-              const favData = agendaFavs.find(f => f.session_id === s.id);
-              unifiedResults.push({ 
-                ...s, 
-                itemType: 'agenda',
-                created_at: favData?.created_at || new Date().toISOString() 
-              });
-            });
-          }
-        }
+        // 1. Últimas Mídias Oficiais (Fotos, Videos, Podcasts)
+        const { data: media } = await supabase
+          .from('media_assets')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (media) media.forEach(m => unifiedResults.push({ ...m, itemType: 'media', newsTitle: m.title }));
 
-        // Detalhes do Feed Social
-        if (socialSaves && socialSaves.length > 0) {
-          const ids = socialSaves.map(f => f.post_id);
-          const { data: posts } = await supabase
-            .from('social_posts')
-            .select('*')
-            .in('id', ids);
-          if (posts) posts.forEach(p => unifiedResults.push({ ...p, itemType: 'social', title: p.caption?.substring(0, 30) + '...' }));
-        }
+        // 2. Últimas Postagens do Feed Social
+        const { data: posts } = await supabase
+          .from('social_posts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (posts) posts.forEach(p => unifiedResults.push({ ...p, itemType: 'social', newsTitle: p.caption?.substring(0, 50) + (p.caption?.length > 50 ? '...' : '') }));
 
-        // Detalhes da Mídia (Fotos/Videos)
-        if (mediaSaves && mediaSaves.length > 0) {
-          const ids = mediaSaves.map(m => m.media_id);
-          const validUuids = ids.filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
-          
-          if (validUuids.length > 0) {
-            const { data: assets } = await supabase
-              .from('media_assets')
-              .select('*')
-              .in('id', validUuids);
-            if (assets) assets.forEach(a => unifiedResults.push({ ...a, itemType: 'media' }));
-          }
-          
-          // Detalhes da Mídia (Memórias Estáticas)
-          const staticIds = ids.filter(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
-          if (staticIds.length > 0) {
-            const memories2025 = [
-              { id: 'mem-2025-0', title: 'Abertura II CIECC', type: 'video', url: 'https://www.youtube.com/watch?v=kYI9C7tHkQ0', category: 'Memórias 2025' },
-              { id: 'mem-2025-1', title: 'Educação Clássica na Prática', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' },
-              { id: 'mem-2025-2', title: 'Entrevista Exclusiva', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' },
-              { id: 'mem-2025-3', title: 'Paineis de Debate', type: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', category: 'Memórias 2025' }
-            ];
-            staticIds.forEach(sid => {
-              const found = memories2025.find(m => m.id === sid);
-              if (found) unifiedResults.push({ ...found, itemType: 'media' });
-            });
-          }
-        }
+        // 3. Últimos Comunicados / Notificações (Notícias gerais)
+        const { data: notices } = await supabase
+          .from('member_inbox')
+          .select('*')
+          .eq('user_cpf', userCpf)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (notices) notices.forEach(n => unifiedResults.push({ ...n, itemType: 'notice', newsTitle: n.title }));
 
         if (isMounted) {
-          // Ordenar por data (mais recentes primeiro)
           const sorted = unifiedResults.sort((a, b) => {
             const dateA = new Date(a.created_at || 0).getTime();
             const dateB = new Date(b.created_at || 0).getTime();
             return dateB - dateA;
           });
-          setFavoriteItems(sorted);
+          setNewsItems(sorted.slice(0, 15));
         }
       } catch (err) {
-        console.error("[HomeTab] Error fetching unified favorites:", err);
-        if (isMounted) setFavoriteItems([]);
+        console.error("[HomeTab] Error fetching news:", err);
+        if (isMounted) setNewsItems([]);
       }
     }
 
     fetchSponsors();
     fetchWorkshops();
     fetchSpeakers();
-    fetchFavorites();
+    fetchNews();
 
-    // REALTIME FAVORITES: Sincroniza tudo instantaneamente
-    const favSub = supabase
-      .channel('home_favorites_sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'agenda_favorites', filter: `user_cpf=eq.${userCpf}` }, () => fetchFavorites())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_engagements', filter: `user_id=eq.${userCpf}` }, () => fetchFavorites())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'media_engagements', filter: `user_cpf=eq.${userCpf}` }, () => fetchFavorites())
+    // REALTIME NEWS: Sincroniza quando algo novo é postado
+    const newsSub = supabase
+      .channel('home_news_sync')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'social_posts' }, () => fetchNews())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'media_assets' }, () => fetchNews())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'member_inbox', filter: `user_cpf=eq.${userCpf}` }, () => fetchNews())
       .subscribe();
 
     return () => { 
       isMounted = false; 
-      supabase.removeChannel(favSub);
+      supabase.removeChannel(newsSub);
     };
   }, [userCpf]);
 
@@ -577,45 +520,53 @@ const HomeTab = ({
           />
         )}
 
-      {/* 7. Seção de Favoritos Personalizada (Unificada) */}
+      {/* 7. Novidades e Comunicados (Feed em Tempo Real) */}
       <section style={{ padding: '24px 20px' }}>
         <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Star size={18} fill="var(--gold)" color="var(--gold)" /> Meus Favoritos
+          <Megaphone size={18} color="var(--primary)" /> Novidades e Comunicados
         </h4>
         
-        {favoriteItems.length > 0 ? (
+        {newsItems.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {favoriteItems.map(item => (
+            {newsItems.map(item => (
                 <div 
                   key={`${item.itemType}-${item.id}`} 
                   onClick={() => {
-                    if (item.itemType === 'agenda') {
-                      onNavigate('agenda'); // Futuro: abrir modal direto
-                    } else if (item.itemType === 'media') {
+                    if (item.itemType === 'media') {
                       onOpenMedia(item);
                     } else if (item.itemType === 'social') {
                       onNavigate('feed');
+                    } else if (item.itemType === 'notice') {
+                      onOpenNotifications();
                     }
                   }}
                   className="card" 
                   style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                 >
-                <div style={{ background: 'var(--primary)', color: 'white', padding: '10px', borderRadius: '12px', minWidth: '60px', textAlign: 'center' }}>
-                  {item.itemType === 'agenda' ? (
-                    <p style={{ fontSize: '12px', fontWeight: '800' }}>{item.start_time?.slice(0, 5)}</p>
+                <div style={{ 
+                  background: item.itemType === 'notice' ? 'var(--primary)' : 'var(--accent)', 
+                  color: item.itemType === 'notice' ? 'white' : 'var(--primary)', 
+                  padding: '10px', borderRadius: '12px', minWidth: '50px', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                }}>
+                  {item.itemType === 'media' ? (
+                    <PlayCircle size={20} />
                   ) : item.itemType === 'social' ? (
-                    <Users size={20} color="var(--gold)" />
+                    <Users size={20} />
                   ) : (
-                    <PlayCircle size={20} color="var(--gold)" />
+                    <Bell size={20} />
                   )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.title || item.name}</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    {item.itemType === 'agenda' 
-                      ? (Array.isArray(item.speakers) ? (item.speakers[0]?.name || 'A confirmar') : (item.speakers?.name || 'A confirmar'))
-                      : item.itemType === 'social' ? 'Feed Social' : (item.category || item.type || 'Mídia Oficial')}
-                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      {item.itemType === 'media' ? (item.type === 'video' ? 'Vídeo / Entrevista' : 'Podcast / Mídia') : item.itemType === 'social' ? 'Novo Post no Feed' : 'Comunicado Oficial'}
+                    </p>
+                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                      {new Date(item.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.newsTitle}</p>
                 </div>
                 <ChevronRight size={18} color="var(--border)" />
               </div>
@@ -630,14 +581,8 @@ const HomeTab = ({
             boxShadow: 'var(--shadow-sm)',
             border: '1px dashed var(--border)'
           }}>
-             <div style={{ background: '#F8F9FA', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <Bookmark size={20} color="var(--text-muted)" />
-             </div>
-             <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '4px' }}>Nada salvo ainda?</p>
-             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>Curta a agenda, salve fotos do feed e vídeos para vê-los aqui.</p>
-             <button onClick={() => onNavigate('agenda')} style={{ background: 'var(--accent)', color: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}>
-                EXPLORAR O CONGRESSO
-             </button>
+             <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)' }}>Aguardando novidades...</p>
+             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Tudo o que for postado de novo aparecerá aqui para você.</p>
           </div>
         )}
       </section>
