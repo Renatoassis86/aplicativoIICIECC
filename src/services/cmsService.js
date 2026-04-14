@@ -128,7 +128,7 @@ class CMSService {
           description,
           media_type: type,
           source_type: 'upload',
-          url_or_path: filePath
+          url: filePath
         })
         .select()
         .single();
@@ -183,7 +183,7 @@ class CMSService {
           description,
           media_type: type,
           source_type: 'link',
-          url_or_path: url,
+          url: url,
           is_live_stream: isLive
         })
         .select()

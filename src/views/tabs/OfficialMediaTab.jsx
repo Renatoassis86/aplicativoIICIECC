@@ -240,14 +240,14 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
           )}
         />
 
-        {/* 5. MEMÓRIAS I CIECC 2025 (CARROSSEL) */}
+        {/* 5. MEMÓRIAS (CARROSSEL) */}
         <CarouselSection 
-          title="Memórias 2025"
+          title="Memórias"
           items={allMemories}
           renderItem={(img, index) => (
             <div 
               onClick={() => onOpenMedia({ 
-                ...img, type: 'gallery', photos: allMemories, startIndex: index, title: 'I CIECC • Memórias 2025' 
+                ...img, type: 'gallery', photos: allMemories, startIndex: index, title: 'Memórias' 
               })}
               style={{ 
                 width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',
@@ -257,6 +257,28 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
             </div>
           )}
         />
+
+        {/* 6. OUTRAS CATEGORIAS (DINÂMICO) */}
+        {Object.entries(
+          mediaList.reduce((acc, m) => {
+            if (!['Flash 2026', 'Entrevistas Exclusivas', 'Podcast', 'Memórias'].includes(m.category)) {
+              if (!acc[m.category]) acc[m.category] = [];
+              acc[m.category].push(m);
+            }
+            return acc;
+          }, {})
+        ).map(([cat, items]) => (
+          <CarouselSection 
+            key={cat}
+            title={cat || 'Mais Conteúdo'}
+            items={items}
+            renderItem={(m) => (
+              <div onClick={() => onOpenMedia(m)} style={{ width: '180px', height: '120px', borderRadius: '16px', background: '#000', overflow: 'hidden' }}>
+                <img src={getImageUrl(m)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+          />
+        ))}
       </div>
 
     </div>

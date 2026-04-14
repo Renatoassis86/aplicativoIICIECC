@@ -36,7 +36,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
     try {
       const [postsData, astData] = await Promise.all([
         fetchFeedPosts(userCpf),
-        supabase.from('media_assets').select('*').order('created_at', { ascending: false })
+        supabase.from('media_assets')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
       ]);
       
       setPosts(postsData || []);
@@ -116,51 +119,60 @@ export default function MediaTab({ userType, userName, userCpf }) {
       </section>
 
 
-      {/* ACERVO DIGITAL (GALERIA DE CATEGORIAS) */}
+      {/* ACERVO DIGITAL (GALERIA DE CATEGORIAS EM MOVIMENTO) */}
       {!viewingSaved && (
         <section style={{ padding: '0 0 20px 0', background: 'white', marginBottom: '12px' }}>
           {Object.keys(groupedAssets).length === 0 && !loading ? (
             null
           ) : (
             Object.entries(groupedAssets).map(([category, assets]) => (
-              <div key={category} style={{ marginBottom: '24px' }}>
+              <div key={category} style={{ marginBottom: '24px', overflow: 'hidden' }}>
                 <div style={{ padding: '20px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h5 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>{category}</h5>
                     <span style={{ fontSize: '11px', color: 'var(--brand)', fontWeight: '700' }}>{assets.length} ITENS</span>
                 </div>
                 
-                <div className="no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', padding: '0 20px' }}>
-                  {assets.map(asset => (
-                    <div 
-                      key={asset.id}
-                      onClick={() => setSelectedAsset(asset)}
-                      style={{ flexShrink: 0, width: '160px', cursor: 'pointer' }}
-                    >
-                      <div style={{ 
-                        width: '160px', height: '100px', borderRadius: '16px', background: '#000', 
-                        overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.05)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                      }}>
-                        {asset.media_type === 'video' ? (
-                          <>
-                            <video src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
-                              <Play size={24} color="white" fill="white" />
+                <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '14px', 
+                    width: 'max-content',
+                    animation: assets.length > 2 ? 'scroll-infinite 35s linear infinite' : 'none',
+                    padding: '0 20px'
+                  }}>
+                    {/* Duplicamos os itens para garantir o loop infinito suave */}
+                    {(assets.length > 2 ? [...assets, ...assets] : assets).map((asset, aIdx) => (
+                      <div 
+                        key={`${asset.id}-${aIdx}`}
+                        onClick={() => setSelectedAsset(asset)}
+                        style={{ flexShrink: 0, width: '160px', cursor: 'pointer' }}
+                      >
+                        <div style={{ 
+                          width: '160px', height: '100px', borderRadius: '16px', background: '#000', 
+                          overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.05)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                        }}>
+                          {asset.media_type === 'video' ? (
+                            <>
+                              <video src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
+                                <Play size={24} color="white" fill="white" />
+                              </div>
+                            </>
+                          ) : asset.media_type === 'image' ? (
+                            <img src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Podcast size={32} color="var(--brand)" />
                             </div>
-                          </>
-                        ) : asset.media_type === 'image' ? (
-                          <img src={asset.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Podcast size={32} color="var(--brand)" />
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <h6 style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxDirection: 'vertical', overflow: 'hidden' }}>
+                          {asset.title}
+                        </h6>
                       </div>
-                      <h6 style={{ marginTop: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxDirection: 'vertical', overflow: 'hidden' }}>
-                        {asset.title}
-                      </h6>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             ))

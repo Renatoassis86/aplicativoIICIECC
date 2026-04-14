@@ -518,22 +518,41 @@ const HomeTab = ({
         </div>
       </section>
 
-      {/* PATROCINADORES - CARROSSEL */}
-      <CarouselSection 
-         title="Patrocinadores & Parceiros"
-         items={sponsors}
-         renderItem={(s) => (
-           <div 
-             onClick={() => setSelectedSponsor(s)}
-             style={{ 
-               width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
-               borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-               boxShadow: 'var(--shadow-sm)'
-             }}>
-             <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-           </div>
-         )}
-       />
+      {/* PATROCINADORES - CARROSSEL EM MOVIMENTO CONTÍNUO */}
+      <section style={{ padding: '24px 0', overflow: 'hidden', background: 'rgba(255,255,255,0.4)', marginTop: '20px' }}>
+        <div style={{ padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: '800', color: 'var(--secondary)' }}>Orgulho em Apoiar</h4>
+          <div style={{ width: '32px', height: '2px', background: 'var(--gold)' }}></div>
+        </div>
+        
+        <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: '30px', 
+            width: 'max-content',
+            animation: 'scroll-infinite 20s linear infinite',
+            padding: '0 20px'
+          }}>
+            {/* Duplicamos os itens para garantir o loop infinito suave */}
+            {[...sponsors, ...sponsors].map((s, idx) => (
+              <div 
+                key={`${s.id}-${idx}`}
+                onClick={() => setSelectedSponsor(s)}
+                style={{ 
+                  width: '100px', height: '100px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
+                  borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: 'var(--shadow-sm)', cursor: 'pointer', flexShrink: 0,
+                  transition: 'transform 0.2s ease', 
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
         {/* OFICINAS - CARROSSEL */}
         {workshops.length > 0 && (

@@ -106,32 +106,41 @@ const MediaCMS = () => {
                             url: result.url,
                             media_type: finalType,
                             category: data.category || 'Memórias',
-                            source_type: 'file',
+                            source_type: 'upload',
                             is_live_stream: data.is_live_stream === 'on',
+                            created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         };
                         const { error: insError } = await supabase.from('media_assets').insert(payload);
-                        if (insError) console.error("Error inserting file:", insError);
+                        if (insError) throw insError;
                     }
                 }
                 triggerSuccess(`${mediaFiles.length} arquivos publicados com sucesso!`);
                 setMediaFiles([]);
             } else {
                 const payload = {
-                    id: editingItem?.id || undefined,
                     title: data.title,
                     description: data.description,
                     url: data.url,
                     media_type: mediaType,
                     category: data.category || (editingItem ? editingItem.category : 'Memórias'),
-                    source_type: sourceType,
+                    source_type: sourceType === 'file' ? 'upload' : sourceType,
                     is_live_stream: data.is_live_stream === 'on',
                     updated_at: new Date().toISOString()
                 };
 
-                const { error } = await supabase.from('media_assets').upsert(payload);
-                if (error) throw error;
-                triggerSuccess('Conteúdo salvo com sucesso!');
+                if (editingItem) {
+                    const { error } = await supabase.from('media_assets').update(payload).eq('id', editingItem.id);
+                    if (error) throw error;
+                    triggerSuccess('Conteúdo atualizado com sucesso!');
+                } else {
+                    const { error } = await supabase.from('media_assets').insert({
+                        ...payload,
+                        created_at: new Date().toISOString()
+                    });
+                    if (error) throw error;
+                    triggerSuccess('Conteúdo publicado com sucesso!');
+                }
             }
 
             setEditingItem(null);
@@ -198,12 +207,12 @@ const MediaCMS = () => {
                 </div>
             </div>
 
-            <div className="responsive-grid">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 
-                {/* COLUNA ESQUERDA: FORMULÁRIO */}
+                {/* PARTE SUPERIOR: FORMULÁRIO (Full Width agora) */}
                 <div style={{ 
                     background: 'var(--card-bg)', padding: '32px', borderRadius: '32px', 
-                    border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', minWidth: 0
+                    border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
                         <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>
@@ -214,88 +223,116 @@ const MediaCMS = () => {
                         )}
                     </div>
 
-                    <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
                         
-                        <div>
-                            <label style={labelStyle}>TIPO DE CONTEÚDO</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                                {typeOptions.map(opt => (
-                                    <button 
-                                        key={opt.id}
-                                        type="button"
-                                        onClick={() => setMediaType(opt.id)}
-                                        style={{
-                                            padding: '16px 8px', borderRadius: '16px', border: '2px solid',
-                                            borderColor: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.1)',
-                                            background: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.05)',
-                                            color: 'white',
-                                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                                            transition: 'all 0.2s', cursor: 'pointer'
-                                        }}
-                                    >
-                                        {opt.icon}
-                                        <span style={{ fontSize: '10px', fontWeight: '900' }}>{opt.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label style={labelStyle}>Título e Categoria</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Título da mídia" />
-                                <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={inputStyle}>
-                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
-                            <label style={labelStyle}>Mídia do Post</label>
-                            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                                <button type="button" onClick={() => setSourceType('link')} style={{ ...tabStyle, flex: 1, background: sourceType === 'link' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'link' ? 'black' : 'white' }}>LINK / URL</button>
-                                <button type="button" onClick={() => setSourceType('file')} style={{ ...tabStyle, flex: 1, background: sourceType === 'file' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'file' ? 'black' : 'white' }}>UPLOAD</button>
-                            </div>
-
-                            {sourceType === 'link' ? (
-                                <input name="url" defaultValue={editingItem?.url} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
-                            ) : (
-                                <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
-                                    <input type="file" id="media_bulk_upload" multiple style={{ display: 'none' }} onChange={(e) => setMediaFiles(Array.from(e.target.files))} />
-                                    <label htmlFor="media_bulk_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                                        <Upload size={24} color="var(--brand)" />
-                                        <span style={{ fontSize: '13px', fontWeight: '700', color: mediaFiles.length > 0 ? 'var(--brand)' : 'white' }}>
-                                            {mediaFiles.length > 0 ? `${mediaFiles.length} arquivos selecionados` : 'Selecione um ou mais arquivos'}
-                                        </span>
-                                    </label>
-                                </div>
-                            )}
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '18px' }}>
-                            <input type="checkbox" name="is_live_stream" defaultChecked={editingItem?.is_live_stream} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Marcar como LIVE STREAM</label>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Destaque em tempo real no aplicativo.</p>
+                                <label style={labelStyle}>TIPO DE CONTEÚDO</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                                    {typeOptions.map(opt => (
+                                        <button 
+                                            key={opt.id}
+                                            type="button"
+                                            onClick={() => setMediaType(opt.id)}
+                                            style={{
+                                                padding: '16px 8px', borderRadius: '16px', border: '2px solid',
+                                                borderColor: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.1)',
+                                                background: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.05)',
+                                                color: 'white',
+                                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                                                transition: 'all 0.2s', cursor: 'pointer'
+                                            }}
+                                        >
+                                            {opt.icon}
+                                            <span style={{ fontSize: '10px', fontWeight: '900' }}>{opt.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={labelStyle}>Título e Categoria</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Título da mídia" />
+                                    <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={inputStyle}>
+                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <button type="submit" disabled={loading} style={btnSaveStyle}>
-                            {loading ? 'PROCESSANDO...' : editingItem ? 'SALVAR ALTERAÇÕES' : 'PUBLICAR NO ACERVO'}
-                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={labelStyle}>Mídia do Post</label>
+                                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                                    <button type="button" onClick={() => setSourceType('link')} style={{ ...tabStyle, flex: 1, background: sourceType === 'link' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'link' ? 'black' : 'white' }}>LINK / URL</button>
+                                    <button type="button" onClick={() => setSourceType('file')} style={{ ...tabStyle, flex: 1, background: sourceType === 'file' ? 'var(--brand)' : 'rgba(255,255,255,0.05)', color: sourceType === 'file' ? 'black' : 'white' }}>UPLOAD</button>
+                                </div>
+
+                                {sourceType === 'link' ? (
+                                    <input name="url" defaultValue={editingItem?.url} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
+                                ) : (
+                                    <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                                        <input type="file" id="media_bulk_upload" multiple style={{ display: 'none' }} onChange={(e) => setMediaFiles(Array.from(e.target.files))} />
+                                        <label htmlFor="media_bulk_upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                                            <Upload size={24} color="var(--brand)" />
+                                            <span style={{ fontSize: '13px', fontWeight: '700', color: mediaFiles.length > 0 ? 'var(--brand)' : 'white' }}>
+                                                {mediaFiles.length > 0 ? `${mediaFiles.length} arquivos selecionados` : 'Selecione um ou mais arquivos'}
+                                            </span>
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '18px' }}>
+                                <input type="checkbox" name="is_live_stream" defaultChecked={editingItem?.is_live_stream} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Marcar como LIVE STREAM</label>
+                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Destaque em tempo real no aplicativo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <button type="submit" disabled={loading} style={{ ...btnSaveStyle, width: '100%' }}>
+                                {loading ? 'PROCESSANDO...' : editingItem ? 'SALVAR ALTERAÇÕES' : 'PUBLICAR NO ACERVO'}
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                {/* COLUNA DIREITA: LISTAGEM */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
-                    <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '24px', border: '1px solid var(--border-color)', display: 'flex', gap: '12px' }}>
-                        <div style={{ position: 'relative', flex: 1 }}>
-                            <Search size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                            <input placeholder="Pesquisar acervo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ ...inputStyle, paddingLeft: '48px', height: '48px' }} />
+                {/* PARTE INFERIOR: BANCO DE POSTAGENS (LISTAGEM) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ borderTop: '2px dashed rgba(255,255,255,0.05)', paddingTop: '40px', marginBottom: '10px' }}>
+                        <h4 style={{ fontWeight: '900', fontSize: '20px', color: 'white', marginBottom: '8px' }}>Banco do que já foi postado</h4>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>Visualize e gerencie todo o conteúdo disponível no aplicativo.</p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap-reverse' }}>
+                        <div style={{ flex: 1, minWidth: '280px', background: 'var(--card-bg)', padding: '12px', borderRadius: '20px', border: '1px solid var(--border-color)', display: 'flex', gap: '12px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <Search size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <input placeholder="Pesquisar no banco..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ ...inputStyle, paddingLeft: '48px', height: '40px', borderRadius: '12px' }} />
+                            </div>
                         </div>
-                        <button onClick={loadMedia} style={{ ...tabStyle, width: '48px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        </button>
+
+                        <div className="no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                             {['ALL', ...categories].map(cat => (
+                                 <button 
+                                    key={cat} 
+                                    onClick={() => setActiveTab(cat)}
+                                    style={{
+                                        ...tabStyle,
+                                        whiteSpace: 'nowrap',
+                                        background: activeTab === cat ? 'var(--brand)' : 'rgba(255,255,255,0.05)',
+                                        color: activeTab === cat ? 'black' : 'white',
+                                        borderColor: activeTab === cat ? 'var(--brand)' : 'rgba(255,255,255,0.1)'
+                                    }}
+                                 >
+                                    {cat === 'ALL' ? 'TODOS' : cat.toUpperCase()}
+                                 </button>
+                             ))}
+                        </div>
                     </div>
 
                     <div style={{ 
@@ -307,14 +344,15 @@ const MediaCMS = () => {
                         {filteredItems.map(item => (
                             <div key={item.id} style={{ 
                                 background: 'var(--card-bg)', padding: layoutMode === 'grid' ? '0' : '16px 20px', 
-                                borderRadius: '20px', border: '1px solid var(--border-color)', 
+                                borderRadius: '20px', border: editingItem?.id === item.id ? '2px solid var(--brand)' : '1px solid var(--border-color)', 
                                 display: layoutMode === 'grid' ? 'block' : 'flex', 
                                 alignItems: 'center', gap: '16px', opacity: item.is_archived ? 0.5 : 1,
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                boxShadow: editingItem?.id === item.id ? '0 0 20px rgba(212, 193, 156, 0.2)' : 'none'
                             }}>
                                 <div style={{ 
-                                    width: layoutMode === 'grid' ? '100%' : '48px', 
-                                    height: layoutMode === 'grid' ? '160px' : '48px', 
+                                    width: layoutMode === 'grid' ? '100%' : '64px', 
+                                    height: layoutMode === 'grid' ? '160px' : '64px', 
                                     borderRadius: layoutMode === 'grid' ? '0' : '12px', 
                                     background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                                     color: 'var(--brand)', overflow: 'hidden', position: 'relative' 
@@ -337,17 +375,19 @@ const MediaCMS = () => {
                                         <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>{item.category?.toUpperCase()}</span>
                                         {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>LIVE</span>}
                                     </div>
-                                    <h6 style={{ color: 'white', fontWeight: '800', fontSize: '15px', marginTop: layoutMode === 'grid' ? '8px' : '0' }}>{item.title}</h6>
+                                    <h6 style={{ color: 'white', fontWeight: '800', fontSize: '15px', marginTop: '4px' }}>{item.title}</h6>
+                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>Postado em: {item.created_at ? new Date(item.created_at).toLocaleDateString('pt-BR') : 'Data desconhecida'}</p>
+                                    
                                     {layoutMode === 'grid' && (
                                         <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                                            <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); }} style={{ ...actionBtnStyle, flex: 1, width: 'auto' }}><Edit2 size={16} style={{ marginRight: '8px' }} /> EDITAR</button>
+                                            <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ ...actionBtnStyle, flex: 1, width: 'auto' }}><Edit2 size={16} style={{ marginRight: '8px' }} /> EDITAR</button>
                                             <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444', width: '48px' }}><Trash2 size={16} /></button>
                                         </div>
                                     )}
                                 </div>
                                 {layoutMode === 'list' && (
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); }} style={actionBtnStyle}><Edit2 size={16} /></button>
+                                        <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={actionBtnStyle}><Edit2 size={16} /></button>
                                         <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444' }}><Trash2 size={16} /></button>
                                     </div>
                                 )}
