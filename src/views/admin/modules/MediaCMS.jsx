@@ -277,10 +277,13 @@ const MediaCMS = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 
                 {/* PARTE SUPERIOR: FORMULÁRIO (Full Width agora) */}
-                <div style={{ 
-                    background: 'var(--card-bg)', padding: '32px', borderRadius: '32px', 
-                    border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
-                }}>
+                <div 
+                    key={editingItem?.id || 'new'}
+                    style={{ 
+                        background: 'var(--card-bg)', padding: '32px', borderRadius: '32px', 
+                        border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+                    }}
+                >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
                         <h4 style={{ fontWeight: '900', fontSize: '18px', color: 'white' }}>
                             {editingItem ? 'Editar Mídia' : 'Nova Publicação'}
@@ -326,6 +329,16 @@ const MediaCMS = () => {
                                     </select>
                                 </div>
                             </div>
+
+                            <div>
+                                <label style={labelStyle}>Descrição (Opcional)</label>
+                                <textarea 
+                                    name="description" 
+                                    defaultValue={editingItem?.description} 
+                                    style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} 
+                                    placeholder="Breve descrição do conteúdo..."
+                                />
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -337,7 +350,7 @@ const MediaCMS = () => {
                                 </div>
 
                                 {sourceType === 'link' ? (
-                                    <input name="url" value={currentUrl} onChange={(e) => setCurrentUrl(e.target.value)} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
+                                    <input name="url" defaultValue={editingItem?.url || currentUrl} onChange={(e) => setCurrentUrl(e.target.value)} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
                                 ) : (
                                     <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
                                         <input type="file" id="media_bulk_upload" multiple style={{ display: 'none' }} onChange={(e) => setMediaFiles(Array.from(e.target.files))} />
@@ -362,7 +375,7 @@ const MediaCMS = () => {
                                         </p>
                                         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
                                             <video 
-                                                key={currentUrl || (mediaFiles[0]?.name)}
+                                                key={currentUrl || (mediaFiles[0]?.name) || editingItem?.url}
                                                 ref={videoPreviewRef}
                                                 src={sourceType === 'link' ? currentUrl : (mediaFiles[0] ? URL.createObjectURL(mediaFiles[0]) : editingItem?.url)} 
                                                 controls 
