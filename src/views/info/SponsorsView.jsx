@@ -119,57 +119,115 @@ const SponsorsView = ({ onClose }) => {
             Carregando parceiros...
           </div>
         ) : (
-          <div style={{ display: 'grid', gap: '48px' }}>
+          <div style={{ display: 'grid', gap: '64px' }}>
             {tierConfigs.map((tier, idx) => tier.sponsors.length > 0 && (
               <section key={idx}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                   {tier.icon}
-                   <h4 style={{ fontSize: '13px', fontWeight: '900', color: tier.color, textTransform: 'uppercase', letterSpacing: '2px' }}>{tier.name}</h4>
+                {/* TIER HEADER */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                   <div style={{ width: '48px', height: '1px', background: tier.color, opacity: 0.3 }}></div>
+                   <h4 style={{ 
+                     fontSize: '15px', fontWeight: '900', color: tier.color, 
+                     textTransform: 'uppercase', letterSpacing: '4px', textAlign: 'center' 
+                   }}>
+                     {tier.name}
+                   </h4>
+                   <div style={{ flex: 1, height: '1px', background: tier.color, opacity: 0.3 }}></div>
                 </div>
                 
                 {tier.layout === 'grid' ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: tier.id === 'diamond' ? '1fr' : 'repeat(2, 1fr)', gap: '24px' }}>
                     {tier.sponsors.map((s, si) => (
                       <div 
                         key={si} 
                         onClick={() => setSelectedSponsor(s)}
                         className="card clickable" 
                         style={{ 
-                          padding: '24px 16px', display: 'flex', flexDirection: 'column', 
-                          alignItems: 'center', gap: '16px', border: '1px solid rgba(0,0,0,0.04)',
-                          textAlign: 'center', background: 'white', borderRadius: '24px'
+                          padding: tier.id === 'diamond' ? '48px 24px' : '32px 18px', 
+                          display: 'flex', flexDirection: 'column', 
+                          alignItems: 'center', gap: '20px', 
+                          border: tier.id === 'diamond' ? `2px solid ${tier.color}30` : '1px solid rgba(0,0,0,0.03)',
+                          textAlign: 'center', 
+                          background: tier.id === 'diamond' ? 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)' : 'white', 
+                          borderRadius: '32px',
+                          boxShadow: tier.id === 'diamond' ? '0 20px 40px rgba(0,0,0,0.05)' : 'var(--shadow-sm)',
+                          position: 'relative',
+                          overflow: 'hidden'
                         }}
                       >
-                         <div style={{ width: '80px', height: '80px', borderRadius: '16px', overflow: 'hidden', background: 'white', padding: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                         {tier.id === 'diamond' && (
+                           <div style={{ 
+                             position: 'absolute', top: '16px', right: '16px', 
+                             background: tier.color, color: 'white', padding: '6px 14px', 
+                             borderRadius: '10px', fontSize: '10px', fontWeight: '900' 
+                           }}>
+                             DESTAQUE DIAMANTE
+                           </div>
+                         )}
+                         <div style={{ 
+                           width: tier.id === 'diamond' ? '180px' : '100px', 
+                           height: tier.id === 'diamond' ? '120px' : '80px', 
+                           padding: '12px', background: 'white', 
+                           borderRadius: '24px', boxShadow: '0 8px 20px rgba(0,0,0,0.04)',
+                           display: 'flex', alignItems: 'center', justifyContent: 'center'
+                         }}>
                             <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                          </div>
                          <div style={{ width: '100%' }}>
-                            <h5 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '4px' }}>{s.name}</h5>
-                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>{s.tagline}</p>
+                            <h5 style={{ 
+                              fontSize: tier.id === 'diamond' ? '22px' : '16px', 
+                              fontWeight: '900', color: 'var(--secondary)', marginBottom: '6px',
+                              fontFamily: 'var(--font-serif)'
+                            }}>
+                              {s.name}
+                            </h5>
+                            <p style={{ 
+                              fontSize: tier.id === 'diamond' ? '14px' : '11px', 
+                              color: 'var(--text-muted)', fontWeight: '700',
+                              lineHeight: '1.4'
+                            }}>
+                              {s.tagline}
+                            </p>
                          </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gap: '12px' }}>
+                  <div style={{ display: 'grid', gap: '16px' }}>
                     {tier.sponsors.map((s, si) => (
                       <div 
                         key={si} 
                         onClick={() => setSelectedSponsor(s)}
-                        className="card clickable list-item" 
+                        className="card clickable" 
                         style={{ 
-                          padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', 
-                          border: '1px solid rgba(0,0,0,0.03)', background: 'white', borderRadius: '16px'
+                          padding: '20px', display: 'flex', gap: '20px', alignItems: 'center', 
+                          border: '1px solid rgba(0,0,0,0.02)', background: 'rgba(255,255,255,0.8)', 
+                          borderRadius: '20px',
+                          backdropFilter: 'blur(10px)'
                         }}
                       >
-                         <div style={{ width: '50px', height: '50px', borderRadius: '10px', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', background: 'white', padding: '6px' }}>
+                         <div style={{ 
+                           width: '70px', height: '70px', borderRadius: '14px', 
+                           border: '1px solid #f1f1f1', overflow: 'hidden', 
+                           background: 'white', padding: '10px', flexShrink: 0 
+                         }}>
                             <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                          </div>
                          <div style={{ flex: 1, overflow: 'hidden' }}>
-                            <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '2px' }}>{s.name}</h5>
-                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.tagline}</p>
+                            <h5 style={{ fontSize: '17px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '4px' }}>{s.name}</h5>
+                            <p style={{ 
+                              fontSize: '12px', color: 'var(--text-muted)', 
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              fontWeight: '600'
+                            }}>
+                              {s.tagline}
+                            </p>
                          </div>
-                         <ExternalLink size={14} color="#CBD5E0" />
+                         <div style={{ 
+                           padding: '10px', background: 'var(--accent)', borderRadius: '12px',
+                           color: 'var(--primary)', display: 'flex'
+                         }}>
+                            <ExternalLink size={18} />
+                         </div>
                       </div>
                     ))}
                   </div>
