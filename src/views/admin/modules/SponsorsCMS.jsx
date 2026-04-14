@@ -23,6 +23,7 @@ export default function SponsorsCMS() {
   const [successMsg, setSuccessMsg] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [layoutMode, setLayoutMode] = useState('grid');
   
   const [newSponsor, setNewSponsor] = useState({
     name: '',
@@ -127,7 +128,10 @@ export default function SponsorsCMS() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '40px' }}>
       {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
 
-      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border-color)' }}>
+      <div 
+        key={editingId || 'new'}
+        style={{ background: 'rgba(255,255,255,0.02)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border-color)' }}
+      >
         <h3 style={{ fontWeight: '900', color: '#FFFFFF', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px', fontSize: '24px' }}>
           {isEditing ? <Edit2 size={28} color="var(--brand)" /> : <Plus size={28} color="var(--brand)" />} 
           {isEditing ? 'Editar Patrocinador' : 'Novo Expositor / Patrocinador'}
@@ -150,6 +154,7 @@ export default function SponsorsCMS() {
               onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
               style={inputStyle}
             >
+              <option value="diamond">Cota Diamante</option>
               <option value="ouro">Cota Ouro</option>
               <option value="prata">Cota Prata</option>
               <option value="bronze">Cota Bronze</option>
@@ -240,50 +245,85 @@ export default function SponsorsCMS() {
       </div>
 
       <div style={{ display: 'grid', gap: '24px' }}>
-        <h4 style={{ fontWeight: '900', fontSize: '20px', color: 'white', letterSpacing: '1px' }}>REDE ATIVA (II CIECC 2026)</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h4 style={{ fontWeight: '900', fontSize: '20px', color: 'white', letterSpacing: '1px' }}>REDE ATIVA (II CIECC 2026)</h4>
+            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border-color)' }}>
+                <button onClick={() => setLayoutMode('grid')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'grid' ? 'var(--brand)' : 'transparent', color: layoutMode === 'grid' ? 'black' : 'white', cursor: 'pointer', fontSize: '11px', fontWeight: '900' }}>QUADROS</button>
+                <button onClick={() => setLayoutMode('list')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'list' ? 'var(--brand)' : 'transparent', color: layoutMode === 'list' ? 'black' : 'white', cursor: 'pointer', fontSize: '11px', fontWeight: '900' }}>LISTA</button>
+            </div>
+        </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
+        <div style={{ 
+            display: layoutMode === 'grid' ? 'grid' : 'flex',
+            flexDirection: layoutMode === 'grid' ? 'none' : 'column',
+            gridTemplateColumns: layoutMode === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none', 
+            gap: '16px' 
+        }}>
             {sponsors.map(sponsor => (
-            <div key={sponsor.id} style={cardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        <div style={{ width: '60px', height: '60px', background: 'white', borderRadius: '12px', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <img src={sponsor.logo_url || '/logo.png'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
-                        </div>
-                        <div>
-                            <h5 style={{ fontWeight: '900', color: 'white', fontSize: '18px' }}>{sponsor.name}</h5>
-                            <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '900', textTransform: 'uppercase', background: 'rgba(212,193,156,0.1)', padding: '2px 8px', borderRadius: '4px' }}>{sponsor.tier}</span>
+            <div key={sponsor.id} style={{ 
+                ...cardStyle, 
+                padding: layoutMode === 'grid' ? '24px' : '12px 20px',
+                display: layoutMode === 'grid' ? 'block' : 'flex',
+                alignItems: 'center',
+                gap: '20px'
+            }}>
+                <div style={{ 
+                    display: 'flex', 
+                    flex: 1,
+                    flexDirection: layoutMode === 'grid' ? 'column' : 'row',
+                    gap: layoutMode === 'grid' ? '20px' : '20px', 
+                    alignItems: layoutMode === 'grid' ? 'flex-start' : 'center',
+                    marginBottom: layoutMode === 'grid' ? '20px' : '0'
+                }}>
+                    <div style={{ 
+                        width: layoutMode === 'grid' ? '80px' : '48px', 
+                        height: layoutMode === 'grid' ? '80px' : '48px', 
+                        background: 'white', borderRadius: '12px', padding: '8px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                    }}>
+                        <img src={sponsor.logo_url || '/logo.png'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="" />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h5 style={{ fontWeight: '900', color: 'white', fontSize: layoutMode === 'grid' ? '18px' : '15px', marginBottom: '4px' }}>{sponsor.name}</h5>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <span style={{ 
+                                fontSize: '9px', color: 'var(--brand)', fontWeight: '900', 
+                                textTransform: 'uppercase', background: 'rgba(212,193,156,0.1)', 
+                                padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(212,193,156,0.1)'
+                            }}>{sponsor.tier}</span>
+                            {layoutMode === 'list' && sponsor.booth && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>ESTANDE: {sponsor.booth}</span>}
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <button 
-                            onClick={() => {
-                                setIsEditing(true);
-                                setEditingId(sponsor.id);
-                                setNewSponsor({...sponsor});
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }} 
-                            style={{ 
-                                display: 'flex', alignItems: 'center', gap: '8px', 
-                                padding: '10px 16px', color: 'var(--brand)', 
-                                background: 'rgba(212,193,156,0.1)', border: '1px solid rgba(212,193,156,0.2)', 
-                                borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '900' 
-                            }}
-                        >
-                            <Edit2 size={14} /> EDITAR
-                        </button>
-                        <button 
-                            onClick={() => handleDelete(sponsor.id)} 
-                            style={{ 
-                                display: 'flex', alignItems: 'center', gap: '8px', 
-                                padding: '10px 16px', color: '#EF4444', 
-                                background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
-                                borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '900' 
-                            }}
-                        >
-                            <Trash2 size={14} /> EXCLUIR
-                        </button>
-                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: layoutMode === 'grid' ? 'flex-end' : 'flex-end' }}>
+                    <button 
+                        onClick={() => {
+                            setIsEditing(true);
+                            setEditingId(sponsor.id);
+                            setNewSponsor({...sponsor});
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} 
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '8px', 
+                            padding: '8px 12px', color: 'var(--brand)', 
+                            background: 'rgba(212,193,156,0.05)', border: '1px solid rgba(212,193,156,0.1)', 
+                            borderRadius: '10px', cursor: 'pointer', fontSize: '10px', fontWeight: '900' 
+                        }}
+                    >
+                        <Edit2 size={12} /> {layoutMode === 'grid' ? 'EDITAR' : ''}
+                    </button>
+                    <button 
+                        onClick={() => handleDelete(sponsor.id)} 
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '8px', 
+                            padding: '8px 12px', color: '#EF4444', 
+                            background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', 
+                            borderRadius: '10px', cursor: 'pointer', fontSize: '10px', fontWeight: '900' 
+                        }}
+                    >
+                        <Trash2 size={12} /> {layoutMode === 'grid' ? 'EXCLUIR' : ''}
+                    </button>
                 </div>
             </div>
             ))}

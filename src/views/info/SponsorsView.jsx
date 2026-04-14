@@ -23,12 +23,28 @@ const SponsorsView = ({ onClose }) => {
     fetchSponsors();
   }, []);
 
-  const tiers = [
+  const tierConfigs = [
     {
+      id: 'diamond',
+      name: 'Cota Diamante',
+      icon: <Award size={22} color="#E2E8F0" />,
+      color: '#4A5568',
+      layout: 'grid',
+      sponsors: sponsors.filter(s => s.tier?.toLowerCase() === 'diamond').map(s => ({
+          ...s,
+          logo: s.logo_url,
+          tierName: 'Diamante',
+          website: s.website_url,
+          tierColor: '#4A5568'
+      }))
+    },
+    {
+      id: 'ouro',
       name: 'Cota Ouro',
       icon: <Zap size={20} color="#FFD700" />,
-      color: '#FFD700',
-      sponsors: sponsors.filter(s => s.tier === 'ouro' || s.tier === 'gold').map(s => ({
+      color: '#DAA520',
+      layout: 'grid',
+      sponsors: sponsors.filter(s => s.tier?.toLowerCase() === 'ouro' || s.tier?.toLowerCase() === 'gold').map(s => ({
           ...s,
           logo: s.logo_url,
           tierName: 'Ouro',
@@ -37,10 +53,12 @@ const SponsorsView = ({ onClose }) => {
       }))
     },
     {
+      id: 'prata',
       name: 'Cota Prata',
       icon: <Award size={20} color="#C1C1C1" />,
-      color: '#607D8B',
-      sponsors: sponsors.filter(s => s.tier === 'prata' || s.tier === 'silver').map(s => ({
+      color: '#718096',
+      layout: 'list',
+      sponsors: sponsors.filter(s => s.tier?.toLowerCase() === 'prata' || s.tier?.toLowerCase() === 'silver').map(s => ({
           ...s,
           logo: s.logo_url,
           tierName: 'Prata',
@@ -49,10 +67,12 @@ const SponsorsView = ({ onClose }) => {
       }))
     },
     {
+      id: 'bronze',
       name: 'Cota Bronze',
       icon: <Briefcase size={20} color="#CD7F32" />,
-      color: '#CD7F32',
-      sponsors: sponsors.filter(s => s.tier === 'bronze').map(s => ({
+      color: '#8B4513',
+      layout: 'list',
+      sponsors: sponsors.filter(s => s.tier?.toLowerCase() === 'bronze').map(s => ({
           ...s,
           logo: s.logo_url,
           tierName: 'Bronze',
@@ -99,32 +119,61 @@ const SponsorsView = ({ onClose }) => {
             Carregando parceiros...
           </div>
         ) : (
-          <div style={{ display: 'grid', gap: '40px' }}>
-            {tiers.map((tier, idx) => tier.sponsors.length > 0 && (
+          <div style={{ display: 'grid', gap: '48px' }}>
+            {tierConfigs.map((tier, idx) => tier.sponsors.length > 0 && (
               <section key={idx}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                    {tier.icon}
-                   <h4 style={{ fontSize: '14px', fontWeight: '900', color: tier.color, textTransform: 'uppercase', letterSpacing: '1px' }}>{tier.name}</h4>
+                   <h4 style={{ fontSize: '13px', fontWeight: '900', color: tier.color, textTransform: 'uppercase', letterSpacing: '2px' }}>{tier.name}</h4>
                 </div>
-                <div style={{ display: 'grid', gap: '16px' }}>
-                  {tier.sponsors.map((s, si) => (
-                    <div 
-                      key={si} 
-                      onClick={() => setSelectedSponsor(s)}
-                      className="card clickable" 
-                      style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', border: '1px solid rgba(0,0,0,0.05)' }}
-                    >
-                       <div style={{ width: '56px', height: '56px', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden', background: 'white', padding: '6px' }}>
-                          <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                       </div>
-                       <div style={{ flex: 1, overflow: 'hidden' }}>
-                          <h5 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '4px' }}>{s.name}</h5>
-                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.tagline}</p>
-                       </div>
-                       <ExternalLink size={16} color="#CBD5E0" />
-                    </div>
-                  ))}
-                </div>
+                
+                {tier.layout === 'grid' ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    {tier.sponsors.map((s, si) => (
+                      <div 
+                        key={si} 
+                        onClick={() => setSelectedSponsor(s)}
+                        className="card clickable" 
+                        style={{ 
+                          padding: '24px 16px', display: 'flex', flexDirection: 'column', 
+                          alignItems: 'center', gap: '16px', border: '1px solid rgba(0,0,0,0.04)',
+                          textAlign: 'center', background: 'white', borderRadius: '24px'
+                        }}
+                      >
+                         <div style={{ width: '80px', height: '80px', borderRadius: '16px', overflow: 'hidden', background: 'white', padding: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                            <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                         </div>
+                         <div style={{ width: '100%' }}>
+                            <h5 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '4px' }}>{s.name}</h5>
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>{s.tagline}</p>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {tier.sponsors.map((s, si) => (
+                      <div 
+                        key={si} 
+                        onClick={() => setSelectedSponsor(s)}
+                        className="card clickable list-item" 
+                        style={{ 
+                          padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', 
+                          border: '1px solid rgba(0,0,0,0.03)', background: 'white', borderRadius: '16px'
+                        }}
+                      >
+                         <div style={{ width: '50px', height: '50px', borderRadius: '10px', border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', background: 'white', padding: '6px' }}>
+                            <img src={s.logo} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                         </div>
+                         <div style={{ flex: 1, overflow: 'hidden' }}>
+                            <h5 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '2px' }}>{s.name}</h5>
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.tagline}</p>
+                         </div>
+                         <ExternalLink size={14} color="#CBD5E0" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
             ))}
           </div>
