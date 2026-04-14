@@ -43,18 +43,26 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
         padding: '24px',
         overflow: 'hidden'
       }}>
-        {/* Botão VOLTAR (Substituindo o X) */}
-        <button 
-          onClick={onClose} 
-          style={{ 
-            position: 'absolute', top: 'calc(env(safe-area-inset-top, 24px) + 10px)', left: '20px', 
-            background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '14px', padding: '10px 16px',
-            display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(10px)', zIndex: 30,
-            color: 'white', fontSize: '14px', fontWeight: '800'
-          }}
-        >
-          <ArrowLeft size={20} /> VOLTAR
-        </button>
+        {/* Botão VOLTAR PROEMINENTE - Estilo Página Fixa */}
+        <div style={{ 
+          position: 'absolute', top: 'calc(env(safe-area-inset-top, 24px) + 12px)', left: '20px',
+          zIndex: 40
+        }}>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: '16px', 
+              padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '10px', 
+              backdropFilter: 'blur(20px)', color: 'white', fontSize: '15px', fontWeight: '900',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)', cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.35)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+          >
+            <ArrowLeft size={22} strokeWidth={3} /> VOLTAR AO PAINEL
+          </button>
+        </div>
 
         {/* Badge de Tier */}
         <div style={{ 
