@@ -79,17 +79,35 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
            </p>
         </div>
 
-        {/* Links Rápidos */}
+        {/* Links Rápidos de Contato */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '40px' }}>
-           <button style={{ width: '50px', height: '50px', borderRadius: '15px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <Globe size={20} color="#64748B" />
-           </button>
-           <button style={{ width: '50px', height: '50px', borderRadius: '15px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <Instagram size={20} color="#64748B" />
-           </button>
-           <button style={{ width: '50px', height: '50px', borderRadius: '15px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <Mail size={20} color="#64748B" />
-           </button>
+           {sponsor.website_url && (
+             <button 
+               onClick={() => window.open(sponsor.website_url, '_blank')}
+               style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--accent)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(107, 20, 26, 0.1)' }}
+               title="Website"
+             >
+               <Globe size={24} color="var(--primary)" />
+             </button>
+           )}
+           {sponsor.instagram_url && (
+             <button 
+               onClick={() => window.open(sponsor.instagram_url, '_blank')}
+               style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--accent)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(107, 20, 26, 0.1)' }}
+               title="Instagram"
+             >
+               <Instagram size={24} color="var(--primary)" />
+             </button>
+           )}
+           {sponsor.contact_email && (
+             <button 
+               onClick={() => window.location.href = `mailto:${sponsor.contact_email}`}
+               style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--accent)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(107, 20, 26, 0.1)' }}
+               title="E-mail"
+             >
+               <Mail size={24} color="var(--primary)" />
+             </button>
+           )}
         </div>
 
         {/* Descrição */}

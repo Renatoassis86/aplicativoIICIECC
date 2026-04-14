@@ -35,25 +35,23 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
       // Normalização de tipos para os filtros do NetworkTab
       if (['organizador', 'staff', 'apoio', 'voluntario'].includes(type.toLowerCase())) {
         type = 'staff';
-      } else if (['expositor', 'patrocinador'].includes(type.toLowerCase())) {
-        type = 'expositor';
-      } else if (['parceiro'].includes(type.toLowerCase())) {
+      } else if (['patrocinador', 'parceiro'].includes(type.toLowerCase())) {
         type = 'parceiro';
+      } else if (['expositor'].includes(type.toLowerCase())) {
+        type = 'expositor';
       } else if (['palestrante'].includes(type.toLowerCase())) {
         type = 'palestrante';
       } else if (['professor', 'diretor', 'coordenador', 'gestor'].includes(type.toLowerCase())) {
-        // Podem ser congressistas ou uma categoria nova, mas por enquanto mantemos como congressista
-        // ou permitimos que o filtro de busca os encontre pelo job_title
         type = 'congressista';
       }
 
       return {
         id: m.cpf,
         name: m.name || 'Participante',
-        role: p?.job_title || (type === 'palestrante' ? 'Palestrante' : 'Congressista'),
+        role: p?.job_title || (type === 'palestrante' ? 'Palestrante' : (type === 'parceiro' ? 'Patrocinador' : 'Congressista')),
         institution: m.institution || '',
         type: type,
-        verified: type === 'staff' || type === 'palestrante',
+        verified: type === 'staff' || type === 'palestrante' || type === 'parceiro',
         avatar: p?.avatar_url
       };
     });
@@ -62,7 +60,6 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
     const { data: cmsSpeakers } = await supabase.from('speakers').select('*');
     if (cmsSpeakers) {
       cmsSpeakers.forEach(s => {
-        // Evitar duplicidade se já existir na lista pelo nome (ou CPF se tivéssemos)
         if (!baseResults.some(r => r.name === s.name)) {
           baseResults.push({
             id: s.id,
@@ -72,6 +69,24 @@ export const fetchNetworkProfiles = async (searchTerm = '', filterType = 'all') 
             type: 'palestrante',
             verified: true,
             avatar: s.photo_url || 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop'
+          });
+        }
+      });
+    }
+
+    // 4. Buscar Patrocinadores/Parceiros da tabela de Sponsors (Gestão CMS)
+    const { data: cmsSponsors } = await supabase.from('sponsors').select('*').eq('active', true);
+    if (cmsSponsors) {
+      cmsSponsors.forEach(s => {
+        if (!baseResults.some(r => r.name === s.name)) {
+          baseResults.push({
+            id: s.id,
+            name: s.name,
+            role: s.tagline || 'Patrocinador Oficial',
+            institution: s.name,
+            type: 'parceiro',
+            verified: true,
+            avatar: s.logo_url || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&h=400&fit=crop'
           });
         }
       });
