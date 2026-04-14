@@ -72,6 +72,11 @@ export default function MediaTab({ userType, userName, userCpf }) {
     await deletePostApi(postId);
   };
 
+  const handleLikeComment = async (postId, commentId, currentState) => {
+    await toggleLikeComment(commentId, currentState, userCpf);
+    loadInitialData(); // Atualiza contador de likes e estado visual
+  };
+
   const visiblePosts = (viewingSaved ? posts.filter(p => p.savedByMe) : posts)
     .filter(p => !hiddenPosts.includes(p.id));
 
