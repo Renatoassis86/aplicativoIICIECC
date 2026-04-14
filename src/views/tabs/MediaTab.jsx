@@ -14,59 +14,6 @@ import { useContent } from '../../hooks/useContent';
  * Feed Institucional estilo Instagram + Acervo Digital (Flash, Podcasts, etc)
  */
 
-const NativeCarousel = ({ title, items, onSelect }) => {
-  if (items.length === 0) return null;
-  
-  return (
-    <div style={{ marginBottom: '32px' }}>
-      <div style={{ padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <h5 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</h5>
-        <div style={{ padding: '2px 8px', background: 'rgba(0,0,0,0.05)', borderRadius: '6px', fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)' }}>{items.length} ITENS</div>
-      </div>
-      <div 
-        style={{ 
-          display: 'flex', gap: '14px', overflowX: 'auto', padding: '0 20px 10px',
-          scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
-        }}
-        className="no-scrollbar"
-      >
-        {items.map((item) => (
-          <div 
-            key={item.id} 
-            onClick={() => onSelect(item)}
-            style={{ 
-              flexShrink: 0, width: '160px', cursor: 'pointer',
-              background: 'white', borderRadius: '20px', overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.03)'
-            }}
-          >
-            <div style={{ width: '100%', height: '100px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                {item.media_type === 'image' ? (
-                   <img src={item.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : item.media_type === 'video' ? (
-                   <Clapperboard color="white" size={32} opacity={0.3} />
-                ) : (
-                   <Podcast color="white" size={32} opacity={0.3} />
-                )}
-                
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 100%)' }}></div>
-                
-                <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'var(--primary)', padding: '6px', borderRadius: '50%' }}>
-                    {item.media_type === 'image' ? <Camera size={12} color="white" /> : <Play size={12} color="white" fill="white" />}
-                </div>
-            </div>
-            <div style={{ padding: '12px' }}>
-               <h6 style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', height: '32px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.2' }}>{item.title}</h6>
-               <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', fontWeight: '700' }}>
-                 {item.media_type === 'image' ? 'Foto' : item.media_type === 'video' ? 'Vídeo' : 'Áudio'}
-               </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 export default function MediaTab({ userType, userName, userCpf }) {
   const { content: mediaTitle } = useContent('titles', 'page_media');
@@ -168,48 +115,6 @@ export default function MediaTab({ userType, userName, userCpf }) {
         </div>
       </section>
 
-      {/* AO VIVO / DESTAQUE */}
-      {liveStreams.length > 0 && !viewingSaved && (
-        <section style={{ padding: '20px 20px 0' }}>
-            {liveStreams.map(live => (
-                <div key={live.id} onClick={() => setSelectedAsset(live)} style={{ 
-                    background: 'linear-gradient(90deg, #4A101D 0%, #6B141A 100%)', 
-                    borderRadius: '24px', padding: '20px', color: 'white', display: 'flex', gap: '16px', alignItems: 'center',
-                    boxShadow: '0 8px 24px var(--primary-glow)', border: '1px solid rgba(255,255,255,0.1)',
-                    marginBottom: '24px', cursor: 'pointer'
-                }}>
-                    <div style={{ position: 'relative' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Radio size={28} className="animate-pulse" />
-                        </div>
-                        <span style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>LIVE</span>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>Transmissão em Tempo Real</p>
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginTop: '4px' }}>{live.title}</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', opacity: 0.8 }}>
-                            <MonitorPlay size={14} /> <span style={{ fontSize: '12px', fontWeight: '600' }}>Toque para assistir agora</span>
-                        </div>
-                    </div>
-                    <ChevronRight size={20} color="var(--gold)" />
-                </div>
-            ))}
-        </section>
-      )}
-
-      {/* ACERVO DIGITAL (Flash, Podcasts, etc) */}
-      {!viewingSaved && (
-        <div style={{ paddingTop: '20px' }}>
-          {Object.entries(groupedAssets).map(([category, items]) => (
-            <NativeCarousel 
-              key={category} 
-              title={category} 
-              items={items} 
-              onSelect={setSelectedAsset} 
-            />
-          ))}
-        </div>
-      )}
 
       {/* FEED SOCIAL */}
       <h5 style={{ padding: '20px 20px 10px', fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -256,10 +161,10 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
               {/* MEDIA RENDER */}
               <div 
-                onClick={() => post.mediaType === 'reel' && post.mediaUrls?.[0] && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
-                style={{ width: '100%', background: '#000', borderRadius: '0', cursor: post.mediaType === 'reel' ? 'pointer' : 'default' }}
+                onClick={() => (post.mediaType === 'video' || post.mediaType === 'reel') && post.mediaUrls?.[0] && setSelectedAsset({ title: post.sponsorName, url: post.mediaUrls[0], description: post.caption, media_type: 'video' })}
+                style={{ width: '100%', background: '#000', borderRadius: '0', cursor: (post.mediaType === 'video' || post.mediaType === 'reel') ? 'pointer' : 'default' }}
               >
-                {post.mediaType === 'reel' ? (
+                {(post.mediaType === 'video' || post.mediaType === 'reel') ? (
                    <video src={post.mediaUrls?.[0]} style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} muted playsInline autoPlay loop />
                 ) : (
                    <img src={post.mediaUrls?.[0] || post.imageUrl} alt="" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} />
