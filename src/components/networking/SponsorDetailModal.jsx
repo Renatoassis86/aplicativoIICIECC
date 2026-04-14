@@ -4,6 +4,26 @@ import { X, ExternalLink, Globe, Instagram, Mail, MapPin, Share2, Bookmark } fro
 export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite }) {
   if (!sponsor) return null;
 
+  // Normalização de dados para o modal (caso venha do HomeTab ou SponsorsView)
+  const logoUrl = sponsor.logo_url || sponsor.logo || '/logo.png';
+  const tier = (sponsor.tier || 'ouro').toLowerCase();
+  
+  const getTierInfo = (t) => {
+    switch(t) {
+      case 'diamond': return { name: 'Diamante', color: '#4A5568' };
+      case 'ouro': case 'gold': return { name: 'Ouro', color: '#DAA520' };
+      case 'prata': case 'silver': return { name: 'Prata', color: '#718096' };
+      case 'bronze': return { name: 'Bronze', color: '#8B4513' };
+      case 'organizador': return { name: 'Organizador', color: '#6B141A' };
+      default: return { name: 'Apoio', color: '#94A3B8' };
+    }
+  };
+
+  const info = getTierInfo(tier);
+  const tierName = sponsor.tierName || info.name;
+  const tierColor = sponsor.tierColor || info.color;
+  const website = sponsor.website_url || sponsor.website;
+
   return (
     <div style={{
       position: 'fixed', inset: 0,
@@ -14,35 +34,32 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
     }}>
       {/* Header Sticky */}
       <header style={{ 
-        padding: 'env(safe-area-inset-top, 24px) 20px 20px', 
+        padding: 'calc(env(safe-area-inset-top, 24px) + 12px) 20px 20px', 
         borderBottom: '1px solid #f1f1f1',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'white', position: 'sticky', top: 0, zIndex: 10
       }}>
-        <button onClick={onClose} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}>
+        <button onClick={onClose} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px', display: 'flex' }}>
           <X size={20} color="#111" />
         </button>
         <span style={{ 
           fontSize: '11px', 
           fontWeight: '900', 
-          background: sponsor.tierColor + '15', 
-          color: sponsor.tierColor, 
+          background: `${tierColor}15`, 
+          color: tierColor, 
           padding: '6px 14px', 
           borderRadius: '20px',
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
-          {sponsor.tierName}
+          {tierName}
         </span>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
             onClick={() => onSaveFavorite && onSaveFavorite(sponsor)}
-            style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}
+            style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px', display: 'flex' }}
           >
             <Bookmark size={20} color="var(--primary)" />
-          </button>
-          <button style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '10px' }}>
-            <Share2 size={20} color="#666" />
           </button>
         </div>
       </header>
@@ -64,7 +81,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
           border: '1px solid #f1f1f1'
         }}>
           <img 
-            src={sponsor.logo} 
+            src={logoUrl} 
             alt={sponsor.name} 
             style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
           />
@@ -81,9 +98,9 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
 
         {/* Links Rápidos de Contato */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '40px' }}>
-           {sponsor.website_url && (
+           {website && (
              <button 
-               onClick={() => window.open(sponsor.website_url, '_blank')}
+               onClick={() => window.open(website, '_blank')}
                style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--accent)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(107, 20, 26, 0.1)' }}
                title="Website"
              >
@@ -99,24 +116,17 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
                <Instagram size={24} color="var(--primary)" />
              </button>
            )}
-           {sponsor.contact_email && (
-             <button 
-               onClick={() => window.location.href = `mailto:${sponsor.contact_email}`}
-               style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--accent)', border: '1px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(107, 20, 26, 0.1)' }}
-               title="E-mail"
-             >
-               <Mail size={24} color="var(--primary)" />
-             </button>
-           )}
         </div>
 
         {/* Descrição */}
-        <div style={{ marginBottom: '40px' }}>
-          <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>Sobre a Empresa</h4>
-          <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#475569', textAlign: 'justify', whiteSpace: 'pre-line' }}>
-            {sponsor.bio}
-          </p>
-        </div>
+        {sponsor.bio && (
+          <div style={{ marginBottom: '40px' }}>
+            <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>Sobre a Empresa</h4>
+            <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#475569', textAlign: 'justify', whiteSpace: 'pre-line' }}>
+              {sponsor.bio}
+            </p>
+          </div>
+        )}
 
         {/* Localização / Estande */}
         {sponsor.booth && (
@@ -134,7 +144,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
             </div>
             <div>
                <p style={{ fontSize: '11px', fontWeight: '800', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>Onde encontrar no evento</p>
-               <p style={{ fontSize: '17px', fontWeight: '900' }}>{sponsor.booth}</p>
+               <p style={{ fontSize: '17px', fontWeight: '900' }}>Estande: {sponsor.booth}</p>
             </div>
           </div>
         )}
@@ -143,24 +153,15 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
 
       {/* Footer / CTA Principal */}
       <div style={{ padding: '20px 24px env(safe-area-inset-bottom, 20px)', borderTop: '1px solid #f1f1f1', background: 'white', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <button 
-          onClick={() => onSaveFavorite && onSaveFavorite(sponsor)}
-          style={{ 
-            width: '100%', padding: '18px', background: 'white', 
-            color: 'var(--primary)', border: '2px solid var(--primary)', borderRadius: '16px', 
-            fontWeight: '900', fontSize: '15px', display: 'flex', 
-            alignItems: 'center', justifyContent: 'center', gap: '12px'
-          }}
-        >
-          ADICIONAR À MINHA AGENDA <Bookmark size={18} />
-        </button>
-        <button 
-          onClick={() => window.open(sponsor.website, '_blank')}
-          className="btn-primary"
-          style={{ width: '100%', padding: '18px', fontSize: '15px' }}
-        >
-          ACESSAR SOLUÇÕES <ExternalLink size={18} />
-        </button>
+        {website && (
+          <button 
+            onClick={() => window.open(website, '_blank')}
+            className="btn-primary"
+            style={{ width: '100%', padding: '18px', fontSize: '15px' }}
+          >
+            ACESSAR SITE OFICIAL <ExternalLink size={18} />
+          </button>
+        )}
         <button 
           onClick={() => window.open('https://cursos.ficv.edu.br/ciecc/patrocinio/index.html', '_blank')}
           style={{ 
