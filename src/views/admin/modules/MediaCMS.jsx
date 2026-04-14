@@ -23,11 +23,19 @@ const MediaCMS = () => {
     const [sourceType, setSourceType] = useState('link'); // 'link' ou 'file'
     const [layoutMode, setLayoutMode] = useState('list'); // 'grid' ou 'list' (Default list for Media)
     const [capturedThumbnail, setCapturedThumbnail] = useState(null);
+    const [currentUrl, setCurrentUrl] = useState('');
     const videoPreviewRef = useRef(null);
 
     useEffect(() => {
         loadMedia();
     }, []);
+
+    useEffect(() => {
+        if (editingItem) {
+            setCurrentUrl(editingItem.url || '');
+            setCapturedThumbnail(editingItem.thumbnail_url || null);
+        }
+    }, [editingItem]);
 
     const captureThumbnail = async () => {
         if (!videoPreviewRef.current) {
@@ -64,8 +72,16 @@ const MediaCMS = () => {
                 }
             }, 'image/jpeg', 0.8);
         } catch (err) {
-            alert("Não foi possível capturar a imagem deste vídeo (pode ser restrição de CORS se for link externo). Use um link direto ou upload.");
+            alert("Não foi possível capturar a imagem deste vídeo. Verifique se o link permite acesso (CORS).");
         }
+    };
+
+    const autoCaptureStart = () => {
+        if (!videoPreviewRef.current) return;
+        videoPreviewRef.current.currentTime = 0.5; // Pega meio segundo para evitar tela preta inicial
+        setTimeout(() => {
+            captureThumbnail();
+        }, 500);
     };
 
     const categories = [
@@ -194,6 +210,8 @@ const MediaCMS = () => {
 
             setEditingItem(null);
             setSourceType('link');
+            setCurrentUrl('');
+            setCapturedThumbnail(null);
             e.target.reset();
             loadMedia();
         } catch (err) {
@@ -319,7 +337,7 @@ const MediaCMS = () => {
                                 </div>
 
                                 {sourceType === 'link' ? (
-                                    <input name="url" defaultValue={editingItem?.url} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
+                                    <input name="url" value={currentUrl} onChange={(e) => setCurrentUrl(e.target.value)} placeholder="Link do vídeo ou áudio..." style={inputStyle} />
                                 ) : (
                                     <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
                                         <input type="file" id="media_bulk_upload" multiple style={{ display: 'none' }} onChange={(e) => setMediaFiles(Array.from(e.target.files))} />
@@ -344,25 +362,40 @@ const MediaCMS = () => {
                                         </p>
                                         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
                                             <video 
+                                                key={currentUrl || (mediaFiles[0]?.name)}
                                                 ref={videoPreviewRef}
-                                                src={sourceType === 'link' ? editingItem?.url : (mediaFiles[0] ? URL.createObjectURL(mediaFiles[0]) : editingItem?.url)} 
+                                                src={sourceType === 'link' ? currentUrl : (mediaFiles[0] ? URL.createObjectURL(mediaFiles[0]) : editingItem?.url)} 
                                                 controls 
                                                 crossOrigin="anonymous"
                                                 style={{ width: '100%', height: '100%' }} 
                                             />
                                         </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={captureThumbnail}
-                                            style={{ 
-                                                marginTop: '12px', width: '100%', padding: '12px', borderRadius: '12px', 
-                                                background: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: '800', 
-                                                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                                            }}
-                                        >
-                                            <Camera size={18} /> CAPTURAR CAPA DO VÍDEO
-                                        </button>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
+                                            <button 
+                                                type="button" 
+                                                onClick={autoCaptureStart}
+                                                style={{ 
+                                                    padding: '12px', borderRadius: '12px', 
+                                                    background: 'var(--brand)', color: 'black', fontWeight: '900', 
+                                                    border: 'none', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                                }}
+                                            >
+                                                <Film size={18} /> CAPTURA AUTO
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={captureThumbnail}
+                                                style={{ 
+                                                    padding: '12px', borderRadius: '12px', 
+                                                    background: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: '800', 
+                                                    border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                                }}
+                                            >
+                                                <Camera size={18} /> ESTE FRAME
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {(capturedThumbnail || editingItem?.thumbnail_url) && (
