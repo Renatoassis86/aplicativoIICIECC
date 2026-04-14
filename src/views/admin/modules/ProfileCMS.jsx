@@ -9,7 +9,9 @@ import {
   Camera,
   Key,
   Database,
-  UserCheck
+  UserCheck,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
@@ -21,6 +23,7 @@ export default function ProfileCMS({ userCpf }) {
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -169,7 +172,22 @@ export default function ProfileCMS({ userCpf }) {
               </h3>
               <div>
                   <label style={labelStyle}>Senha de Acesso</label>
-                  <input type="password" style={inputStyle} value={formData.current_password} onChange={e => setFormData({...formData, current_password: e.target.value})} />
+                  <div style={{ position: 'relative' }}>
+                    <Key size={18} style={{ position: 'absolute', left: '16px', top: '16px', color: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      style={inputStyle} 
+                      value={formData.current_password} 
+                      onChange={e => setFormData({...formData, current_password: e.target.value})} 
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{ position: 'absolute', right: '16px', top: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.3)', zIndex: 1 }}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>Sua senha é utilizada para fazer login no Hub pelo aplicativo e pelo console admin.</p>
               </div>
           </div>

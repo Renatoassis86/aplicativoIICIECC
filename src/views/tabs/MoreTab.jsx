@@ -50,9 +50,12 @@ const MoreTab = ({
 
   const formatUserType = (type) => {
     if (!type || typeof type !== 'string') return 'Congressista';
-    if (type === 'staff') return 'Staff / Organização';
+    if (type === 'staff') return 'Equipe Staff';
     if (type === 'admin') return 'Administrador';
     if (type === 'organizador') return 'Organização Oficial';
+    if (type === 'patrocinador_ouro') return 'Patrocinador Ouro';
+    if (type === 'patrocinador_prata') return 'Patrocinador Prata';
+    if (type === 'patrocinador_bronze') return 'Patrocinador Bronze';
     if (type?.includes('patrocinador')) return 'Parceiro Patrocinador';
     return type.charAt(0).toUpperCase() + type.slice(1);
   };

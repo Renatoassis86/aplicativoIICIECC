@@ -3,7 +3,8 @@ import {
   Video, Music, Plus, Trash2, Edit2, Save, X, Link as LinkIcon, 
   Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay, 
   Upload, Image as ImageIcon, Search, Filter, 
-  ChevronRight, MoreHorizontal, Globe, Shield, Camera, Film, RefreshCw
+  ChevronRight, MoreHorizontal, Globe, Shield, Camera, Film, RefreshCw,
+  LayoutGrid, List, Play
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
@@ -20,6 +21,7 @@ const MediaCMS = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('ALL');
     const [sourceType, setSourceType] = useState('link'); // 'link' ou 'file'
+    const [layoutMode, setLayoutMode] = useState('list'); // 'grid' ou 'list' (Default list for Media)
 
     const categories = [
         "Flash 2026",
@@ -181,11 +183,18 @@ const MediaCMS = () => {
         <div style={{ paddingBottom: '60px' }}>
             {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
 
-            {/* HEADER */}
-            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h3 style={{ fontWeight: '900', fontSize: '32px', color: 'white', letterSpacing: '-1px' }}>Acervo de Mídia</h3>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px' }}>Gerencie transmissões, podcasts e memórias visuais.</p>
+                </div>
+                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '6px', border: '1px solid var(--border-color)' }}>
+                    <button onClick={() => setLayoutMode('grid')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'grid' ? 'var(--brand)' : 'transparent', color: layoutMode === 'grid' ? 'black' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', transition: 'all 0.2s' }}>
+                        <LayoutGrid size={18} /> <span style={{ fontSize: '12px' }}>CARTÃO</span>
+                    </button>
+                    <button onClick={() => setLayoutMode('list')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'list' ? 'var(--brand)' : 'transparent', color: layoutMode === 'list' ? 'black' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', transition: 'all 0.2s' }}>
+                        <List size={18} /> <span style={{ fontSize: '12px' }}>LISTA</span>
+                    </button>
                 </div>
             </div>
 
@@ -289,26 +298,59 @@ const MediaCMS = () => {
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ 
+                        display: layoutMode === 'grid' ? 'grid' : 'flex', 
+                        gridTemplateColumns: layoutMode === 'grid' ? 'repeat(auto-fill, minmax(280px, 1fr))' : 'none',
+                        flexDirection: layoutMode === 'grid' ? 'none' : 'column',
+                        gap: '12px' 
+                    }}>
                         {filteredItems.map(item => (
                             <div key={item.id} style={{ 
-                                background: 'var(--card-bg)', padding: '16px 20px', borderRadius: '20px', border: '1px solid var(--border-color)', 
-                                display: 'flex', alignItems: 'center', gap: '16px', opacity: item.is_archived ? 0.5 : 1
+                                background: 'var(--card-bg)', padding: layoutMode === 'grid' ? '0' : '16px 20px', 
+                                borderRadius: '20px', border: '1px solid var(--border-color)', 
+                                display: layoutMode === 'grid' ? 'block' : 'flex', 
+                                alignItems: 'center', gap: '16px', opacity: item.is_archived ? 0.5 : 1,
+                                overflow: 'hidden'
                             }}>
-                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand)' }}>
-                                    {item.media_type === 'video' ? <Film size={20} /> : item.media_type === 'image' ? <Camera size={20} /> : <Podcast size={20} />}
+                                <div style={{ 
+                                    width: layoutMode === 'grid' ? '100%' : '48px', 
+                                    height: layoutMode === 'grid' ? '160px' : '48px', 
+                                    borderRadius: layoutMode === 'grid' ? '0' : '12px', 
+                                    background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                                    color: 'var(--brand)', overflow: 'hidden', position: 'relative' 
+                                }}>
+                                    {item.media_type === 'video' ? (
+                                        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                            <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted preload="metadata" />
+                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                                <Play size={layoutMode === 'grid' ? 32 : 18} color="white" fill="white" />
+                                            </div>
+                                        </div>
+                                    ) : item.media_type === 'image' ? (
+                                        <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Podcast size={layoutMode === 'grid' ? 40 : 20} /></div>
+                                    )}
                                 </div>
-                                <div style={{ flex: 1, overflow: 'hidden' }}>
+                                <div style={{ flex: 1, overflow: 'hidden', padding: layoutMode === 'grid' ? '20px' : '0' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--brand)', background: 'rgba(212, 193, 156, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>{item.category?.toUpperCase()}</span>
                                         {item.is_live_stream && <span style={{ background: '#EF4444', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>LIVE</span>}
                                     </div>
-                                    <h6 style={{ color: 'white', fontWeight: '800', fontSize: '15px' }}>{item.title}</h6>
+                                    <h6 style={{ color: 'white', fontWeight: '800', fontSize: '15px', marginTop: layoutMode === 'grid' ? '8px' : '0' }}>{item.title}</h6>
+                                    {layoutMode === 'grid' && (
+                                        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                                            <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); }} style={{ ...actionBtnStyle, flex: 1, width: 'auto' }}><Edit2 size={16} style={{ marginRight: '8px' }} /> EDITAR</button>
+                                            <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444', width: '48px' }}><Trash2 size={16} /></button>
+                                        </div>
+                                    )}
                                 </div>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); }} style={actionBtnStyle}><Edit2 size={16} /></button>
-                                    <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444' }}><Trash2 size={16} /></button>
-                                </div>
+                                {layoutMode === 'list' && (
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => { setEditingItem(item); setSourceType(item.source_type || 'link'); }} style={actionBtnStyle}><Edit2 size={16} /></button>
+                                        <button onClick={() => deleteItem(item.id, item.url)} style={{ ...actionBtnStyle, color: '#EF4444' }}><Trash2 size={16} /></button>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

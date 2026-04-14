@@ -28,7 +28,7 @@ export default function SponsorsCMS() {
     name: '',
     logo_url: '',
     website_url: '',
-    tier: 'gold',
+    tier: 'ouro',
     order_index: 0,
     tagline: '',
     bio: '',
@@ -93,7 +93,7 @@ export default function SponsorsCMS() {
 
         if (error) throw error;
 
-        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
+        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
         setUploadFile(null);
         setIsEditing(false);
         setEditingId(null);
@@ -150,12 +150,11 @@ export default function SponsorsCMS() {
               onChange={e => setNewSponsor({...newSponsor, tier: e.target.value})}
               style={inputStyle}
             >
-              <option value="diamond">Master & Diamante</option>
-              <option value="gold">Cota Ouro</option>
-              <option value="silver">Cota Prata</option>
+              <option value="ouro">Cota Ouro</option>
+              <option value="prata">Cota Prata</option>
               <option value="bronze">Cota Bronze</option>
               <option value="organizador">Organizador</option>
-              <option value="apoio">Apoio</option>
+              <option value="apoio">Apoio Institucional</option>
             </select>
           </div>
           <div>
@@ -231,7 +230,7 @@ export default function SponsorsCMS() {
                 onClick={() => {
                     setIsEditing(false);
                     setEditingId(null);
-                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'gold', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
+                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
                 }}
                 style={{ width: '100%', marginTop: '12px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: '800', cursor: 'pointer' }}
             >

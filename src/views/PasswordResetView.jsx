@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 const PasswordResetView = ({ onComplete }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -101,7 +103,7 @@ const PasswordResetView = ({ onComplete }) => {
               <div style={{ position: 'relative' }}>
                 <Lock size={18} color="#CBD5E0" style={{ position: 'absolute', left: '16px', top: '15px', opacity: 0.5 }} />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   className="input-field-custom-light" 
                   placeholder="Mínimo 6 caracteres"
                   value={newPassword}
@@ -111,11 +113,19 @@ const PasswordResetView = ({ onComplete }) => {
                     background: '#F1F5F9', 
                     border: '1px solid #E2E8F0', 
                     borderRadius: '16px', 
-                    padding: '16px 16px 16px 48px',
-                    fontSize: '15px' 
+                    padding: '16px 48px 16px 48px',
+                    fontSize: '15px',
+                    outline: 'none'
                   }}
                   required
                 />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '16px', top: '15px', background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E0' }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
@@ -124,7 +134,7 @@ const PasswordResetView = ({ onComplete }) => {
               <div style={{ position: 'relative' }}>
                 <Lock size={18} color="#CBD5E0" style={{ position: 'absolute', left: '16px', top: '15px', opacity: 0.5 }} />
                 <input 
-                  type="password" 
+                  type={showConfirmPassword ? "text" : "password"} 
                   className="input-field-custom-light" 
                   placeholder="Repita a nova senha"
                   value={confirmPassword}
@@ -134,11 +144,19 @@ const PasswordResetView = ({ onComplete }) => {
                     background: '#F1F5F9', 
                     border: '1px solid #E2E8F0', 
                     borderRadius: '16px', 
-                    padding: '16px 16px 16px 48px',
-                    fontSize: '15px' 
+                    padding: '16px 48px 16px 48px',
+                    fontSize: '15px',
+                    outline: 'none'
                   }}
                   required
                 />
+                <button 
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ position: 'absolute', right: '16px', top: '15px', background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E0' }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

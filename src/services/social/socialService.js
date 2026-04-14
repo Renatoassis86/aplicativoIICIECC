@@ -6,10 +6,10 @@ import { supabase } from '../../lib/supabase';
  */
 
 export const SPONSOR_TIERS = {
-  DIAMOND: { level: 4, name: 'Diamante', color: '#B9F2FF' },
   GOLD: { level: 3, name: 'Ouro', color: '#FFD700' },
-  SILVER: { level: 2, name: 'Prata', color: '#C0C0C0' },
-  BRONZE: { level: 1, name: 'Bronze', color: '#CD7F32' }
+  SILVER: { level: 2, name: 'Prata', color: '#C1C1C1' },
+  BRONZE: { level: 1, name: 'Bronze', color: '#CD7F32' },
+  ORGANIZADOR: { level: 4, name: 'Organizador', color: '#FFFFFF' }
 };
 
 const getSponsorTierByLevel = (level) => {

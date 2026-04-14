@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, X } from 'lucide-react';
+import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
@@ -15,6 +15,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
         user_type: 'staff',
         password: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -148,11 +149,11 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                             >
                                 <option value="admin">Organizador / Admin</option>
                                 <option value="staff">Staff Evento</option>
-                                <option value="patrocinador_master">Patrocinador Master</option>
-                                <option value="patrocinador_diamante">Patrocinador Diamante</option>
                                 <option value="patrocinador_ouro">Patrocinador Ouro</option>
-                                <option value="palestrante">Palestrante</option>
-                                <option value="apoio">Equipe de Apoio</option>
+                                <option value="patrocinador_prata">Patrocinador Prata</option>
+                                <option value="patrocinador_bronze">Patrocinador Bronze</option>
+                                <option value="palestrante">Palestrante / GTs</option>
+                                <option value="apoio">Equipe de Apoio / Voluntário</option>
                                 <option value="congressista">Congressista Comum</option>
                             </select>
                         </div>
@@ -160,14 +161,20 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>{isEditing ? 'Nova Senha (deixe em branco para manter)' : 'Senha de Acesso'}</label>
                             <div style={{ position: 'relative' }}>
-                                <RefreshCw size={16} style={{ position: 'absolute', right: '12px', top: '14px', color: 'rgba(255,255,255,0.2)' }} />
                                 <input 
-                                    type="text" 
+                                    type={showPassword ? "text" : "password"} 
                                     value={newUser.password} 
                                     onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                                     style={inputStyle}
                                     placeholder={isEditing ? "Alterar senha..." : "Senha inicial"}
                                 />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                         </div>
 

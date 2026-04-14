@@ -51,6 +51,7 @@ import AdminImportView from './AdminImportView';
 import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 import ProfileCMS from './modules/ProfileCMS';
+import MaintenanceCMS from './modules/MaintenanceCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
@@ -155,6 +156,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'import', label: 'Importar Inscritos', icon: <FileSpreadsheet size={20} />, color: '#D4C19C' },
     { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#D4C19C' },
     { id: 'profile', label: 'Meu Perfil', icon: <UserCheck size={20} />, color: '#D4C19C' },
+    { id: 'maintenance', label: 'Manutenção & Logs', icon: <ShieldCheck size={20} />, color: '#EF4444' },
   ];
 
   const renderContent = () => {
@@ -191,6 +193,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
       case 'members': return <MembersListCMS onEditUser={(u) => { setSelectedUserForEdit(u); setActiveMenu('users'); }} />;
       case 'profile': return <ProfileCMS userCpf={userCpf} />;
+      case 'maintenance': return <MaintenanceCMS />;
       default: return null;
     }
   };
@@ -319,7 +322,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
 
         .admin-container {
           display: flex;
-          min-height: 100vh;
+          height: 100vh;
           background: var(--bg-dark);
           color: #E2E8F0;
           font-family: 'Inter', system-ui, sans-serif;
@@ -484,7 +487,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         /* Custom scrollbar for Dark Theme */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(212, 193, 156, 0.4); borderRadius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
 
         /* Global Theme Consistency */

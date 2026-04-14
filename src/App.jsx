@@ -7,6 +7,7 @@ import UserTypeSelectionView from './views/UserTypeSelectionView';
 import QuestionnaireController from './views/questionnaires/QuestionnaireController';
 import AdminImportView from './views/admin/AdminImportView';
 import AdminPortalView from './views/admin/AdminPortalView';
+import { logService } from './services/logService';
 
 import './App.css';
 
@@ -18,6 +19,33 @@ function App() {
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState(null);
   const [errorState, setErrorState] = useState(null);
+
+  // Global Error Listeners
+  useEffect(() => {
+    const handleUnhandledError = (event) => {
+      logService.error(event.message || 'Erro de Janela não tratado', {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack
+      }, 'WindowGlobal');
+    };
+
+    const handlePromiseRejection = (event) => {
+      logService.error('Promise Rejection não tratada', {
+        reason: event.reason?.message || event.reason,
+        stack: event.reason?.stack
+      }, 'PromiseGlobal');
+    };
+
+    window.addEventListener('error', handleUnhandledError);
+    window.addEventListener('unhandledrejection', handlePromiseRejection);
+
+    return () => {
+      window.removeEventListener('error', handleUnhandledError);
+      window.removeEventListener('unhandledrejection', handlePromiseRejection);
+    };
+  }, []);
 
   // Carregar estado inicial
   useEffect(() => {
@@ -62,7 +90,7 @@ function App() {
 
         // Se for admin/organizador e acessou via URL admin, força o portal
         if (isPathAdmin || isAdminForced) {
-          if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
+          if (['organizador', 'admin', 'staff'].includes(profile.user_type)) {
             setView('admin-portal');
             setAuthStatus('logged-in');
             setSelectedType(profile.user_type);
@@ -298,6 +326,10 @@ class ErrorBoundary extends React.Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    logService.error(error.message || 'Erro de Renderização', {
+        stack: error.stack,
+        info: errorInfo
+    }, 'ErrorBoundary');
   }
   render() {
     if (this.state.hasError) {
@@ -351,7 +383,7 @@ class ErrorBoundary extends React.Component {
             
             {/* ADMIN FLOWS */}
             
-            {(authStatus === 'logged-in' && view === 'admin-portal' && ['organizador', 'admin', 'staff', 'master'].includes(selectedType)) && (
+            {(authStatus === 'logged-in' && view === 'admin-portal' && ['organizador', 'admin', 'staff'].includes(selectedType)) && (
               <AdminPortalView 
                 onLogout={handleLogout}
                 onBackToApp={() => setView('app')}

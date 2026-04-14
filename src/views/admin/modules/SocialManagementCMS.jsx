@@ -5,7 +5,8 @@ import {
   MoreHorizontal, Eye, Flag, Share2, 
   User, Calendar, Clock, Image as ImageIcon,
   Video, Play, Bookmark, Archive, PlusSquare, Upload,
-  Camera, Film, Podcast, Send, RefreshCw, MapPin, UserPlus, Edit3
+  Camera, Film, Podcast, Send, RefreshCw, MapPin, UserPlus, Edit3,
+  LayoutGrid, List
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
@@ -26,6 +27,7 @@ const SocialManagementCMS = () => {
     const [showTagMenu, setShowTagMenu] = useState(false);
     const [isSponsorPost, setIsSponsorPost] = useState(false);
     const [selectedSponsor, setSelectedSponsor] = useState(null);
+    const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' ou 'list'
 
     useEffect(() => {
         loadPosts();
@@ -68,21 +70,29 @@ const SocialManagementCMS = () => {
     const handleFileUpload = async (file) => {
         if (!file) return null;
         try {
+            console.log("[SocialCMS] Iniciando upload:", file.name);
             const fileExt = file.name.split('.').pop().toLowerCase();
             const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
             const filePath = `social/${fileName}`;
 
-            const { error: uploadError } = await supabase.storage
+            const { error: uploadError, data } = await supabase.storage
                 .from('app_media')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error("[SocialCMS] Erro no storage:", uploadError);
+                throw new Error(`Falha no Upload: ${uploadError.message}`);
+            }
             
             const { data: { publicUrl } } = supabase.storage.from('app_media').getPublicUrl(filePath);
+            console.log("[SocialCMS] Public URL gerada:", publicUrl);
             return publicUrl;
         } catch (error) {
-            console.error("Upload error:", error);
-            return null;
+            console.error("Upload error details:", error);
+            throw error; // Repassar o erro para o handleSave tratar
         }
     };
 
@@ -93,26 +103,34 @@ const SocialManagementCMS = () => {
 
         setLoading(true);
         try {
-            let mediaUrl = data.media_url_manual || editingItem?.media_urls?.[0];
+            let mediaUrl = editingItem?.media_urls?.[0]; // Mantém o antigo por padrão se estiver editando
             
             if (mediaFile) {
+                // Se houver novo arquivo, tenta upload
                 const uploaded = await handleFileUpload(mediaFile);
                 if (uploaded) mediaUrl = uploaded;
             }
 
+            // Mapeamento de Tiers para Níveis numéricos (Ouro é a cota máxima no site)
+            const tierMap = { 'ouro': 4, 'prata': 2, 'bronze': 1, 'organizador': 4, 'apoio': 1 };
+            const authorTier = isSponsorPost ? (tierMap[selectedSponsor?.tier] || 4) : 4;
+
             const payload = {
-                author_name: data.author_name || 'Organização CIECC',
-                author_role: data.author_role || 'Comunicado Oficial',
-                author_tier: 4,
+                author_name: isSponsorPost ? selectedSponsor.name : (data.author_name || 'Organização CIECC'),
+                author_role: isSponsorPost ? `Patrocinador ${selectedSponsor.tier}` : (data.author_role || 'Comunicado Oficial'),
+                author_tier: authorTier,
                 content_type: mediaType,
                 media_urls: mediaUrl ? [mediaUrl] : [],
                 caption: data.caption,
                 user_id: editingItem?.user_id || 'SYSTEM_ADMIN',
                 media_type: mediaType,
                 location_name: data.location_name,
-                tagged_users_json: taggedUsers,
-                updated_at: new Date().toISOString()
+                tagged_user_ids: taggedUsers.map(u => u.cpf),
+                is_pinned: editingItem?.is_pinned || false,
+                is_archived: editingItem?.is_archived || false
             };
+
+            console.log("[SocialCMS] Salvando Payload:", payload);
 
             if (editingItem) {
                 const { error } = await supabase
@@ -133,7 +151,8 @@ const SocialManagementCMS = () => {
             resetForm();
             loadPosts();
         } catch (err) {
-            alert('Erro ao salvar: ' + err.message);
+            console.error("[SocialCMS] Erro crítico:", err);
+            alert('🚫 Erro ao processar publicação: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -215,11 +234,18 @@ const SocialManagementCMS = () => {
         <div style={{ paddingBottom: '60px' }}>
             {showSuccess && <SuccessMessage message={successMsg} onComplete={() => setShowSuccess(false)} />}
 
-            {/* HEADER */}
-            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h3 style={{ fontWeight: '900', fontSize: '32px', color: 'white', letterSpacing: '-1px' }}>Feed Social & Conectar</h3>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px' }}>Gerenciamento e moderação oficial da comunidade.</p>
+                </div>
+                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '6px', border: '1px solid var(--border-color)' }}>
+                    <button onClick={() => setLayoutMode('grid')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'grid' ? 'var(--brand)' : 'transparent', color: layoutMode === 'grid' ? 'black' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', transition: 'all 0.2s' }}>
+                        <LayoutGrid size={18} /> <span style={{ fontSize: '12px' }}>CARTÃO</span>
+                    </button>
+                    <button onClick={() => setLayoutMode('list')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: layoutMode === 'list' ? 'var(--brand)' : 'transparent', color: layoutMode === 'list' ? 'black' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', transition: 'all 0.2s' }}>
+                        <List size={18} /> <span style={{ fontSize: '12px' }}>LISTA</span>
+                    </button>
                 </div>
             </div>
 
@@ -388,37 +414,58 @@ const SocialManagementCMS = () => {
                         </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div style={{ 
+                        display: layoutMode === 'grid' ? 'grid' : 'flex', 
+                        gridTemplateColumns: layoutMode === 'grid' ? 'repeat(auto-fill, minmax(280px, 1fr))' : 'none',
+                        flexDirection: layoutMode === 'grid' ? 'none' : 'column',
+                        gap: '20px' 
+                    }}>
                         {filteredPosts.map(post => (
                             <div key={post.id} style={{ 
                                 background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)', 
-                                overflow: 'hidden', opacity: post.is_archived ? 0.5 : 1, transition: 'all 0.3s'
+                                overflow: 'hidden', opacity: post.is_archived ? 0.5 : 1, transition: 'all 0.3s',
+                                display: layoutMode === 'list' ? 'flex' : 'block',
+                                height: layoutMode === 'list' ? '120px' : 'auto'
                             }}>
-                                <div style={{ height: '160px', background: '#000', position: 'relative' }}>
+                                <div style={{ 
+                                    height: layoutMode === 'list' ? '100%' : '160px', 
+                                    width: layoutMode === 'list' ? '160px' : '100%',
+                                    background: '#000', position: 'relative', flexShrink: 0 
+                                }}>
                                     {post.media_type === 'video' ? (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Video size={40} color="rgba(255,255,255,0.2)" /></div>
+                                        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                            <video src={post.media_urls?.[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted preload="metadata" />
+                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                                <Play size={24} color="white" fill="white" />
+                                            </div>
+                                        </div>
                                     ) : post.media_type === 'audio' ? (
                                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Podcast size={40} color="var(--brand)" /></div>
                                     ) : (
                                         <img src={post.media_urls?.[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                                     )}
-                                    {post.location_name && (
+                                    {post.location_name && layoutMode === 'grid' && (
                                         <div style={{ position: 'absolute', bottom: '12px', left: '12px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', color: 'white', display: 'flex', alignItems: 'center', gap: '4px', backdropFilter: 'blur(4px)' }}>
                                             <MapPin size={12} color="var(--brand)" /> {post.location_name}
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ padding: '20px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div style={{ marginBottom: layoutMode === 'list' ? '4px' : '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div>
                                             <h6 style={{ color: 'white', fontWeight: '800', fontSize: '14px' }}>{post.author_name}</h6>
                                             <p style={{ fontSize: '10px', color: 'var(--brand)', fontWeight: '700' }}>{post.author_role}</p>
                                         </div>
-                                        <button onClick={() => startEdit(post)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '6px', borderRadius: '8px', cursor: 'pointer' }}><Edit3 size={14} /></button>
+                                        {layoutMode === 'list' && post.location_name && (
+                                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>{post.location_name}</span>
+                                        )}
                                     </div>
-                                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: '1.4', marginBottom: '16px', height: '34px', overflow: 'hidden' }}>{post.caption}</p>
+
+                                    {layoutMode === 'grid' && (
+                                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: '1.4', marginBottom: '16px', height: '34px', overflow: 'hidden' }}>{post.caption}</p>
+                                    )}
                                     
-                                    {post.tagged_users_json?.length > 0 && (
+                                    {post.tagged_users_json?.length > 0 && layoutMode === 'grid' && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '16px' }}>
                                             {post.tagged_users_json.map((u, idx) => (
                                                 <span key={idx} style={{ fontSize: '9px', color: 'var(--brand)', fontWeight: '800' }}>@{u.name}</span>
@@ -427,8 +474,15 @@ const SocialManagementCMS = () => {
                                     )}
 
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => toggleArchive(post)} style={{ ...actionBtnStyle, flex: 1 }}>{post.is_archived ? 'REATIVAR' : 'ARQUIVAR'}</button>
-                                        <button onClick={() => deletePost(post.id)} style={{ ...actionBtnStyle, width: '48px', color: '#EF4444' }}><Trash2 size={16} /></button>
+                                        <button onClick={() => startEdit(post)} style={{ ...actionBtnStyle, flex: 1, color: 'var(--brand)' }}>
+                                            <Edit3 size={14} style={{ marginRight: layoutMode === 'grid' ? '6px' : '0' }} /> {layoutMode === 'grid' ? 'EDITAR' : ''}
+                                        </button>
+                                        <button onClick={() => toggleArchive(post)} style={{ ...actionBtnStyle, flex: 1 }}>
+                                            {post.is_archived ? 'REATIVAR' : 'ARQUIVAR'}
+                                        </button>
+                                        <button onClick={() => deletePost(post.id)} style={{ ...actionBtnStyle, width: '48px', color: '#EF4444' }}>
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, ArrowRight } from 'lucide-react';
+import { User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
 
 const LoginView = ({ onLogin, onAdminAccess }) => {
@@ -8,6 +8,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
   const [isForgotMode, setIsForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -129,13 +130,20 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
                   <input 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     className="input-field-custom" 
                     placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
                   />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: 'absolute', right: '14px', top: '15px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 

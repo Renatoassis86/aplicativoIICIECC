@@ -242,9 +242,12 @@ const HomeTab = ({
   const formatUserType = (type) => {
     if (!type || typeof type !== 'string') return 'Congressista';
     if (type === 'admin') return 'Organizador';
-    if (type === 'staff') return 'Staff';
+    if (type === 'staff') return 'Equipe Staff';
+    if (type === 'patrocinador_ouro') return 'Patre. Ouro';
+    if (type === 'patrocinador_prata') return 'Patr. Prata';
+    if (type === 'patrocinador_bronze') return 'Patr. Bronze';
     if (type.includes('patrocinador')) return 'Patrocinador';
-    if (type === 'palestrante') return 'Palestrante';
+    if (type === 'palestrante') return 'Palestrante / GT';
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
@@ -510,40 +513,19 @@ const HomeTab = ({
 
       {/* PATROCINADORES - CARROSSEL */}
       <CarouselSection 
-         title="Patrocinadores Master"
+         title="Patrocinadores & Parceiros"
          items={sponsors}
-         renderItem={(s) => {
-           if (s) {
-             // Formatar dados para o padrão esperado pelo componente
-             const formatted = sponsors.map(s => {
-               let dateStr = '01/05';
-               try {
-                 if (s.session_date) {
-                    const [y, m, d] = s.session_date.split('-');
-                    dateStr = `${d}/${m}`;
-                 }
-               } catch(e) { console.error(e); }
-
-               return {
-                 id: s.id,
-                 date: dateStr,
-                 time: s.start_time ? s.start_time.slice(0, 5) : '00:00',
-                 title: s.title || 'Sem título'
-               };
-             });
-           }
-           return (
-             <div 
-               onClick={() => setSelectedSponsor(s)}
-               style={{ 
-                 width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
-                 borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                 boxShadow: 'var(--shadow-sm)'
-               }}>
-               <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-             </div>
-           );
-         }}
+         renderItem={(s) => (
+           <div 
+             onClick={() => setSelectedSponsor(s)}
+             style={{ 
+               width: '120px', height: '120px', background: 'white', border: '1px solid rgba(0,0,0,0.05)',
+               borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+               boxShadow: 'var(--shadow-sm)'
+             }}>
+             <img src={s.logo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+           </div>
+         )}
        />
 
         {/* OFICINAS - CARROSSEL */}

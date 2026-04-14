@@ -25,39 +25,39 @@ const SponsorsView = ({ onClose }) => {
 
   const tiers = [
     {
-      name: 'Master & Diamante',
-      icon: <Zap size={20} color="var(--gold)" />,
-      color: 'var(--gold)',
-      sponsors: sponsors.filter(s => s.tier === 'Master' || s.tier === 'Diamante').map(s => ({
-          ...s,
-          logo: s.logo_url,
-          tierName: s.tier,
-          website: s.website_url,
-          tierColor: '#B9F2FF'
-      }))
-    },
-    {
       name: 'Cota Ouro',
-      icon: <Award size={20} color="#FFD700" />,
+      icon: <Zap size={20} color="#FFD700" />,
       color: '#FFD700',
-      sponsors: sponsors.filter(s => s.tier === 'Ouro').map(s => ({
+      sponsors: sponsors.filter(s => s.tier === 'ouro' || s.tier === 'gold').map(s => ({
           ...s,
           logo: s.logo_url,
-          tierName: s.tier,
+          tierName: 'Ouro',
           website: s.website_url,
           tierColor: '#FFD700'
       }))
     },
     {
-      name: 'Cota Prata & Bronze',
-      icon: <Briefcase size={20} color="#C0C0C0" />,
-      color: '#C0C0C0',
-      sponsors: sponsors.filter(s => s.tier === 'Prata' || s.tier === 'Bronze').map(s => ({
+      name: 'Cota Prata',
+      icon: <Award size={20} color="#C1C1C1" />,
+      color: '#607D8B',
+      sponsors: sponsors.filter(s => s.tier === 'prata' || s.tier === 'silver').map(s => ({
           ...s,
           logo: s.logo_url,
-          tierName: s.tier,
+          tierName: 'Prata',
           website: s.website_url,
-          tierColor: '#C0C0C0'
+          tierColor: '#C1C1C1'
+      }))
+    },
+    {
+      name: 'Cota Bronze',
+      icon: <Briefcase size={20} color="#CD7F32" />,
+      color: '#CD7F32',
+      sponsors: sponsors.filter(s => s.tier === 'bronze').map(s => ({
+          ...s,
+          logo: s.logo_url,
+          tierName: 'Bronze',
+          website: s.website_url,
+          tierColor: '#CD7F32'
       }))
     }
   ];
