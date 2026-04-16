@@ -31,6 +31,7 @@ import GTsView from './info/GTsView';
 import ScannerStaffView from './ScannerStaffView';
 import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import ProfileView from './ProfileView';
+import WorkshopsView from './info/WorkshopsView';
 import MediaDetailView from './media/MediaDetailView';
 import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
@@ -38,7 +39,7 @@ import { useContent } from '../hooks/useContent';
 
 const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAvatarUpdate, isAdminView }) => {
   const [activeTab, setActiveTab] = useState('home');
-  const [currentPage, setCurrentPage] = useState(null); // 'ticket', 'notifications', 'faq', 'sponsors', 'map', 'gts', 'profile', 'scanner', 'broadcast', 'mediaDetail'
+  const [currentPage, setCurrentPage] = useState(null); // 'ticket', 'notifications', 'faq', 'sponsors', 'map', 'gts', 'profile', 'scanner', 'broadcast', 'mediaDetail', 'workshops'
   const [mediaDetail, setMediaDetail] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -82,6 +83,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenSponsors={() => setCurrentPage('sponsors')}
           onOpenMap={() => setCurrentPage('map')}
           onOpenProfile={() => setCurrentPage('profile')}
+          onOpenWorkshops={() => setCurrentPage('workshops')}
           onOpenMedia={(media) => {
             setMediaDetail(media);
             setCurrentPage('mediaDetail');
@@ -159,6 +161,13 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
         )}
         {currentPage === 'scanner' && <ScannerStaffView onClose={() => setCurrentPage(null)} />}
         {currentPage === 'broadcast' && <AdminBroadcastModal onClose={() => setCurrentPage(null)} />}
+        {currentPage === 'workshops' && (
+          <WorkshopsView 
+            userCpf={userCpf} 
+            userName={userName} 
+            onClose={() => setCurrentPage(null)} 
+          />
+        )}
         {currentPage === 'mediaDetail' && mediaDetail && (
           <MediaDetailView 
             media={mediaDetail} 

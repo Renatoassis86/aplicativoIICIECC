@@ -52,6 +52,7 @@ import MembersListCMS from './modules/MembersListCMS';
 import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 import ProfileCMS from './modules/ProfileCMS';
 import MaintenanceCMS from './modules/MaintenanceCMS';
+import WorkshopsCMS from './modules/WorkshopsCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
@@ -148,6 +149,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'broadcast', label: 'Comunicados & Alertas', icon: <Send size={20} />, color: '#D4C19C' },
     { id: 'home', label: 'Editar Página Inicial', icon: <Layout size={20} />, color: '#D4C19C' },
     { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#D4C19C' },
+    { id: 'workshops', label: 'Gestão de Oficinas', icon: <Briefcase size={20} />, color: '#D4C19C' },
     { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#D4C19C' },
     { id: 'social', label: 'Conectar (Social Feed)', icon: <MessageSquare size={20} />, color: '#D4C19C' },
     { id: 'users', label: 'Gestão de Usuários', icon: <ShieldCheck size={20} />, color: '#D4C19C' },
@@ -187,6 +189,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'media': return <MediaCMS />;
       case 'social': return <SocialManagementCMS />;
       case 'schedule': return <ScheduleCMS />;
+      case 'workshops': return <WorkshopsCMS />;
       case 'users': return <UserManagementCMS initialUser={selectedUserForEdit} onClearSelection={() => setSelectedUserForEdit(null)} />;
       case 'sponsors': return <SponsorsCMS />;
       case 'texts': return <TextContentCMS />;

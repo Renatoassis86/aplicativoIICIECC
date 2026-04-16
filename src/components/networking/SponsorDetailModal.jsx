@@ -10,7 +10,6 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
   
   const getTierInfo = (t) => {
     switch(t) {
-      case 'diamond': return { name: 'Cota Diamante', color: '#E2E8F0', bg: 'linear-gradient(135deg, #1A365D 0%, #2A4365 100%)' };
       case 'ouro': case 'gold': return { name: 'Cota Ouro', color: '#FFD700', bg: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)' };
       case 'prata': case 'silver': return { name: 'Cota Prata', color: '#C1C1C1', bg: 'linear-gradient(135deg, #2D3748 0%, #4A5568 100%)' };
       case 'bronze': return { name: 'Cota Bronze', color: '#CD7F32', bg: 'linear-gradient(135deg, #744210 0%, #975A16 100%)' };
