@@ -253,7 +253,32 @@ export default function MediaTab({ userType, userName, userCpf }) {
                   <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{post.sponsorName}</span>
                   {post.caption}
                 </p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600', marginTop: '8px' }}>{post.timeAgo}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600', marginTop: '8px', marginBottom: '12px' }}>{post.timeAgo}</p>
+
+                {/* COMENTÁRIOS PREVIEW (Últimos 5) */}
+                {post.comments && post.comments.length > 0 && (
+                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.03)', paddingTop: '12px' }}>
+                    {post.comments.slice(-5).map(comment => (
+                      <div key={comment.id} style={{ marginBottom: '6px', fontSize: '13px', lineHeight: '1.4' }}>
+                        <span style={{ fontWeight: '800', marginRight: '6px', color: 'var(--secondary)' }}>{comment.authorName}</span>
+                        <span style={{ color: 'var(--text-main)' }}>{comment.text}</span>
+                      </div>
+                    ))}
+                    
+                    {post.comments.length > 5 && (
+                      <button 
+                        onClick={() => setActiveCommentsPost(post)}
+                        style={{ 
+                          background: 'none', border: 'none', padding: '4px 0', 
+                          color: 'var(--text-muted)', fontSize: '13px', fontWeight: '700',
+                          marginTop: '4px', cursor: 'pointer'
+                        }}
+                      >
+                        Ver todos os {post.comments.length} comentários
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </article>
           ))
