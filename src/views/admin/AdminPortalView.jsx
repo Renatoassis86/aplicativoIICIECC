@@ -32,7 +32,8 @@ import {
   ShieldCheck,
   ChevronRight,
   UserCheck,
-  Menu
+  Menu,
+  Ticket
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';

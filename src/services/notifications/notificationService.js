@@ -37,7 +37,7 @@ export const fetchInbox = async (userCpf, userRole = 'congressista') => {
     const { data: reads, error: readErr } = await supabase
       .from('system_notifications_reads')
       .select('notification_id')
-      .eq('user_cpf', userCpf);
+      .eq('user_id', userCpf);
 
     if (readErr) throw readErr;
 
@@ -63,9 +63,9 @@ export const markAsRead = async (userCpf, notificationId) => {
     const { error } = await supabase
       .from('system_notifications_reads')
       .upsert({ 
-        user_cpf: userCpf, 
+        user_id: userCpf, 
         notification_id: notificationId 
-      }, { onConflict: 'user_cpf,notification_id' });
+      }, { onConflict: 'user_id,notification_id' });
 
     if (error) {
       if (error.code === '23505') return; // Duplicate

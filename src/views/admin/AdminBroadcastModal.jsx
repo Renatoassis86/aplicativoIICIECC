@@ -36,7 +36,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
       setStatus('success');
       setTimeout(() => { onClose(); }, 2500);
     } catch (e) {
-      console.error(e);
+      console.error("[BroadcastError] Erro técnico detalhado:", e);
       setStatus('error');
     } finally {
       setIsSending(false);
