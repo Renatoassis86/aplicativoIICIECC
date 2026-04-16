@@ -199,9 +199,11 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         <CarouselSection 
           title="Flashes 2026"
           items={livePhotos}
-          renderItem={(img) => (
+          renderItem={(img, index) => (
             <div 
-              onClick={() => onOpenMedia({ type: 'image', url: img.url, title: img.label })}
+              onClick={() => onOpenMedia({ 
+                ...img, type: 'gallery', photos: livePhotos, startIndex: index, title: 'Flashes 2026' 
+              })}
               style={{ 
                 width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',
                 boxShadow: 'var(--shadow-sm)', border: '1px solid rgba(0,0,0,0.05)'

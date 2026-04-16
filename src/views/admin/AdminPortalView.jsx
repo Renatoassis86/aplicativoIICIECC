@@ -53,6 +53,7 @@ import StrategicDashboardCMS from './modules/StrategicDashboardCMS';
 import ProfileCMS from './modules/ProfileCMS';
 import MaintenanceCMS from './modules/MaintenanceCMS';
 import WorkshopsCMS from './modules/WorkshopsCMS';
+import TicketsCMS from './modules/TicketsCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
@@ -156,6 +157,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} />, color: '#D4C19C' },
     { id: 'texts', label: 'Textos & Objetos', icon: <FileText size={20} />, color: '#D4C19C' },
     { id: 'import', label: 'Importar Inscritos', icon: <FileSpreadsheet size={20} />, color: '#D4C19C' },
+    { id: 'tickets', label: 'Gestão de Ingressos', icon: <Ticket size={20} />, color: '#D4C19C' },
     { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#D4C19C' },
     { id: 'profile', label: 'Meu Perfil', icon: <UserCheck size={20} />, color: '#D4C19C' },
     { id: 'maintenance', label: 'Manutenção & Logs', icon: <ShieldCheck size={20} />, color: '#EF4444' },
@@ -194,6 +196,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'sponsors': return <SponsorsCMS />;
       case 'texts': return <TextContentCMS />;
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
+      case 'tickets': return <TicketsCMS />;
       case 'members': return <MembersListCMS onEditUser={(u) => { setSelectedUserForEdit(u); setActiveMenu('users'); }} />;
       case 'profile': return <ProfileCMS userCpf={userCpf} />;
       case 'maintenance': return <MaintenanceCMS />;

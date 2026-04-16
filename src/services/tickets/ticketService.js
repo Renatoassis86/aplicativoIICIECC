@@ -130,3 +130,64 @@ const logScan = async (ticketId, scannerId, success, message) => {
     scan_message: message
   });
 };
+// ===================================
+// 3. ADMIN: GESTÃO CENTRAL DE TICKETS
+// ===================================
+
+/**
+ * Busca todos os tickets com dados do membro associado
+ */
+export const fetchAllTickets = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('system_tickets')
+      .select(`
+        *,
+        member:members(name, email, phone)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Erro ao buscar base de tickets:", error);
+    return [];
+  }
+};
+
+/**
+ * Altera status do ingresso (Manual Override)
+ */
+export const updateTicketStatus = async (ticketId, newStatus) => {
+  try {
+    const { error } = await supabase
+      .from('system_tickets')
+      .update({ status: newStatus })
+      .eq('id', ticketId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao atualizar ticket:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+/**
+ * Busca estatísticas rápidas para o painel
+ */
+export const fetchTicketStats = async () => {
+    try {
+        const { data: total } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true });
+        const { data: scanned } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true }).eq('status', 'scanned');
+        const { data: blocked } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true }).eq('status', 'blocked');
+
+        return {
+            total: total?.length || 0, // Fallback if count head doesn't work as expected with length
+            scanned: scanned?.length || 0,
+            blocked: blocked?.length || 0
+        };
+    } catch (e) {
+        return { total: 0, scanned: 0, blocked: 0 };
+    }
+};

@@ -8,6 +8,7 @@ import QuestionnaireController from './views/questionnaires/QuestionnaireControl
 import AdminImportView from './views/admin/AdminImportView';
 import AdminPortalView from './views/admin/AdminPortalView';
 import { logService } from './services/logService';
+import { fetchUserTicket } from './services/tickets/ticketService';
 
 import './App.css';
 
@@ -299,6 +300,10 @@ function App() {
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('cpf', currentUserCpf);
+
+      // GARANTE EMISSÃO DO INGRESSO IMEDIATAMENTE APÓS QUESTIONÁRIO
+      console.log("[App] Questionário concluído. Gerando ingresso para:", currentUserCpf);
+      await fetchUserTicket(currentUserCpf);
 
       setView('app');
       setAuthStatus('logged-in');

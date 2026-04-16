@@ -7,6 +7,7 @@ import {
   Calendar, 
   Info, 
   ChevronRight, 
+  ChevronLeft,
   Search,
   AlertCircle,
   Briefcase,
