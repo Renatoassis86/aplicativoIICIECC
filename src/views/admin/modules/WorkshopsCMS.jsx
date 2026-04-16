@@ -57,7 +57,12 @@ const WorkshopsCMS = () => {
         ...r.members
       }));
 
-      setWorkshops(sessions || []);
+      const filteredSessions = (sessions || []).filter(s => {
+        const title = s.title?.toLowerCase() || '';
+        return !title.includes('abertura') && !title.includes('encerramento') && !title.includes('coffee');
+      });
+
+      setWorkshops(filteredSessions || []);
       setParticipants(participantsList);
     } catch (err) {
       console.error('Error fetching admin workshop data:', err);

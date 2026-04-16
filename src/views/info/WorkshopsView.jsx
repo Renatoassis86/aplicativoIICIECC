@@ -57,7 +57,12 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         return acc;
       }, {});
 
-      setWorkshops((sessions || []).map(s => ({
+      const filteredSessions = (sessions || []).filter(s => {
+        const title = s.title?.toLowerCase() || '';
+        return !title.includes('abertura') && !title.includes('encerramento') && !title.includes('coffee');
+      });
+
+      setWorkshops(filteredSessions.map(s => ({
         ...s,
         registrations: countsMap[s.id] || 0,
         speakerName: s.speakers?.name || 'A confirmar'
