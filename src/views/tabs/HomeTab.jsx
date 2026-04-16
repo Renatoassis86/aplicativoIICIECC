@@ -375,33 +375,66 @@ const HomeTab = ({
         </div>
       </section>
 
-      {/* 3. Comunicados Oficiais */}
-      <section style={{ padding: '0 20px', marginTop: '-12px', position: 'relative', zIndex: 20 }}>
+      {/* 3. Comunicados Oficiais - Posicionado Abaixo do Cabeçalho */}
+      <section style={{ padding: '24px 20px 0', position: 'relative', zIndex: 20 }}>
         <div 
            onClick={onOpenNotifications}
-           className="card" 
-           style={{ borderLeft: '4px solid var(--gold)', display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', boxShadow: 'var(--shadow-md)', cursor: 'pointer' }}
+           style={{ 
+             background: 'white',
+             borderRadius: '24px',
+             padding: '20px',
+             display: 'flex',
+             gap: '16px',
+             alignItems: 'center',
+             boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+             border: '1px solid rgba(0,0,0,0.03)',
+             cursor: 'pointer',
+             position: 'relative',
+             overflow: 'hidden'
+           }}
         >
-          <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px' }}>
-            <Bell size={20} color="var(--primary)" />
+          {/* Accent Line */}
+          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '6px', background: 'var(--primary)' }}></div>
+
+          <div style={{ 
+            background: 'var(--accent)', 
+            padding: '12px', 
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+          }}>
+            <Bell size={24} color="var(--primary)" />
           </div>
+
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '13px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {unreadCount > 0 ? `Novo Comunicado (${unreadCount})` : 'Central de Mensagens'}
-            </p>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-              {unreadCount > 0 ? 'Toque para abrir a notificação.' : 'Acompanhe os avisos da organização.'}
+            <h4 style={{ 
+              fontSize: '15px', 
+              fontWeight: '900', 
+              color: 'var(--secondary)', 
+              letterSpacing: '0.5px',
+              fontFamily: 'var(--font-serif)',
+              marginBottom: '2px'
+            }}>
+              {unreadCount > 0 ? `NOVOS AVISOS (${unreadCount})` : 'CENTRAL DE MENSAGENS'}
+            </h4>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
+              {unreadCount > 0 ? 'Toque para conferir as novidades.' : 'Acompanhe os comunicados da organização.'}
             </p>
           </div>
-          <ChevronRight size={18} color="var(--border)" />
+          
+          <div style={{ background: 'rgba(0,0,0,0.02)', padding: '8px', borderRadius: '50%' }}>
+            <ChevronRight size={18} color="var(--primary)" />
+          </div>
         </div>
 
         {(userType === 'staff' || userType === 'admin' || userType === 'organizador') && (
           <button 
             onClick={onOpenBroadcast}
             style={{ 
-              width: '100%', padding: '12px', marginTop: '12px', borderRadius: '10px',
-              background: 'white', border: '1px solid var(--primary)', color: 'var(--primary)',
+              width: '100%', padding: '14px', marginTop: '12px', borderRadius: '16px',
+              background: 'rgba(107, 20, 26, 0.05)', border: '1px dashed var(--primary)', color: 'var(--primary)',
               fontSize: '13px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}
           >
