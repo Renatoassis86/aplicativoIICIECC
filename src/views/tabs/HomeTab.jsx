@@ -376,7 +376,7 @@ const HomeTab = ({
       </section>
 
       {/* 3. Comunicados Oficiais */}
-      <section style={{ padding: '0 20px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
+      <section style={{ padding: '0 20px', marginTop: '-12px', position: 'relative', zIndex: 20 }}>
         <div 
            onClick={onOpenNotifications}
            className="card" 

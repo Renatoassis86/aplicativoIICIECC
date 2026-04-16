@@ -8,7 +8,7 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
 
   const carregarMensagens = async () => {
     setLoading(true);
-    const { items } = await fetchInbox(userId, userRole);
+    const items = await fetchInbox(userId, userRole);
     setNotifications(items || []);
     setLoading(false);
   };
@@ -20,7 +20,7 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
   const handleRead = async (id, isCurrentlyRead) => {
     if (isCurrentlyRead) return;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    await markAsRead(id, userId);
+    await markAsRead(userId, id);
   };
 
   return (
