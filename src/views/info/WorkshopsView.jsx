@@ -76,6 +76,8 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
     }
   };
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const handleToggleWorkshop = async (workshopId) => {
     if (saving) return;
 
@@ -109,6 +111,10 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         
         if (error) throw error;
         setRegistrations(prev => [...prev, workshopId]);
+        
+        // Show success animation
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
       }
       
       // Update local counts
@@ -298,6 +304,27 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         </div>
       </div>
       
+      {showSuccess && (
+        <div style={{ 
+          position: 'fixed', bottom: '100px', left: '20px', right: '20px', 
+          background: 'rgba(72, 187, 120, 0.95)', color: 'white', padding: '16px 20px', 
+          borderRadius: '20px', zIndex: 1000, display: 'flex', alignItems: 'center', gap: '12px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+          animation: 'slideUpModal 0.4s ease',
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div style={{ background: 'white', borderRadius: '50%', padding: '4px' }}>
+            <Check size={20} color="#48BB78" />
+          </div>
+          <div>
+            <p style={{ fontWeight: '800', fontSize: '14px' }}>Inscrição Realizada!</p>
+            <p style={{ fontSize: '11px', opacity: 0.9 }}>
+              {registrations.length === 2 ? 'Suas 2 vagas estão garantidas.' : 'Vaga reservada com sucesso.'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {saving && (
         <div style={{ 
           position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.7)', 
