@@ -139,10 +139,25 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
                   />
                   <button 
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ position: 'absolute', right: '14px', top: '15px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}
+                    onMouseDown={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+                    onTouchStart={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+                    style={{ 
+                      position: 'absolute', 
+                      right: '0', 
+                      top: '0', 
+                      bottom: '0',
+                      width: '48px',
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      color: 'rgba(255,255,255,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 10
+                    }}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </div>

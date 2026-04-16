@@ -13,6 +13,7 @@ import {
   Briefcase,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Camera,
   Search,
   Award,
@@ -328,7 +329,7 @@ const HomeTab = ({
           }} onClick={() => {
             const container = document.getElementById('video-container');
             if (container) {
-              container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
+              container.innerHTML = `<iframe width=\"100%\" height=\"100%\" src=\"${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0\" title=\"II CIECC 2026\" frameBorder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowFullScreen></iframe>`;
             }
           }} id="video-container">
             <img 
@@ -468,67 +469,69 @@ const HomeTab = ({
          )}
        />
        
-       {/* CHAMADA PARA ESCOLHA DE OFICINAS */}
-       <section style={{ padding: '0 20px', margin: '24px 0' }}>
-         <div 
-           onClick={onOpenWorkshops}
-           className="card-workshop-cta"
-           style={{ 
-             background: 'linear-gradient(135deg, #2C5282 0%, #1A365D 100%)',
-             borderRadius: '24px',
-             padding: '24px',
-             color: 'white',
-             position: 'relative',
-             overflow: 'hidden',
-             cursor: 'pointer',
-             boxShadow: '0 10px 20px rgba(44, 82, 130, 0.3)',
-             display: 'flex',
-             flexDirection: 'column',
-             gap: '12px'
-           }}
-         >
-            {/* Background element */}
-            <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}>
-              <Briefcase size={120} color="white" />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '12px' }}>
-                <Star size={20} color="var(--gold)" />
-              </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Vagas Limitadas</span>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>Escolha suas Oficinas</h3>
-              <p style={{ fontSize: '13px', opacity: 0.9, lineHeight: '1.4' }}>
-                Garanta sua vaga nas atividades práticas. <br/>
-                Você pode escolher até 2 oficinas.
-              </p>
-            </div>
-
-            <div style={{ 
-              marginTop: '8px', 
-              background: 'white', 
-              color: '#1A365D', 
-              padding: '12px 20px', 
-              borderRadius: '12px', 
-              fontWeight: '900',
-              fontSize: '13px',
-              width: 'fit-content',
+        {/* CHAMADA PARA ESCOLHA DE OFICINAS - PREMIUM DESIGN */}
+        <section style={{ padding: '0 20px', margin: '32px 0' }}>
+          <div 
+            onClick={onOpenWorkshops}
+            style={{ 
+              background: 'linear-gradient(135deg, #4A101D 0%, #1A365D 100%)',
+              borderRadius: '28px',
+              padding: '28px',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              cursor: 'pointer',
+              boxShadow: '0 15px 35px rgba(26, 54, 93, 0.4)',
               display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              ESCOLHER AGORA <ArrowRight size={16} />
-            </div>
-         </div>
-       </section>
+              flexDirection: 'column',
+              gap: '12px',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+             {/* Background graphics */}
+             <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}>
+               <Briefcase size={140} color="white" />
+             </div>
+             
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <div style={{ background: 'rgba(212, 193, 156, 0.2)', padding: '10px', borderRadius: '14px' }}>
+                 <Star size={22} color="var(--gold)" />
+               </div>
+               <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gold)' }}>Vagas Limitadas</span>
+             </div>
+
+             <div style={{ marginTop: '4px' }}>
+               <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '6px', fontFamily: 'var(--font-serif)', lineHeight: '1.1' }}>
+                 Escolha suas Oficinas
+               </h3>
+               <p style={{ fontSize: '14px', opacity: 0.85, lineHeight: '1.5', maxWidth: '85%' }}>
+                 Garanta sua vaga nas atividades práticas mais disputadas do II CIECC.
+               </p>
+             </div>
+
+             <div style={{ 
+               marginTop: '12px', 
+               background: 'white', 
+               color: '#1A365D', 
+               padding: '14px 28px', 
+               borderRadius: '16px', 
+               fontWeight: '900',
+               fontSize: '14px',
+               width: 'fit-content',
+               display: 'flex',
+               alignItems: 'center',
+               gap: '10px',
+               boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+             }}>
+               ESCOLHER AGORA <ArrowRight size={18} />
+             </div>
+          </div>
+        </section>
        
 
       {/* 4. Acessos Rápidos */}
       <section style={{ padding: '24px 20px' }}>
-        <h4 className="section-title">Acesso Rápido</h4>
+        <h4 className=\"section-title\">Acesso Rápido</h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {shortcuts.map(item => (
             <div 
@@ -593,8 +596,8 @@ const HomeTab = ({
 
       {/* 7. Novidades e Comunicados (Feed em Tempo Real) */}
       <section style={{ padding: '24px 20px' }}>
-        <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Megaphone size={18} color="var(--primary)" /> Novidades e Comunicados
+        <h4 className=\"section-title\" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Megaphone size={18} color=\"var(--primary)\" /> Novidades e Comunicados
         </h4>
         
         {newsItems.length > 0 ? (
@@ -611,7 +614,7 @@ const HomeTab = ({
                       onOpenNotifications();
                     }
                   }}
-                  className="card" 
+                  className=\"card\" 
                   style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                 >
                 <div style={{ 
@@ -639,7 +642,7 @@ const HomeTab = ({
                   </div>
                   <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.newsTitle}</p>
                 </div>
-                <ChevronRight size={18} color="var(--border)" />
+                <ChevronRight size={18} color=\"var(--border)\" />
               </div>
             ))}
           </div>
@@ -664,10 +667,10 @@ const HomeTab = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Criado por</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
-              <path d="M8 32L20 8L32 32" stroke="var(--primary)" strokeWidth="3" />
-              <path d="M4 21H36" stroke="var(--primary)" strokeWidth="3" />
-              <circle cx="20" cy="6" r="3" fill="var(--primary)" />
+            <svg width=\"20\" height=\"20\" viewBox=\"0 0 40 40\" fill=\"none\">
+              <path d=\"M8 32L20 8L32 32\" stroke=\"var(--primary)\" strokeWidth=\"3\" />
+              <path d=\"M4 21H36\" stroke=\"var(--primary)\" strokeWidth=\"3\" />
+              <circle cx=\"20\" cy=\"6\" r=\"3\" fill=\"var(--primary)\" />
             </svg>
             <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '2px' }}>ARKOS</span>
           </div>

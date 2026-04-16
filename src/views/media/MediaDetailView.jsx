@@ -5,7 +5,7 @@ import {
   Heart, 
   MessageCircle, 
   Share2, 
-  ChevronLeft,
+  ArrowLeft,
   Play,
   Pause,
   SkipForward,
@@ -224,8 +224,8 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
             <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                <img src={media.photos[activeGalleryIndex]?.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                <div style={{ position: 'absolute', bottom: '20px', background: 'rgba(0,0,0,0.5)', padding: '6px 16px', borderRadius: '20px', color: 'white', fontSize: '13px', fontWeight: '800' }}>{activeGalleryIndex + 1} / {media.photos.length}</div>
-               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev - 1 + media.photos.length) % media.photos.length); }} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ChevronLeft size={24} /></button>
-               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev + 1) % media.photos.length); }} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ChevronLeft size={24} style={{ transform: 'rotate(180deg)' }} /></button>
+               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev - 1 + media.photos.length) % media.photos.length); }} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ArrowLeft size={24} /></button>
+               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev + 1) % media.photos.length); }} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ArrowLeft size={24} style={{ transform: 'rotate(180deg)' }} /></button>
             </div>
           ) : (
             <img src={media.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />

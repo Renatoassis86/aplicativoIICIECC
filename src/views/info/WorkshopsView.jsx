@@ -304,23 +304,80 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         </div>
       </div>
       
+      {/* Success Modal Overlay - PREMIUM VERSION */}
       {showSuccess && (
-        <div style={{ 
-          position: 'fixed', bottom: '100px', left: '20px', right: '20px', 
-          background: 'rgba(72, 187, 120, 0.95)', color: 'white', padding: '16px 20px', 
-          borderRadius: '20px', zIndex: 1000, display: 'flex', alignItems: 'center', gap: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-          animation: 'slideUpModal 0.4s ease',
-          backdropFilter: 'blur(8px)'
-        }}>
-          <div style={{ background: 'white', borderRadius: '50%', padding: '4px' }}>
-            <Check size={20} color="#48BB78" />
-          </div>
-          <div>
-            <p style={{ fontWeight: '800', fontSize: '14px' }}>Inscrição Realizada!</p>
-            <p style={{ fontSize: '11px', opacity: 0.9 }}>
-              {registrations.length === 2 ? 'Suas 2 vagas estão garantidas.' : 'Vaga reservada com sucesso.'}
-            </p>
+        <div 
+          className="fade-in"
+          style={{ 
+            position: 'fixed', 
+            inset: 0,
+            background: 'rgba(10, 15, 26, 0.9)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000000,
+            padding: '24px'
+          }}
+        >
+          <div style={{ 
+            background: 'white',
+            borderRadius: '32px',
+            padding: '40px 24px',
+            width: '100%',
+            maxWidth: '340px',
+            textAlign: 'center',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+             {/* Decorative particles (Visual only) */}
+             <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(45deg, var(--gold), transparent)', opacity: 0.2 }}></div>
+             <div style={{ position: 'absolute', bottom: '-40px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(45deg, var(--primary), transparent)', opacity: 0.1 }}></div>
+
+             <div style={{ 
+               width: '80px', 
+               height: '80px', 
+               background: '#F0FDF4', 
+               borderRadius: '50%', 
+               display: 'flex', 
+               alignItems: 'center', 
+               justifyContent: 'center',
+               margin: '0 auto 24px',
+               boxShadow: '0 10px 20px rgba(34, 197, 94, 0.1)'
+             }}>
+               <Check size={40} color="#22C55E" strokeWidth={3} />
+             </div>
+
+             <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px', fontFamily: 'var(--font-serif)' }}>
+               Inscrição Confirmada!
+             </h2>
+             
+             <p style={{ fontSize: '15px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>
+               Sua vaga foi garantida com sucesso. <br/>
+               {registrations.length === 2 ? 
+                 <strong style={{ color: 'var(--secondary)' }}>Você completou suas 2 vagas permitidas!</strong> : 
+                 "Você ainda pode escolher mais uma oficina."}
+             </p>
+
+             <button 
+               onClick={() => setShowSuccess(false)}
+               style={{ 
+                 width: '100%',
+                 background: 'var(--primary)',
+                 color: 'white',
+                 border: 'none',
+                 padding: '16px',
+                 borderRadius: '16px',
+                 fontWeight: '900',
+                 fontSize: '14px',
+                 cursor: 'pointer',
+                 boxShadow: '0 10px 20px rgba(107, 20, 26, 0.2)'
+               }}
+             >
+               CONTINUAR
+             </button>
           </div>
         </div>
       )}
