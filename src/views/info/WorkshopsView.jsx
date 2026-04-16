@@ -41,7 +41,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
       if (sessionError) throw sessionError;
 
       // 2. Fetch current user registrations
-      const { data: regs, error: regError } = await supabase
+      const { data: userRegs, error: regError } = await supabase
         .from('workshop_registrations')
         .select('workshop_id')
         .eq('user_cpf', userCpf);
@@ -68,7 +68,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         registrations: countsMap[s.id] || 0,
         speakerName: s.speakers?.name || 'A confirmar'
       })));
-      setRegistrations((regs || []).map(r => r.workshop_id));
+      setRegistrations((userRegs || []).map(r => r.workshop_id));
     } catch (err) {
       console.error('Error fetching workshop data:', err);
     } finally {
@@ -78,20 +78,51 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
 
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleToggleWorkshop = async (workshopId) => {
+  // Helper to get registered workshop details
+  const getRegisteredWorkshops = () => workshops.filter(w => registrations.includes(w.id));
+
+  const handleToggleWorkshop = async (workshop) => {
     if (saving) return;
 
+    const workshopId = workshop.id;
     const isRegistered = registrations.includes(workshopId);
     
-    if (!isRegistered && registrations.length >= 2) {
-      alert('Você já selecionou o limite máximo de 2 oficinas.');
-      return;
+    // Integrity checks
+    if (!isRegistered) {
+      // Check Slot Conflict: Can only have 1 workshop per start_time
+      const alreadyInSlot = workshops.find(w => 
+        registrations.includes(w.id) && w.start_time === workshop.start_time
+      );
+      if (alreadyInSlot) {
+        alert('Este horário já possui uma oficina selecionada. Desmarque-a primeiro.');
+        return;
+      }
+
+      // Check Duplicity Conflict: Cannot pick the same workshop title in different slots
+      const sameTitleInOtherSlot = workshops.find(w => 
+        registrations.includes(w.id) && w.title === workshop.title
+      );
+      if (sameTitleInOtherSlot) {
+        alert('Você já selecionou esta mesma oficina em outro horário. Escolha uma atividade diferente.');
+        return;
+      }
+
+      // Check Overall Limit
+      if (registrations.length >= 2) {
+        alert('Você já selecionou o limite máximo de 2 oficinas.');
+        return;
+      }
+
+      // Check Capacity
+      if (workshop.registrations >= (workshop.capacity_limit || 30)) {
+        alert('Desculpe, esta oficina já atingiu a capacidade máxima da sala.');
+        return;
+      }
     }
 
     setSaving(true);
     try {
       if (isRegistered) {
-        // Unregister
         const { error } = await supabase
           .from('workshop_registrations')
           .delete()
@@ -101,7 +132,6 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         if (error) throw error;
         setRegistrations(prev => prev.filter(id => id !== workshopId));
       } else {
-        // Register
         const { error } = await supabase
           .from('workshop_registrations')
           .insert([{
@@ -111,13 +141,10 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         
         if (error) throw error;
         setRegistrations(prev => [...prev, workshopId]);
-        
-        // Show success animation
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       }
       
-      // Update local counts
       fetchData();
     } catch (err) {
       console.error('Error toggling workshop:', err);
@@ -127,10 +154,15 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
     }
   };
 
-  const filteredWorkshops = workshops.filter(w => 
+  // Group workshops by slots
+  const slots = {
+    'Bloco 1 (14:15)': workshops.filter(w => w.start_time === '14:15:00'),
+    'Bloco 2 (15:15)': workshops.filter(w => w.start_time === '15:15:00')
+  };
+
+  const matchesSearch = (w) => 
     w.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    w.speakerName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    w.speakerName.toLowerCase().includes(searchTerm.toLowerCase());
 
   return (
     <div className="workshops-view fade-in" style={{ 
@@ -169,7 +201,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
             Voltar
           </button>
           <h2 style={{ fontSize: '18px', fontWeight: '800' }}>Escolha de Oficinas</h2>
-          <div style={{ width: '80px' }}></div> {/* Balanced Spacer */}
+          <div style={{ width: '80px' }}></div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '20px' }}>
@@ -181,8 +213,8 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
             {registrations.length}/2
           </div>
           <div>
-            <p style={{ fontSize: '14px', fontWeight: '800' }}>Suas Oficinas</p>
-            <p style={{ fontSize: '12px', opacity: 0.8 }}>Você pode escolher até 2 atividades.</p>
+            <p style={{ fontSize: '14px', fontWeight: '800' }}>Suas Inscrições</p>
+            <p style={{ fontSize: '12px', opacity: 0.8 }}>Escolha uma oficina para cada horário.</p>
           </div>
         </div>
       </header>
@@ -197,7 +229,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
           <Search size={18} color="#A0AEC0" />
           <input 
             type="text" 
-            placeholder="Buscar oficina ou palestrante..." 
+            placeholder="Buscar oficina..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568' }}
@@ -208,84 +240,80 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <p style={{ color: '#718096', fontSize: '14px' }}>Carregando oficinas...</p>
           </div>
-        ) : filteredWorkshops.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <AlertCircle size={48} color="#CBD5E0" style={{ margin: '0 auto 16px' }} />
-            <p style={{ color: '#718096', fontSize: '14px' }}>Nenhuma oficina encontrada.</p>
-          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredWorkshops.map(workshop => {
-              const isRegistered = registrations.includes(workshop.id);
-              return (
-                <div 
-                  key={workshop.id}
-                  onClick={() => handleToggleWorkshop(workshop.id)}
-                  style={{ 
-                    background: 'white', 
-                    borderRadius: '24px', 
-                    padding: '20px',
-                    border: isRegistered ? '2px solid #2C5282' : '2px solid transparent',
-                    boxShadow: isRegistered ? '0 8px 16px rgba(44, 82, 130, 0.15)' : '0 4px 12px rgba(0,0,0,0.03)',
-                    transition: 'all 0.2s ease',
-                    position: 'relative',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {isRegistered && (
-                    <div style={{ 
-                      position: 'absolute', top: '12px', right: '12px', 
-                      background: '#2C5282', color: 'white', padding: '4px', borderRadius: '50%'
-                    }}>
-                      <Check size={14} strokeWidth={3} />
-                    </div>
-                  )}
+          Object.entries(slots).map(([slotName, items]) => (
+            <div key={slotName} style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <Clock size={16} color="var(--primary)" />
+                <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase' }}>
+                  {slotName}
+                </h4>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {items.filter(matchesSearch).map(workshop => {
+                  const isRegistered = registrations.includes(workshop.id);
+                  const isFull = workshop.registrations >= (workshop.capacity_limit || 30);
+                  
+                  // Disable if already picked SAME title in other slot
+                  const sameInOtherSlot = getRegisteredWorkshops().some(rw => rw.title === workshop.title && rw.id !== workshop.id);
 
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                    <span style={{ 
-                      fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', 
-                      padding: '4px 8px', borderRadius: '6px', 
-                      background: 'rgba(44, 82, 130, 0.1)', color: '#2C5282' 
-                    }}>
-                      {workshop.session_date ? new Date(workshop.session_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : 'Data'}
-                    </span>
-                    <span style={{ 
-                      fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', 
-                      padding: '4px 8px', borderRadius: '6px', 
-                      background: 'rgba(0,0,0,0.05)', color: '#4A5568' 
-                    }}>
-                      {workshop.start_time?.slice(0, 5)} - {workshop.end_time?.slice(0, 5)}
-                    </span>
-                  </div>
+                  return (
+                    <div 
+                      key={workshop.id}
+                      onClick={() => !isFull && !sameInOtherSlot ? handleToggleWorkshop(workshop) : isRegistered ? handleToggleWorkshop(workshop) : null}
+                      style={{ 
+                        background: 'white', 
+                        borderRadius: '24px', 
+                        padding: '20px',
+                        border: isRegistered ? '2px solid #2C5282' : (isFull || sameInOtherSlot) ? '1px solid #E2E8F0' : '2px solid transparent',
+                        boxShadow: isRegistered ? '0 8px 16px rgba(44, 82, 130, 0.15)' : '0 4px 12px rgba(0,0,0,0.03)',
+                        opacity: (isFull || sameInOtherSlot) && !isRegistered ? 0.6 : 1,
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        cursor: (isFull || sameInOtherSlot) && !isRegistered ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {isRegistered && (
+                        <div style={{ 
+                          position: 'absolute', top: '12px', right: '12px', 
+                          background: '#2C5282', color: 'white', padding: '4px', borderRadius: '50%'
+                        }}>
+                          <Check size={14} strokeWidth={3} />
+                        </div>
+                      )}
 
-                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1A365D', marginBottom: '8px', lineHeight: '1.4' }}>
-                    {workshop.title}
-                  </h3>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1A365D', marginBottom: '8px', lineHeight: '1.4' }}>
+                        {workshop.title}
+                      </h3>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                    {workshop.speakers?.photo_url ? (
-                      <img src={workshop.speakers.photo_url} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Users size={12} color="#718096" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#4A5568' }}>{workshop.speakerName}</span>
                       </div>
-                    )}
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#4A5568' }}>{workshop.speakerName}</span>
-                  </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F0F4F8' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#718096' }}>
-                      <MapPin size={12} />
-                      <span style={{ fontSize: '11px', fontWeight: '600' }}>{workshop.room || 'Auditório'}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F0F4F8' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#718096' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '600' }}>Limite: {workshop.capacity_limit || 30} vagas</span>
+                        </div>
+                        
+                        {isRegistered ? (
+                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#2C5282' }}>VOCÊ ESTÁ INSCRITO</span>
+                        ) : isFull ? (
+                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#E53E3E' }}>ESGOTADA</span>
+                        ) : sameInOtherSlot ? (
+                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#718096' }}>JÁ SELECIONADA EM OUTRO HORÁRIO</span>
+                        ) : (
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#48BB78' }}>
+                            {workshop.registrations} inscritos
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: workshop.registrations >= 50 ? '#E53E3E' : '#48BB78' }}>
-                      {workshop.registrations} inscritos
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
         )}
       </div>
 
@@ -296,101 +324,43 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         }}>
           <Info size={24} color="var(--gold)" style={{ flexShrink: 0 }} />
           <div>
-            <p style={{ fontSize: '13px', fontWeight: '800', color: '#1A365D', marginBottom: '4px' }}>Importante</p>
+            <p style={{ fontSize: '13px', fontWeight: '800', color: '#1A365D', marginBottom: '4px' }}>Regras de Inscrição</p>
             <p style={{ fontSize: '12px', color: '#4A5568', lineHeight: '1.4' }}>
-              Ao escolher uma oficina, seu nome será adicionado à lista oficial. Caso mude de ideia, você pode desmarcar e escolher outra até o dia do evento.
+              1. Você deve escolher apenas uma oficina por bloco de horário.<br/>
+              2. Não é permitido repetir a mesma oficina nos dois horários.<br/>
+              3. As vagas são reais e travam automaticamente ao lotar.
             </p>
           </div>
         </div>
       </div>
       
-      {/* Success Modal Overlay - PREMIUM VERSION */}
+      {/* Success Modal Overlay */}
       {showSuccess && (
         <div 
           className="fade-in"
           style={{ 
-            position: 'fixed', 
-            inset: 0,
-            background: 'rgba(10, 15, 26, 0.9)',
-            backdropFilter: 'blur(20px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2000000,
-            padding: '24px'
+            position: 'fixed', inset: 0,
+            background: 'rgba(10, 15, 26, 0.9)', backdropFilter: 'blur(20px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000000, padding: '24px'
           }}
         >
           <div style={{ 
-            background: 'white',
-            borderRadius: '32px',
-            padding: '40px 24px',
-            width: '100%',
-            maxWidth: '340px',
-            textAlign: 'center',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            position: 'relative',
-            overflow: 'hidden'
+            background: 'white', borderRadius: '32px', padding: '40px 24px', width: '100%', maxWidth: '340px',
+            textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', position: 'relative'
           }}>
-             {/* Decorative particles (Visual only) */}
-             <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(45deg, var(--gold), transparent)', opacity: 0.2 }}></div>
-             <div style={{ position: 'absolute', bottom: '-40px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(45deg, var(--primary), transparent)', opacity: 0.1 }}></div>
-
-             <div style={{ 
-               width: '80px', 
-               height: '80px', 
-               background: '#F0FDF4', 
-               borderRadius: '50%', 
-               display: 'flex', 
-               alignItems: 'center', 
-               justifyContent: 'center',
-               margin: '0 auto 24px',
-               boxShadow: '0 10px 20px rgba(34, 197, 94, 0.1)'
-             }}>
+             <div style={{ width: '80px', height: '80px', background: '#F0FDF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                <Check size={40} color="#22C55E" strokeWidth={3} />
              </div>
-
-             <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px', fontFamily: 'var(--font-serif)' }}>
-               Inscrição Confirmada!
-             </h2>
-             
-             <p style={{ fontSize: '15px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>
-               Sua vaga foi garantida com sucesso. <br/>
-               {registrations.length === 2 ? 
-                 <strong style={{ color: 'var(--secondary)' }}>Você completou suas 2 vagas permitidas!</strong> : 
-                 "Você ainda pode escolher mais uma oficina."}
-             </p>
-
-             <button 
-               onClick={() => setShowSuccess(false)}
-               style={{ 
-                 width: '100%',
-                 background: 'var(--primary)',
-                 color: 'white',
-                 border: 'none',
-                 padding: '16px',
-                 borderRadius: '16px',
-                 fontWeight: '900',
-                 fontSize: '14px',
-                 cursor: 'pointer',
-                 boxShadow: '0 10px 20px rgba(107, 20, 26, 0.2)'
-               }}
-             >
-               CONTINUAR
-             </button>
+             <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px' }}>Confirmado!</h2>
+             <p style={{ fontSize: '15px', color: '#475569', marginBottom: '24px' }}>Vaga garantida com sucesso.</p>
+             <button onClick={() => setShowSuccess(false)} className="btn-primary" style={{ width: '100%', padding: '16px', borderRadius: '16px' }}>CONTINUAR</button>
           </div>
         </div>
       )}
 
       {saving && (
-        <div style={{ 
-          position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.7)', 
-          zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backdropFilter: 'blur(2px)'
-        }}>
-          <div style={{ background: '#1A365D', color: 'white', padding: '16px 32px', borderRadius: '16px', fontWeight: '800', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-            PROCESSANDO...
-          </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }}>
+          <div style={{ background: '#1A365D', color: 'white', padding: '16px 32px', borderRadius: '16px', fontWeight: '800' }}>PROCESSANDO...</div>
         </div>
       )}
     </div>
