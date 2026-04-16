@@ -435,62 +435,6 @@ const HomeTab = ({
          )}
        />
        
-       {/* CHAMADA PARA ESCOLHA DE OFICINAS */}
-       <section style={{ padding: '0 20px', margin: '16px 0' }}>
-         <div 
-           onClick={onOpenWorkshops}
-           className="card-workshop-cta"
-           style={{ 
-             background: 'linear-gradient(135deg, #2C5282 0%, #1A365D 100%)',
-             borderRadius: '24px',
-             padding: '24px',
-             color: 'white',
-             position: 'relative',
-             overflow: 'hidden',
-             cursor: 'pointer',
-             boxShadow: '0 10px 20px rgba(44, 82, 130, 0.3)',
-             display: 'flex',
-             flexDirection: 'column',
-             gap: '12px'
-           }}
-         >
-            {/* Background element */}
-            <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.1 }}>
-              <Briefcase size={120} color="white" />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '12px' }}>
-                <Star size={20} color="var(--gold)" />
-              </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Vagas Limitadas</span>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '4px' }}>Escolha suas Oficinas</h3>
-              <p style={{ fontSize: '13px', opacity: 0.9, lineHeight: '1.4' }}>
-                Garanta sua vaga nas atividades práticas. <br/>
-                Você pode escolher até 2 oficinas.
-              </p>
-            </div>
-
-            <div style={{ 
-              marginTop: '8px', 
-              background: 'white', 
-              color: '#1A365D', 
-              padding: '12px 20px', 
-              borderRadius: '12px', 
-              fontWeight: '900',
-              fontSize: '13px',
-              width: 'fit-content',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              ESCOLHER AGORA <ArrowRight size={16} />
-            </div>
-         </div>
-       </section>
 
       {/* 4. Acessos Rápidos */}
       <section style={{ padding: '24px 20px' }}>
@@ -556,28 +500,6 @@ const HomeTab = ({
         </div>
       </section>
 
-        {/* OFICINAS - CARROSSEL */}
-        {workshops.length > 0 && (
-          <CarouselSection 
-            title="Oficinas & Workshops"
-            items={workshops}
-            renderItem={(w) => (
-              <div style={{ 
-                width: '240px', background: 'white', borderRadius: '20px', overflow: 'hidden',
-                border: '1px solid rgba(0,0,0,0.05)', boxShadow: 'var(--shadow-sm)'
-              }}>
-                <div style={{ height: '80px', background: 'var(--primary)', padding: '16px', color: 'white' }}>
-                  <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--gold)', marginBottom: '4px' }}>{w.start_time?.slice(0,5)}</p>
-                  <p style={{ fontSize: '13px', fontWeight: '800', lineHeight: '1.2' }}>{w.title}</p>
-                </div>
-                <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{w.location}</p>
-                  <ArrowRight size={14} color="var(--primary)" />
-                </div>
-              </div>
-            )}
-          />
-        )}
 
       {/* 7. Novidades e Comunicados (Feed em Tempo Real) */}
       <section style={{ padding: '24px 20px' }}>
