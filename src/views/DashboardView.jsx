@@ -91,7 +91,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
         />
       );
       case 'agenda': return <AgendaTab userCpf={userCpf} />;
-      case 'network': return <NetworkTab />;
+      case 'network': return <NetworkTab onBack={() => setActiveTab('more')} />;
       case 'media': return (
         <OfficialMediaTab 
           onOpenMedia={(media) => {
@@ -103,7 +103,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
         />
       );
       case 'feed': return <MediaTab userType={userType} userName={userName} userCpf={userCpf} userAvatar={userAvatar} />;
-      case 'speakers': return <SpeakersTab onNavigate={(tab) => setActiveTab(tab)} />;
+      case 'speakers': return <SpeakersTab onNavigate={(tab) => setActiveTab(tab)} onBack={() => setActiveTab('more')} />;
       case 'more': return (
         <MoreTab 
           onLogout={onLogout} 

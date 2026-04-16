@@ -146,11 +146,23 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white' }}>
-            <X size={20} />
+          <button onClick={onClose} style={{ 
+            background: 'rgba(255,255,255,0.2)', 
+            border: 'none', 
+            padding: '10px 16px', 
+            borderRadius: '16px', 
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: '700'
+          }}>
+            <ChevronLeft size={20} />
+            Voltar
           </button>
           <h2 style={{ fontSize: '18px', fontWeight: '800' }}>Escolha de Oficinas</h2>
-          <div style={{ width: '36px' }}></div> {/* Spacer */}
+          <div style={{ width: '80px' }}></div> {/* Balanced Spacer */}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '20px' }}>

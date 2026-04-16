@@ -235,7 +235,6 @@ const AgendaTab = ({ userCpf }) => {
                 {dayEvents.map(event => (
                     <div 
                       key={event.id} 
-                      onClick={() => setSelectedSession(event)}
                       className="card" 
                       style={{ 
                           padding: '20px', 
@@ -245,7 +244,7 @@ const AgendaTab = ({ userCpf }) => {
                           transition: 'transform 0.2s',
                           position: 'relative',
                           overflow: 'hidden',
-                          cursor: 'pointer'
+                          cursor: 'default'
                       }} 
                     >
                     {/* Borda lateral colorida por categoria se for lista */}

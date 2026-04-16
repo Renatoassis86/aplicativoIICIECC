@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, ShieldCheck, MapPin, Building, Briefcase, Award, ArrowRight, UserCog, User, Users, RefreshCw, X } from 'lucide-react';
+import { Search, Filter, ShieldCheck, MapPin, Building, Briefcase, Award, ArrowRight, UserCog, User, Users, RefreshCw, X, ChevronLeft } from 'lucide-react';
 import { fetchNetworkProfiles } from '../../services/networking/networkService';
 
-export default function NetworkTab() {
+export default function NetworkTab({ onBack }) {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -73,9 +73,19 @@ export default function NetworkTab() {
         top: 0,
         zIndex: 50
       }}>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>
-          Networking CIECC
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+          {onBack && (
+            <button 
+              onClick={onBack}
+              style={{ background: 'rgba(255,255,255,0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white' }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: '800' }}>
+            Networking CIECC
+          </h1>
+        </div>
         <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>
           Conecte-se com professores, palestrantes e diretores de todo o Brasil.
         </p>

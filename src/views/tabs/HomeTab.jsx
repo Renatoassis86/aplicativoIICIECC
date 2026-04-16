@@ -222,7 +222,9 @@ const HomeTab = ({
       {/* 1. Cabeçalho Institucional & 2. Banner Principal */}
       <section style={{ 
         padding: 'calc(env(safe-area-inset-top, 20px) + 60px) 20px 48px', 
-        background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)',
+        backgroundImage: 'linear-gradient(135deg, rgba(74, 16, 29, 0.85) 0%, rgba(107, 20, 26, 0.95) 100%), url(/hero.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
         color: 'white',

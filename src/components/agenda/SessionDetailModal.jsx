@@ -9,7 +9,8 @@ import {
   User,
   Heart,
   ExternalLink,
-  FileText
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 import { fetchSessionMaterials, isSessionLiveOrFinished } from '../../services/agenda/agendaService';
 

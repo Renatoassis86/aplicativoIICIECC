@@ -10,13 +10,14 @@ import {
   Users,
   ExternalLink,
   Award,
-  Calendar
+  Calendar,
+  ChevronLeft
 } from 'lucide-react';
 import SpeakerDetailModal from '../../components/networking/SpeakerDetailModal';
 import { supabase } from '../../lib/supabase';
 import { useContent } from '../../hooks/useContent';
 
-const SpeakersTab = ({ onNavigate }) => {
+const SpeakersTab = ({ onNavigate, onBack }) => {
   const { content: speakersTitle } = useContent('titles', 'page_speakers');
   const { content: speakersSubtitle } = useContent('titles', 'page_speakers_subtitle');
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,9 +71,19 @@ const SpeakersTab = ({ onNavigate }) => {
         zIndex: 10
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-           <div>
-              <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>{displaySafe(speakersTitle, 'Palestrantes')}</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{displaySafe(speakersSubtitle, 'Conheça as mentes por trás do II CIECC')}</p>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              {onBack && (
+                <button 
+                  onClick={onBack}
+                  style={{ background: 'var(--accent)', border: 'none', padding: '10px', borderRadius: '14px', color: 'var(--primary)' }}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              )}
+              <div>
+                <h2 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: 'var(--secondary)' }}>{displaySafe(speakersTitle, 'Palestrantes')}</h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{displaySafe(speakersSubtitle, 'Conheça as mentes por trás do II CIECC')}</p>
+              </div>
            </div>
            <div style={{ background: 'var(--accent)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
               <Users size={24} />
