@@ -43,6 +43,18 @@ export default function MediaTab({ userType, userName, userCpf }) {
 
   useEffect(() => {
     loadInitialData();
+
+    // ASSINATURA REALTIME: Persistência e Histórico sempre atualizados
+    const channel = supabase
+      .channel('social-feed-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_posts' }, () => loadInitialData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_comments' }, () => loadInitialData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_engagements' }, () => loadInitialData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userCpf]);
 
 

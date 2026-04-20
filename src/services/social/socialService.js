@@ -55,9 +55,24 @@ export const fetchFeedPosts = async (userId) => {
 };
 
 const processPostsResponse = async (rawPosts, userId) => {
+    if (!rawPosts || rawPosts.length === 0) return [];
+    
     try {
-        const { data: allComments } = await supabase.from('social_comments').select('*').order('created_at', { ascending: true });
-        const { data: engagements } = await supabase.from('social_engagements').select('*');
+        const postIds = rawPosts.map(p => p.id);
+
+        // 1. Fetch only comments for these posts
+        const { data: allComments } = await supabase
+          .from('social_comments')
+          .select('*')
+          .in('post_id', postIds)
+          .order('created_at', { ascending: true });
+
+        // 2. Fetch only relevant engagements
+        // Note: Using broad fetch for engagements since they are usually fewer than comments
+        const { data: engagements } = await supabase
+          .from('social_engagements')
+          .select('*')
+          .in('post_id', postIds);
 
         const hydratedPosts = await Promise.all(rawPosts.map(async post => {
           try {
@@ -84,35 +99,39 @@ const processPostsResponse = async (rawPosts, userId) => {
               const pLikes = (engagements || []).filter(e => e.type === 'post_like' && e.post_id === post.id);
               const pSaves = (engagements || []).filter(e => e.type === 'post_save' && e.post_id === post.id);
 
-              // Hydrate Tagged Users (busca nomes dos CPFs)
+              // Hydrate Tagged Users
               let taggedUsersNames = [];
               if (post.tagged_user_ids && Array.isArray(post.tagged_user_ids) && post.tagged_user_ids.length > 0) {
-                const { data: memberData } = await supabase.from('members').select('name').in('cpf', post.tagged_user_ids);
-                taggedUsersNames = (memberData || []).map(m => m.name);
+                const validIds = post.tagged_user_ids.filter(id => id && id.length > 5);
+                if (validIds.length > 0) {
+                  const { data: memberData } = await supabase.from('members').select('name').in('cpf', validIds);
+                  taggedUsersNames = (memberData || []).map(m => m.name);
+                }
               }
 
               return {
                 id: post.id,
-                sponsorName: post.author_name || 'Usuário',
-                sponsorRole: post.author_role || 'Participante',
-                tier: getSponsorTierByLevel(post.author_tier),
-                sponsorAvatar: (post.author_name || '?').charAt(0).toUpperCase(),
-                mediaType: post.content_type || 'image',
+                sponsorName: post.author_name || post.sponsor_name || 'Usuário',
+                sponsorRole: post.author_role || post.sponsor_role || 'Participante',
+                tier: getSponsorTierByLevel(post.author_tier || post.tier_level),
+                sponsorAvatar: (post.author_name || post.sponsor_name || '?').charAt(0).toUpperCase(),
+                mediaType: post.content_type || post.media_type || 'image',
                 mediaUrls: post.media_urls || [],
                 caption: post.caption || '',
                 isPinned: post.is_pinned || false,
                 isArchived: post.is_archived || false,
-                isSponsor: true, 
+                isSponsor: (post.author_tier || post.tier_level) > 1, 
                 comments: buildTree(null),
                 likes: pLikes.length,
                 likedByMe: pLikes.some(e => e.user_id === userId),
                 savedByMe: pSaves.some(e => e.user_id === userId),
                 timeAgo: agilizarTempoRelativo(post.created_at),
-                taggedUsers: taggedUsersNames
+                taggedUsers: taggedUsersNames,
+                user_id: post.user_id || post.owner_id
               };
           } catch (itemErr) {
               console.error("[SocialService] Error hydrating post:", post.id, itemErr);
-              return null; // Don't kill the whole feed
+              return null;
           }
         }));
 

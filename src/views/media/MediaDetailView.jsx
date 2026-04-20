@@ -39,7 +39,22 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
 
   useEffect(() => {
     if (media) {
-      if (media.id) fetchEngagements();
+      if (media.id) {
+        fetchEngagements();
+        
+        // Ativando REALTIME para Midia Oficial
+        const channel = supabase
+          .channel(`media-${media.id}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'media_comments', filter: `media_id=eq.${media.id}` }, () => fetchEngagements())
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'media_engagements', filter: `media_id=eq.${media.id}` }, () => fetchEngagements())
+          .subscribe();
+          
+        return () => {
+          supabase.removeChannel(channel);
+          document.body.style.overflow = 'auto';
+        };
+      }
+      
       document.body.style.overflow = 'hidden';
       const container = document.querySelector('.fixed-page-portal');
       if (container) container.scrollTop = 0;
