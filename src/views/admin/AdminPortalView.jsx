@@ -33,7 +33,8 @@ import {
   ChevronRight,
   UserCheck,
   Menu,
-  Ticket
+  Ticket,
+  HardDrive
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fetchFeedPosts, deletePostApi } from '../../services/social/socialService';
