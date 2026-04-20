@@ -3,7 +3,7 @@ import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldChe
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
-const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) => {
+const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, currentUserCpf = null }) => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState([]);
@@ -136,6 +136,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                                 onChange={(e) => setNewUser({...newUser, cpf: e.target.value})}
                                 style={inputStyle}
                                 placeholder="Apenas números"
+                                autoComplete="off"
                             />
                         </div>
 
@@ -147,6 +148,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                                 onChange={(e) => setNewUser({...newUser, email: e.target.value})}
                                 style={inputStyle}
                                 placeholder="usuario@email.com"
+                                autoComplete="off"
                             />
                         </div>
 
@@ -157,14 +159,26 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {} }) 
                                 onChange={(e) => setNewUser({...newUser, user_type: e.target.value})}
                                 style={inputStyle}
                             >
-                                <option value="admin">Organizador / Admin</option>
-                                <option value="staff">Staff Evento</option>
+                                {/* Apenas o Master Admin pode criar outros Admins/Organizadores */}
+                                {(['05875164450', '36284400845'].includes(currentUserCpf) || newUser.user_type === 'admin') && (
+                                    <option value="admin">Organizador / Admin</option>
+                                )}
+                                
+                                <option value="congressista">Congressista Comum</option>
+                                <option value="professor_basico">Professor Básico</option>
+                                <option value="aluno_ficv">Aluno FICV</option>
+                                <option value="colaborador_cv">Colaborador CV</option>
+                                <option value="gestor">Gestor / Diretor</option>
+                                <option value="coordenador">Coordenador</option>
+                                <option value="academico">Acadêmico</option>
+                                <option value="servo_kids">Rede Kids / Voluntário</option>
                                 <option value="patrocinador_ouro">Patrocinador Ouro</option>
                                 <option value="patrocinador_prata">Patrocinador Prata</option>
                                 <option value="patrocinador_bronze">Patrocinador Bronze</option>
+                                <option value="staff">Staff Evento</option>
                                 <option value="palestrante">Palestrante / GTs</option>
-                                <option value="apoio">Equipe de Apoio / Voluntário</option>
-                                <option value="congressista">Congressista Comum</option>
+                                <option value="familia_educadora">Família Educadora</option>
+                                <option value="pai_parceira">Pai Parceiro</option>
                             </select>
                         </div>
 

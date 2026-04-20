@@ -193,7 +193,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'social': return <SocialManagementCMS />;
       case 'schedule': return <ScheduleCMS />;
       case 'workshops': return <WorkshopsCMS />;
-      case 'users': return <UserManagementCMS initialUser={selectedUserForEdit} onClearSelection={() => setSelectedUserForEdit(null)} />;
+      case 'users': return <UserManagementCMS initialUser={selectedUserForEdit} onClearSelection={() => setSelectedUserForEdit(null)} currentUserCpf={userCpf} />;
       case 'sponsors': return <SponsorsCMS />;
       case 'texts': return <TextContentCMS />;
       case 'import': return <AdminImportView onBackToApp={() => setActiveMenu('dashboard')} />;
@@ -323,8 +323,9 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
 
         .admin-mode input, .admin-mode select, .admin-mode textarea {
-          color: #000000 !important;
-          background-color: #FFFFFF !important;
+          color: #FFFFFF !important;
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
         .admin-container {
@@ -446,11 +447,36 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         .footer-btn { width: 100%; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); color: #CBD5E1; border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
         .footer-btn.logout { background: transparent; color: #F87171; border: none; }
 
-        .search-bar { background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 12px; display: flex; alignItems: center; gap: 12px; border: 1px solid var(--border-color); }
-        .search-bar input { border: none; outline: none; background: transparent; font-size: 14px; width: 150px; color: white; }
+        .search-bar { background: rgba(255,255,255,0.05); padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-color); transition: all 0.3s; }
+        .search-bar:focus-within { border-color: var(--brand); background: rgba(255,255,255,0.08); box-shadow: 0 0 15px rgba(212, 193, 156, 0.1); }
+        .search-bar input { border: none; outline: none; background: transparent; font-size: 14px; width: 150px; color: white; font-weight: 500; }
+        .search-bar input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .sync-btn {
+          background: var(--brand);
+          color: #000;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .sync-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(212, 193, 156, 0.3);
+          background: #FFFFFF;
+        }
+        .sync-btn:active { transform: translateY(0); }
 
         .topbar {
             flex-shrink: 0;
+            z-index: 50;
         }
 
         .mobile-menu-toggle { display: none; }
@@ -516,8 +542,11 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
 
         input, select, textarea {
-          color: #000000;
-          background-color: #FFFFFF;
+          color: #FFFFFF;
+          background-color: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 8px 12px;
         }
 
         .stat-value, .view-title, .sidebar-logo-text h1 {

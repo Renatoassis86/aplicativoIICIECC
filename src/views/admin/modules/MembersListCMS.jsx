@@ -60,6 +60,8 @@ const MembersListCMS = ({ onEditUser = () => {} }) => {
         { id: 'gestor', label: 'Gestores/Diretores' },
         { id: 'academico', label: 'Acadêmicos' },
         { id: 'servo_kids', label: 'Rede Kids/Voluntários' },
+        { id: 'familia_educadora', label: 'Família Educadora' },
+        { id: 'pai_parceira', label: 'Pai Parceira' },
         { id: 'admin', label: 'Organizadores' },
     ];
 

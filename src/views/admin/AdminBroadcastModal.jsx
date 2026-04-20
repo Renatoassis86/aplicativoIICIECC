@@ -14,16 +14,9 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
     setIsSending(true);
     setStatus(null);
     try {
-      // 1. Inserir em system_notifications (o que o app consome para alertas)
-      const { error: notifError } = await supabase.from('system_notifications').insert({
-        title: title.trim(),
-        message: message.trim(),
-        target_role: audience,
-        type: 'alert'
-      });
-      if (notifError) throw notifError;
-
-      // 2. Inserir em broadcasts (histórico de envios da staff)
+      // O banco de dados possui um gatilho (tr_broadcast_to_notifications_v2) 
+      // que cria automaticamente o registro em system_notifications ao inserir em broadcasts.
+      // Isso é mais seguro e evita falhas de RLS para o usuário.
       const { error: broadcastError } = await supabase.from('broadcasts').insert({
         title: title.trim(),
         message: message.trim(),
@@ -31,6 +24,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
         sender_id: staffCpf,
         sender_name: userName || 'Admin'
       });
+      
       if (broadcastError) throw broadcastError;
 
       setStatus('success');
