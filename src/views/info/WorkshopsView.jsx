@@ -77,18 +77,20 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
 
   // Helper to calculate dynamic capacity for a workshop
   const getDynamicCapacity = (workshop) => {
+    // Pegamos todas as oficinas do mesmo horário
     const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
     
-    // As "salas de 60" são para as duas primeiras oficinas que ultrapassarem 30 inscritos
-    // Contamos quantas oficinas já ocuparam as 2 salas de 60 (excluindo a própria se ela for uma delas)
-    const largeRoomsTaken = slotWorkshops.filter(w => w.registrations > 30 && w.id !== workshop.id).length;
+    // As oficinas que "reivindicaram" as salas maiores são as que já têm mais inscritos
+    // Ordenamos para ver quem está no topo
+    const sorted = [...slotWorkshops].sort((a, b) => b.registrations - a.registrations);
     
-    // Se esta oficina já ultrapassou 30 OU se ainda restam salas de 60 no slot
-    if (workshop.registrations > 30 || largeRoomsTaken < 2) {
-      return 60;
-    }
+    // 1ª colocada (mais inscritos) -> Sala de 100
+    if (workshop.id === sorted[0]?.id) return 100;
     
-    return 30; // Limite padrão
+    // 2ª e 3ª colocadas -> Salas de 60
+    if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
+    
+    return 30; // Limite padrão para as demais
   };
 
   const isFull = (workshop) => {
@@ -96,10 +98,18 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
     return workshop.registrations >= capacity;
   };
 
+  const hasFinished = registrations.length >= 2;
+
   const getRegisteredWorkshops = () => workshops.filter(w => registrations.includes(w.id));
 
   const handleToggleWorkshop = async (workshop) => {
     if (saving) return;
+    
+    // BLOQUEIO: Se já escolheu as duas, não pode mudar nada (conforme solicitado)
+    if (hasFinished) {
+      alert('Suas inscrições já foram finalizadas e não podem ser alteradas.');
+      return;
+    }
 
     const workshopId = workshop.id;
     const isRegistered = registrations.includes(workshopId);
@@ -110,7 +120,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         registrations.includes(w.id) && w.start_time === workshop.start_time
       );
       if (alreadyInSlot) {
-        alert('Este horário já possui uma oficina selecionada. Desmarque a anterior para mudar.');
+        alert('Este horário já possui uma oficina selecionada. Escolha uma oficina no outro horário.');
         return;
       }
 
@@ -123,17 +133,15 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         return;
       }
 
-      // 3. Overall Limit
-      if (registrations.length >= 2) {
-        alert('Você já selecionou o limite máximo de 2 oficinas.');
-        return;
-      }
-
-      // 4. Dynamic Capacity Check
+      // 3. Dynamic Capacity Check
       if (isFull(workshop)) {
-        alert('Desculpe, esta oficina já atingiu o limite de vagas para a sala designada.');
+        alert('Desculpe, esta oficina já atingiu o limite máximo de vagas.');
         return;
       }
+    } else {
+      // Se já está inscrito, mas o usuário quer desmarcar ANTES de completar as 2
+      // Na verdade o usuário disse "Escolhendo as duas ele não poderá mudar". 
+      // Então se ele tem 1, ele ainda PODE desmarcar a única que tem.
     }
 
     setSaving(true);
@@ -157,8 +165,12 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
         
         if (error) throw error;
         setRegistrations(prev => [...prev, workshopId]);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
+        
+        // Se acabou de completar a segunda, mostra sucesso especial
+        if (registrations.length === 1) {
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 4000);
+        }
       }
       
       fetchData();
@@ -171,8 +183,8 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
   };
 
   const slots = {
-    'Bloco 1 (14:15)': workshops.filter(w => w.start_time === '14:15:00'),
-    'Bloco 2 (15:15)': workshops.filter(w => w.start_time === '15:15:00')
+    'Horário 1 (14:15h às 15:15h)': workshops.filter(w => w.start_time === '14:15:00'),
+    'Horário 2 (15:15h às 16:15h)': workshops.filter(w => w.start_time === '15:15:00')
   };
 
   const matchesSearch = (w) => 
@@ -186,7 +198,7 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
       {/* Header */}
       <header style={{ 
         padding: 'calc(env(safe-area-inset-top, 24px) + 20px) 20px 24px', 
-        background: 'linear-gradient(135deg, #1A365D 0%, #2C5282 100%)',
+        background: 'linear-gradient(135deg, #4A101D 0%, #111111 100%)',
         color: 'white', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px',
         position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
       }}>
@@ -197,32 +209,61 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
           }}>
             <ChevronLeft size={20} /> Voltar
           </button>
-          <h2 style={{ fontSize: '18px', fontWeight: '800' }}>Escolha de Oficinas</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--gold)' }}>Minhas Oficinas</h2>
           <div style={{ width: '80px' }}></div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '20px' }}>
           <div style={{ 
-            width: '48px', height: '48px', borderRadius: '16px', background: 'var(--gold)', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '900', color: '#1A365D'
+            width: '48px', height: '48px', borderRadius: '16px', background: registrations.length === 2 ? '#48BB78' : 'var(--gold)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '900', color: '#111'
           }}>
             {registrations.length}/2
           </div>
           <div>
-            <p style={{ fontSize: '14px', fontWeight: '800' }}>Inscrições Efetuadas</p>
-            <p style={{ fontSize: '12px', opacity: 0.8 }}>O sistema reserva sua vaga em tempo real.</p>
+            <p style={{ fontSize: '14px', fontWeight: '800' }}>
+              {registrations.length === 2 ? 'Inscrições Finalizadas' : 'Selecione suas Oficinas'}
+            </p>
+            <p style={{ fontSize: '11px', opacity: 0.8 }}>
+              {registrations.length === 2 ? 'Você já garantiu seus dois horários.' : 'Escolha uma para cada bloco de horário.'}
+            </p>
           </div>
         </div>
       </header>
 
       <div style={{ padding: '24px 20px' }}>
+        
+        {/* SEÇÃO "MINHAS ESCOLHAS" - Visível após selecionar */}
+        {registrations.length > 0 && (
+          <div style={{ marginBottom: '32px', background: 'white', padding: '20px', borderRadius: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid var(--gold)' }}>
+             <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <Check size={18} /> OFICINAS SELECIONADAS
+             </h4>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {getRegisteredWorkshops().map(w => (
+                  <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '6px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '800' }}>
+                      {w.start_time.substring(0, 5)}
+                    </div>
+                    <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--secondary)' }}>{w.title}</p>
+                  </div>
+                ))}
+             </div>
+             {hasFinished && (
+               <p style={{ fontSize: '11px', color: '#718096', marginTop: '16px', fontStyle: 'italic' }}>
+                 * Suas escolhas foram salvas e não podem ser alteradas.
+               </p>
+             )}
+          </div>
+        )}
+
         <div style={{ 
           background: 'white', padding: '12px 16px', borderRadius: '16px', 
           display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
         }}>
           <Search size={18} color="#A0AEC0" />
           <input 
-            type="text" placeholder="Pesquisar oficina..." value={searchTerm}
+            type="text" placeholder="Filtrar por nome ou tema..." value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568' }}
           />
@@ -230,14 +271,14 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p style={{ color: '#718096', fontSize: '14px' }}>Carregando opções...</p>
+            <p style={{ color: '#718096', fontSize: '14px' }}>Carregando oficinas...</p>
           </div>
         ) : (
           Object.entries(slots).map(([slotName, items]) => (
             <div key={slotName} style={{ marginBottom: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                 <Clock size={16} color="var(--primary)" />
-                <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase' }}>
+                <h4 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   {slotName}
                 </h4>
               </div>
@@ -245,78 +286,68 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {items.filter(matchesSearch).map(workshop => {
                   const isRegistered = registrations.includes(workshop.id);
-                  const capacity = getDynamicCapacity(workshop);
                   const full = isFull(workshop);
                   const sameInOtherSlot = getRegisteredWorkshops().some(rw => rw.title === workshop.title && rw.id !== workshop.id);
 
                   return (
                     <div 
                       key={workshop.id}
-                      onClick={() => !full && !sameInOtherSlot ? handleToggleWorkshop(workshop) : isRegistered ? handleToggleWorkshop(workshop) : null}
+                      onClick={() => handleToggleWorkshop(workshop)}
                       style={{ 
                         background: 'white', borderRadius: '24px', padding: '20px',
-                        border: isRegistered ? '2px solid #2C5282' : (full || sameInOtherSlot) ? '1px solid #E2E8F0' : '2px solid transparent',
-                        boxShadow: isRegistered ? '0 8px 16px rgba(44, 82, 130, 0.15)' : '0 4px 12px rgba(0,0,0,0.03)',
-                        opacity: (full || sameInOtherSlot) && !isRegistered ? 0.6 : 1, transition: 'all 0.2s ease', position: 'relative',
-                        cursor: (full || sameInOtherSlot) && !isRegistered ? 'not-allowed' : 'pointer'
+                        border: isRegistered ? '2px solid var(--primary)' : '2px solid transparent',
+                        boxShadow: isRegistered ? '0 8px 20px rgba(107, 20, 26, 0.1)' : '0 4px 12px rgba(0,0,0,0.03)',
+                        opacity: (full || sameInOtherSlot) && !isRegistered ? 0.5 : 1, 
+                        transition: 'all 0.2s ease', position: 'relative',
+                        cursor: (hasFinished || full || sameInOtherSlot) && !isRegistered ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {isRegistered && (
-                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#2C5282', color: 'white', padding: '4px', borderRadius: '50%' }}>
-                          <Check size={14} strokeWidth={3} />
-                        </div>
-                      )}
-
-                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1A365D', marginBottom: '8px', lineHeight: '1.4' }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1A365D', marginBottom: '6px', lineHeight: '1.4' }}>
                         {workshop.title}
                       </h3>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#4A5568' }}>{workshop.speakerName}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#718096' }}>{workshop.speakerName}</span>
                       </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F0F4F8' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: '800', color: capacity === 60 ? 'var(--gold)' : '#718096' }}>
-                            SALA COM ATÉ {capacity} VAGAS
-                          </span>
-                        </div>
-                        
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                         {isRegistered ? (
-                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#2C5282' }}>INSCRITO</span>
-                        ) : full ? (
-                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#E53E3E' }}>LOTADO</span>
-                        ) : sameInOtherSlot ? (
-                          <span style={{ fontSize: '10px', fontWeight: '700', color: '#718096' }}>INDISPONÍVEL</span>
-                        ) : (
-                          <div style={{ fontSize: '11px', fontWeight: '700', color: workshop.registrations >= 25 ? '#E53E3E' : '#48BB78' }}>
-                            {workshop.registrations} inscritos
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
+                            <Check size={12} /> SELECIONADO
                           </div>
-                        )}
+                        ) : full ? (
+                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#E53E3E', textTransform: 'uppercase' }}>Indisponível</span>
+                        ) : sameInOtherSlot ? (
+                          <span style={{ fontSize: '10px', fontWeight: '700', color: '#718096' }}>Já escolhido em outro horário</span>
+                        ) : null}
                       </div>
                     </div>
                   );
                 })}
+                {items.filter(matchesSearch).length === 0 && (
+                  <p style={{ fontSize: '12px', color: '#A0AEC0', textAlign: 'center' }}>Nenhuma oficina encontrada.</p>
+                )}
               </div>
             </div>
           ))
         )}
       </div>
 
-      <div style={{ padding: '0 20px 40px' }}>
+      <div style={{ padding: '0 20px 60px' }}>
         <div style={{ 
           background: 'rgba(212, 193, 156, 0.1)', padding: '20px', borderRadius: '24px', 
-          border: '1px dashed var(--gold)', display: 'flex', gap: '16px' 
+          border: '1px solid var(--gold)', display: 'flex', gap: '16px' 
         }}>
-          <Info size={24} color="var(--gold)" style={{ flexShrink: 0 }} />
+          <AlertCircle size={24} color="var(--gold)" style={{ flexShrink: 0 }} />
           <div>
-            <p style={{ fontSize: '13px', fontWeight: '800', color: '#1A365D', marginBottom: '4px' }}>Alocação Automática</p>
+            <p style={{ fontSize: '13px', fontWeight: '800', color: '#111', marginBottom: '4px' }}>Atenção</p>
             <p style={{ fontSize: '12px', color: '#4A5568', lineHeight: '1.4' }}>
-              As duas primeiras oficinas a atingirem 30 inscritos em cada bloco serão movidas para salas maiores (60 vagas). As demais serão travadas em 30.
+              Ao completar as duas escolhas, sua inscrição será finalizada. Não será possível trocar as oficinas após a confirmação.
             </p>
           </div>
         </div>
       </div>
+
 {/* Success Modal Overlay */}
       {showSuccess && (
         <div 

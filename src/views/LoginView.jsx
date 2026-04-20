@@ -90,8 +90,8 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
             </div>
             
             <div className="hero-footer">
-               <div className="location-badge">Joinville, SC</div>
-               <div className="date-badge">14 e 15 de Maio</div>
+               <div className="location-badge">São Paulo, SP</div>
+               <div className="date-badge">01 e 02 de Maio</div>
             </div>
           </div>
         </div>
