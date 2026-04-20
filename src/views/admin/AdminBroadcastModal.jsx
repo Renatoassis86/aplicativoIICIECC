@@ -39,9 +39,13 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
 
   const audienceOptions = [
     { id: 'all', label: 'Todos' },
-    { id: 'schools', label: 'Escolas' },
-    { id: 'sponsors', label: 'Patrocinadores' },
-    { id: 'staff', label: 'Organização' }
+    { id: 'diretor', label: 'Escolas (Diretores)' },
+    { id: 'professor_basico', label: 'Professores' },
+    { id: 'familia_educadora', label: 'Famílias' },
+    { id: 'gestor', label: 'Gestores' },
+    { id: 'academico', label: 'Acadêmicos' },
+    { id: 'organizador', label: 'Organização' },
+    { id: 'aluno_ficv', label: 'Alunos FICV' }
   ];
 
   return (

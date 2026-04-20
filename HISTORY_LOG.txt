@@ -17,12 +17,22 @@ Status: CONCLUÍDO
 Data: 2026-04-20
 Solicitante: RENATO (Master)
 Pedido: Implementação de log de prompts para acompanhamento do trabalho de Julio via Git.
-Ações: Criação deste arquivo (HISTORY_LOG.txt) e compromisso de atualização contínua.
-Status: EM ANDAMENTO
+Ações: Atualizado StrategicDashboardCMS.jsx.
+Status: CONCLUÍDO
 
 Data: 2026-04-20
 Solicitante: RENATO (Master)
-Pedido: Alterar título do Dashboard para "Página em Desenvolvimento".
-Ações: Atualizado StrategicDashboardCMS.jsx.
+Pedido: Corrigir "Falha no Disparo" e envio para grupos específicos.
+Ações: 
+1. Criada tabela app_system_logs para rastreamento técnico.
+2. Atualizada função handle_new_broadcast para SECURITY DEFINER (bypass RLS).
+3. Atualizada função check_is_admin para incluir Master Admins explicitamente.
+4. Mapeados os IDs de público no AdminBroadcastModal para coincidir com as roles reais do banco de dados (professor_basico, diretor, etc).
+Status: CONCLUÍDO
+
+Data: 2026-04-20
+Solicitante: RENATO (Master)
+Pedido: Sincronização geral com GitHub.
+Ações: Commit e Push de todas as correções.
 Status: CONCLUÍDO
 
