@@ -113,7 +113,7 @@ const StrategicDashboardCMS = () => {
                       <Brain size={18} fill="var(--brand)" />
                       <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px' }}>Inteligência de Mercado Ativa</span>
                    </div>
-                   <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>BI & Analytics Hub</h2>
+                   <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'white', letterSpacing: '-1px' }}>Página em Desenvolvimento</h2>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '12px' }}>
