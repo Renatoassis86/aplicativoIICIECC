@@ -9,6 +9,7 @@ import MemoriesMarquee from '../../components/media/MemoriesMarquee';
 import { useCMS } from '../../hooks/useCMS';
 import { supabase } from '../../lib/supabase';
 import { useContent } from '../../hooks/useContent';
+import { driveService } from '../../services/media/driveService';
 
 const CarouselSection = ({ title, items, renderItem }) => (
   <div style={{ marginBottom: '40px' }}>
@@ -43,6 +44,9 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
   const [mediaList, setMediaList] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
+  const [drivePhotos2026, setDrivePhotos2026] = React.useState([]);
+  const [drivePhotos2025, setDrivePhotos2025] = React.useState([]);
+
   React.useEffect(() => {
     const loadMedia = async () => {
       const data = await cms.getMedia();
@@ -50,7 +54,27 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       setLoading(false);
     };
 
+    const loadDrivePhotos = async () => {
+      try {
+        const configs = await driveService.getSyncConfigs();
+        const conf2026 = configs.find(c => c.category === 'Flashes 2026');
+        const conf2025 = configs.find(c => c.category === 'Memórias');
+
+        if (conf2026) {
+          const photos = await driveService.fetchPhotosFromFolder(conf2026.folder_id);
+          setDrivePhotos2026(photos.map(p => ({ id: p.id, label: p.name, url: p.url, type: 'image' })));
+        }
+        if (conf2025) {
+          const photos = await driveService.fetchPhotosFromFolder(conf2025.folder_id);
+          setDrivePhotos2025(photos.map(p => ({ id: p.id, label: p.name, url: p.url, type: 'photo' })));
+        }
+      } catch (e) {
+        console.error('Drive load error:', e);
+      }
+    };
+
     loadMedia();
+    loadDrivePhotos();
 
     // Listener para atualizações em tempo real do painel admin
     window.addEventListener('cms-updated', loadMedia);
@@ -106,7 +130,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     return data.publicUrl;
   };
 
-  // FOTOS EM TEMPO REAL (II CIECC 2026) - Prioridade para o banco
+  // FOTOS EM TEMPO REAL (II CIECC 2026) - Prioridade para o banco, unindo com Drive
   const dbLivePhotos = mediaList.filter(m => m.category === 'Flash 2026').map(m => ({
     id: m.id,
     label: m.title || 'Flash 2026',
@@ -114,11 +138,11 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     type: 'image'
   }));
 
-  const livePhotos = dbLivePhotos.length > 0 ? dbLivePhotos : [
-    { id: '1hARrE4k2CfTM43whKs2J1cqNScrA93IN', label: 'AO VIVO: Credenciamento', url: getDriveUrl('1hARrE4k2CfTM43whKs2J1cqNScrA93IN') },
-    { id: '1bGzCaUZpCaaIVWH7OA0i1HBNrgPYvYqj', label: 'AO VIVO: Auditório Lotado', url: getDriveUrl('1bGzCaUZpCaaIVWH7OA0i1HBNrgPYvYqj') },
-    { id: '1W2B8z36PPgHHoZn4EMVF9Sjf8vCZB7G-', label: 'AO VIVO: Palestra Principal', url: getDriveUrl('1W2B8z36PPgHHoZn4EMVF9Sjf8vCZB7G-') },
-    { id: '1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx', label: 'AO VIVO: Coffee Break', url: getDriveUrl('1Ix2iHhnBRaOgFgZMcl97rsNi3Mwh_COx') }
+  const livePhotos = [...dbLivePhotos, ...drivePhotos2026];
+  
+  // Se não houver nada, mantém fallbacks do ano passado ou placeholders
+  const finalLivePhotos = livePhotos.length > 0 ? livePhotos : [
+    { id: '1hARrE4k2CfTM43whKs2J1cqNScrA93IN', label: 'Carregando...', url: getDriveUrl('1hARrE4k2CfTM43whKs2J1cqNScrA93IN') }
   ];
 
   const interviews = mediaList.filter(m => m.category === 'Entrevistas Exclusivas' || (m.media_type === 'video' && !m.is_live_stream && m.category !== 'Flash 2026')).map(m => ({
@@ -137,14 +161,14 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     type: 'podcast'
   }));
 
-  // Memórias: Unir hardcoded com DB
+  // Memórias: Unir hardcoded com DB e Drive
   const dbMemories = mediaList.filter(m => m.category === 'Memórias').map(m => ({
     id: m.id,
     label: m.title || 'Memória 2025',
     url: getImageUrl(m),
     type: 'photo'
   }));
-  const allMemories = [...dbMemories, ...memories2025];
+  const allMemories = [...dbMemories, ...drivePhotos2025, ...memories2025];
 
   const liveStream = mediaList.find(m => m.is_live_stream);
 
@@ -198,7 +222,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         {/* 2. FLASHES DO II CIECC 2026 (CARROSSEL FOTOS) */}
         <CarouselSection 
           title="Flashes 2026"
-          items={livePhotos}
+          items={finalLivePhotos}
           renderItem={(img, index) => (
             <div 
               onClick={() => onOpenMedia({ 

@@ -55,6 +55,7 @@ import ProfileCMS from './modules/ProfileCMS';
 import MaintenanceCMS from './modules/MaintenanceCMS';
 import WorkshopsCMS from './modules/WorkshopsCMS';
 import TicketsCMS from './modules/TicketsCMS';
+import DriveSyncCMS from './modules/DriveSyncCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
@@ -153,6 +154,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'schedule', label: 'Agenda & Palestrantes', icon: <Calendar size={20} />, color: '#D4C19C' },
     { id: 'workshops', label: 'Gestão de Oficinas', icon: <Briefcase size={20} />, color: '#D4C19C' },
     { id: 'media', label: 'Mídias & Transmissão', icon: <Video size={20} />, color: '#D4C19C' },
+    { id: 'drive', label: 'Driver de Fotos (Sync)', icon: <HardDrive size={20} />, color: '#D4C19C' },
     { id: 'social', label: 'Conectar (Social Feed)', icon: <MessageSquare size={20} />, color: '#D4C19C' },
     { id: 'users', label: 'Gestão de Usuários', icon: <ShieldCheck size={20} />, color: '#D4C19C' },
     { id: 'sponsors', label: 'Patrocinadores', icon: <Briefcase size={20} />, color: '#D4C19C' },
@@ -190,6 +192,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       );
       case 'home': return <HomeCMS />;
       case 'media': return <MediaCMS />;
+      case 'drive': return <DriveSyncCMS />;
       case 'social': return <SocialManagementCMS />;
       case 'schedule': return <ScheduleCMS />;
       case 'workshops': return <WorkshopsCMS />;
