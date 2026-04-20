@@ -329,7 +329,7 @@ const HomeTab = ({
           }} onClick={() => {
             const container = document.getElementById('video-container');
             if (container) {
-              container.innerHTML = `<iframe width=\"100%\" height=\"100%\" src=\"${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0\" title=\"II CIECC 2026\" frameBorder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowFullScreen></iframe>`;
+              container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
             }
           }} id="video-container">
             <img 
@@ -531,7 +531,7 @@ const HomeTab = ({
 
       {/* 4. Acessos Rápidos */}
       <section style={{ padding: '24px 20px' }}>
-        <h4 className=\"section-title\">Acesso Rápido</h4>
+        <h4 className="section-title">Acesso Rápido</h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {shortcuts.map(item => (
             <div 
@@ -596,8 +596,8 @@ const HomeTab = ({
 
       {/* 7. Novidades e Comunicados (Feed em Tempo Real) */}
       <section style={{ padding: '24px 20px' }}>
-        <h4 className=\"section-title\" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Megaphone size={18} color=\"var(--primary)\" /> Novidades e Comunicados
+        <h4 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Megaphone size={18} color="var(--primary)" /> Novidades e Comunicados
         </h4>
         
         {newsItems.length > 0 ? (
@@ -614,7 +614,7 @@ const HomeTab = ({
                       onOpenNotifications();
                     }
                   }}
-                  className=\"card\" 
+                  className="card" 
                   style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                 >
                 <div style={{ 
@@ -642,7 +642,7 @@ const HomeTab = ({
                   </div>
                   <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary)', lineHeight: '1.2' }}>{item.newsTitle}</p>
                 </div>
-                <ChevronRight size={18} color=\"var(--border)\" />
+                <ChevronRight size={18} color="var(--border)" />
               </div>
             ))}
           </div>
@@ -667,10 +667,10 @@ const HomeTab = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Criado por</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width=\"20\" height=\"20\" viewBox=\"0 0 40 40\" fill=\"none\">
-              <path d=\"M8 32L20 8L32 32\" stroke=\"var(--primary)\" strokeWidth=\"3\" />
-              <path d=\"M4 21H36\" stroke=\"var(--primary)\" strokeWidth=\"3\" />
-              <circle cx=\"20\" cy=\"6\" r=\"3\" fill=\"var(--primary)\" />
+            <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
+              <path d="M8 32L20 8L32 32" stroke="var(--primary)" strokeWidth="3" />
+              <path d="M4 21H36" stroke="var(--primary)" strokeWidth="3" />
+              <circle cx="20" cy="6" r="3" fill="var(--primary)" />
             </svg>
             <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '2px' }}>ARKOS</span>
           </div>

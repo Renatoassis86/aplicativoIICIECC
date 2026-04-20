@@ -20,11 +20,11 @@ Este documento registra a evolução do projeto, decisões técnicas e o status 
 - [x] Navegação básica entre Login e Dashboard
 
 ### 🛠️ Etapa 2: Funcionalidades Core (Próximas Fases)
-- [ ] Integração com Authentication (Supabase - Login por CPF)
-- [ ] Módulo de Agenda (Programação do Congresso)
-- [ ] Módulo de Relacionamento (Networking entre participantes)
-- [ ] Módulos de Conteúdo (Fotos, Vídeos, Documentos)
-- [ ] Notificações Push/Comunicados
+- [x] Integração com Authentication (Supabase - Login por CPF)
+- [x] Módulo de Agenda (Programação do Congresso)
+- [x] Módulo de Relacionamento (Networking entre participantes)
+- [x] Módulos de Conteúdo (Fotos, Vídeos, Documentos)
+- [x] Notificações Push/Comunicados
 
 ### 🚀 Etapa 3: Polimento & Escalabilidade
 - [ ] Testes de UX em dispositivos reais (Android/iOS)
