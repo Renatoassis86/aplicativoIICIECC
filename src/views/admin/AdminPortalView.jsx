@@ -214,7 +214,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img src="/logo.png" alt="CIECC" style={{ height: '40px', filter: 'brightness(0) invert(1)' }} />
             <div>
-              <h1 style={{ color: 'white', fontSize: '15px', fontWeight: '900', letterSpacing: '1px' }}>CIECC Console</h1>
+              <h1 style={{ color: 'white', fontSize: '15px', fontWeight: '900', letterSpacing: '1px' }}>II CIECC 2026</h1>
               <p style={{ color: 'var(--gold)', fontSize: '9px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2px' }}>Digital Hub Control</p>
             </div>
           </div>

@@ -200,10 +200,12 @@ const AdminImportView = ({ onBackToApp }) => {
   };
 
   return (
-    <div className="admin-container fade-in" style={{
+    <div className="admin-import-view fade-in" style={{
       minHeight: '100vh',
       background: 'var(--bg-dark)',
-      paddingBottom: '60px'
+      paddingBottom: '60px',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <header style={{ 
         background: 'linear-gradient(180deg, #4A101D 0%, #6B141A 100%)', 
@@ -228,7 +230,7 @@ const AdminImportView = ({ onBackToApp }) => {
             fontSize: '18px'
           }}>C</div>
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>CIECC Console</h1>
+            <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>Importar Congressistas</h1>
             <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Módulo de Importação</p>
           </div>
         </div>
