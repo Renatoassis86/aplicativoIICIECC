@@ -323,9 +323,9 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
         }
 
         .admin-mode input, .admin-mode select, .admin-mode textarea {
-          color: #FFFFFF !important;
-          background-color: rgba(255, 255, 255, 0.05) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          color: #FFFFFF;
+          background-color: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .admin-container {

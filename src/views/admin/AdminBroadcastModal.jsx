@@ -111,11 +111,11 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px', display: 'block' }}>Título do Alerta</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Início da Palestra Magna" style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid var(--border)', background: 'white', fontWeight: '600' }} />
+                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Início da Palestra Magna" style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid var(--border)', background: 'white', fontWeight: '600', color: '#111111' }} />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px', display: 'block' }}>Conteúdo da Mensagem</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Digite aqui o aviso importante..." rows={5} style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid var(--border)', background: 'white', resize: 'none', lineHeight: '1.5' }} />
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Digite aqui o aviso importante..." rows={5} style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid var(--border)', background: 'white', color: '#111111', resize: 'none', lineHeight: '1.5' }} />
               </div>
               <button 
                 onClick={handleSend} 
