@@ -197,14 +197,34 @@ const WorkshopsCMS = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '2px' }}>Inscritos / Capacidade</p>
-                    <p style={{ fontSize: '24px', fontWeight: '900', color: wsParticipants.length >= (workshop.capacity || 30) ? '#F87171' : 'var(--gold)' }}>
-                      {wsParticipants.length} / {workshop.capacity || 30}
-                    </p>
-                    {wsParticipants.length >= (workshop.capacity || 30) && (
-                      <span style={{ fontSize: '9px', background: '#EF4444', color: 'white', padding: '1px 6px', borderRadius: '4px', fontWeight: '900' }}>LOTADO</span>
-                    )}
+                   <div style={{ textAlign: 'right' }}>
+                    {(() => {
+                      // Motor Competitivo no Admin
+                      const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
+                      const sorted = [...slotWorkshops].sort((a, b) => {
+                        const aCount = participants.filter(p => p.workshop_id === a.id).length;
+                        const bCount = participants.filter(p => p.workshop_id === b.id).length;
+                        return bCount - aCount;
+                      });
+                      
+                      let capacity = 30;
+                      if (workshop.id === sorted[0]?.id) capacity = 100;
+                      else if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) capacity = 60;
+                      
+                      const isFull = wsParticipants.length >= capacity;
+                      
+                      return (
+                        <>
+                          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '2px' }}>Inscritos / Limite Dinâmico</p>
+                          <p style={{ fontSize: '24px', fontWeight: '900', color: isFull ? '#F87171' : 'var(--gold)' }}>
+                            {wsParticipants.length} / {capacity}
+                          </p>
+                          {isFull && (
+                            <span style={{ fontSize: '9px', background: '#EF4444', color: 'white', padding: '1px 6px', borderRadius: '4px', fontWeight: '900' }}>ENCERRADA</span>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                   <div style={{ color: 'rgba(255,255,255,0.2)' }}>
                     {isExpanded ? <ChevronDown size={24} /> : <ChevronRight size={24} />}

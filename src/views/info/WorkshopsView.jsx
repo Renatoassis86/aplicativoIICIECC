@@ -75,9 +75,27 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
 
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // MOTOR COMPETITIVO: Define a capacidade baseada no ranking de inscritos do horário
+  const getCompetitiveCapacity = (workshop) => {
+    const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
+    
+    // Ordenamos pela quantidade de inscritos para definir o ranking
+    const sorted = [...slotWorkshops].sort((a, b) => (b.registrations || 0) - (a.registrations || 0));
+    
+    // 1º lugar -> Sala de 100
+    if (workshop.id === sorted[0]?.id) return 100;
+    
+    // 2º e 3º lugar -> Salas de 60
+    if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
+    
+    // Demais -> Salas de 30
+    return 30;
+  };
+
   const isFull = (workshop) => {
-    const capacity = workshop.capacity || 30;
-    return (workshop.registrations || 0) >= capacity;
+    const capacity = getCompetitiveCapacity(workshop);
+    const registrationsCount = workshop.registrations || 0;
+    return registrationsCount >= capacity;
   };
 
   const hasFinished = registrations.length >= 2;
