@@ -1,40 +1,30 @@
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const supabaseUrl = 'https://iqnbxxawbnfcyqzujpqf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxbmJ4eGF3Ym5mY3lxenVqcHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzI0NDYsImV4cCI6MjA5MDM0ODQ0Nn0.zKfOQn3P997znEQcp5D6RD2KPoD7U64HWxkQnLDbFGc';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function check() {
   console.log("--- CHECKING TABLES ---");
+  console.log("Project URL:", supabaseUrl);
   
   // Test social_posts
   const { data: posts, error: postErr } = await supabase.from('social_posts').select('*').limit(1);
   if (postErr) console.log("social_posts error:", postErr.message);
-  else console.log("social_posts OK. Columns:", Object.keys(posts[0] || {}));
+  else console.log("social_posts OK.");
 
-  // Test social_engagements
-  const { data: eng, error: engErr } = await supabase.from('social_engagements').select('*').limit(1);
-  if (engErr) console.log("social_engagements error:", engErr.message);
-  else console.log("social_engagements OK.");
+  // Test members
+  const { data: members, error: memErr } = await supabase.from('members').select('*').limit(1);
+  if (memErr) console.log("members error:", memErr.message);
+  else console.log("members OK.");
 
-  // Test system_notifications
-  const { data: notifs, error: notifErr } = await supabase.from('system_notifications').select('*').limit(1);
-  if (notifErr) console.log("system_notifications error:", notifErr.message);
-  else console.log("system_notifications OK. Columns:", Object.keys(notifs[0] || {}));
-
-  // Test user_favorites (guessing)
-  const { data: favs, error: favErr } = await supabase.from('user_favorites').select('*').limit(1);
-  if (favErr) console.log("user_favorites error:", favErr.message);
-  else console.log("user_favorites OK.");
-
-  // Try to find any other tables by trying common names
-  const commonTables = ['members', 'profiles', 'sponsors', 'bookmarks', 'favorites'];
-  for (const t of commonTables) {
-    const { error } = await supabase.from(t).select('count', { count: 'exact', head: true });
-    if (!error) console.log(`Table ${t} exists.`);
-    else if (error.code !== '42P01') console.log(`Table ${t} error:`, error.message);
-  }
+  // Test agenda_sessions
+  const { data: sessions, error: sessErr } = await supabase.from('agenda_sessions').select('*').limit(1);
+  if (sessErr) console.log("agenda_sessions error:", sessErr.message);
+  else console.log("agenda_sessions OK.");
 }
 
 check();

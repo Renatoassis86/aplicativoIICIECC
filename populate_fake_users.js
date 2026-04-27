@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const supabaseUrl = 'https://iqnbxxawbnfcyqzujpqf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxbmJ4eGF3Ym5mY3lxenVqcHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzI0NDYsImV4cCI6MjA5MDM0ODQ0Nn0.zKfOQn3P997znEQcp5D6RD2KPoD7U64HWxkQnLDbFGc';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -28,11 +30,9 @@ async function populate() {
 
   console.log("Populating profiles...");
   const profiles = fakeUsers.map(u => ({
-    cpf: u.cpf,
+    user_id: u.cpf,
     user_type: 'congressista',
-    password_reset: true,
-    onboarding_completed: true,
-    current_password: 'congresso2026'
+    job_title: 'Participante'
   }));
   const { error: profilesErr } = await supabase.from('profiles').upsert(profiles);
   if (profilesErr) console.log("Error populating profiles:", profilesErr.message);
