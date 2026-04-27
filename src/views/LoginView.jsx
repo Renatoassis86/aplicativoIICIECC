@@ -86,12 +86,12 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
             <img src="/logo.png" alt="CIECC" className="desktop-logo" />
             <div className="hero-text">
               <h1 className="hero-title">II CIECC 2026</h1>
-              <p className="hero-subtitle">Congresso Internacional de Educação e Criatividade</p>
+              <p className="hero-subtitle">II Congresso Internacional de Educação Cristã Clássica</p>
             </div>
             
             <div className="hero-footer">
-               <div className="location-badge">São Paulo, SP</div>
-               <div className="date-badge">01 e 02 de Maio</div>
+               <div className="location-badge">Bom Retiro, São Paulo - SP</div>
+               <div className="date-badge">01 e 02 de Maio de 2026</div>
             </div>
           </div>
         </div>
