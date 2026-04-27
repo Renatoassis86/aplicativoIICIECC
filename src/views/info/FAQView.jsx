@@ -14,7 +14,7 @@ const FAQView = ({ onClose }) => {
     {
       id: 2,
       question: "Onde e quando o evento será realizado?",
-      answer: "Nos dias 01 e 02 de maio de 2026, na Rua Loefgren, 1279, Vila Clementino - SP, próximo ao Metrô Santa Cruz."
+      answer: "Nos dias 01 e 02 de maio de 2026, na Rua Três Rios, 363, Bom Retiro, São Paulo - SP, próximo ao Metrô Tiradentes."
     },
     {
       id: 3,
@@ -29,7 +29,7 @@ const FAQView = ({ onClose }) => {
     {
       id: 5,
       question: "Como chegar ao local do evento?",
-      answer: "O local fica a apenas 8 minutos a pé da estação Santa Cruz (Linhas 1-Azul e 5-Lilás do Metrô). Também há fácil acesso via apps de transporte."
+      answer: "O local fica a apenas 10 minutos a pé da estação Tiradentes (Linha 1-Azul do Metrô). Também há fácil acesso via apps de transporte."
     },
     {
       id: 6,
