@@ -90,7 +90,7 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
             </div>
             
             <div className="hero-footer">
-               <div className="location-badge">Bom Retiro, São Paulo - SP</div>
+               <div className="location-badge">São Paulo - SP</div>
                <div className="date-badge">01 e 02 de Maio de 2026</div>
             </div>
           </div>
@@ -111,30 +111,32 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
             <form onSubmit={handleSubmit}>
               <div className="input-group">
-                <span className="input-label">Seu CPF</span>
+                <span className="input-label" style={{ textAlign: 'left', display: 'block' }}>Seu CPF</span>
                 <div style={{ position: 'relative' }}>
-                  <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
+                  <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input 
                     type="text" 
                     className="input-field-custom" 
                     placeholder="000.000.000-00"
                     value={loginCpf}
                     onChange={(e) => setLoginCpf(e.target.value)}
+                    style={{ paddingLeft: '44px' }}
                     required
                   />
                 </div>
               </div>
 
               <div className="input-group">
-                <span className="input-label">Sua Senha</span>
+                <span className="input-label" style={{ textAlign: 'left', display: 'block' }}>Sua Senha</span>
                 <div style={{ position: 'relative' }}>
-                  <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
+                  <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input 
                     type={showPassword ? "text" : "password"} 
                     className="input-field-custom" 
                     placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
+                    style={{ paddingLeft: '44px' }}
                     required
                   />
                   <button 
@@ -143,10 +145,9 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
                     onTouchStart={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
                     style={{ 
                       position: 'absolute', 
-                      right: '0', 
-                      top: '0', 
-                      bottom: '0',
-                      width: '48px',
+                      right: '12px', 
+                      top: '50%',
+                      transform: 'translateY(-50%)',
                       background: 'none', 
                       border: 'none', 
                       cursor: 'pointer', 
