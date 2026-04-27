@@ -141,12 +141,12 @@ const MaintenanceCMS = () => {
                                         <div style={detailsGridStyle}>
                                             <div>
                                                 <label style={detailLabelStyle}>Contexto Técnico:</label>
-                                                <pre style={codeBlockStyle}>{JSON.stringify(log.context, null, 2)}</pre>
+                                                <pre style={codeBlockStyle}>{JSON.stringify(log.details, null, 2)}</pre>
                                             </div>
-                                            {log.user_id && (
+                                            {log.user_cpf && (
                                                 <div style={{ marginTop: '16px' }}>
                                                     <label style={detailLabelStyle}>Usuário (CPF):</label>
-                                                    <p style={{ margin: 0, fontWeight: '700', color: 'var(--gold)' }}>{log.user_id}</p>
+                                                    <p style={{ margin: 0, fontWeight: '700', color: 'var(--gold)' }}>{log.user_cpf}</p>
                                                 </div>
                                             )}
                                         </div>

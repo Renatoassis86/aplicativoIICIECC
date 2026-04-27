@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, Send, BellRing, AlertCircle } from 'lucide-react';
+import { logService } from '../../services/logService';
+
 
 export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
   const [title, setTitle] = useState('');
@@ -27,6 +29,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
       
       if (broadcastError) {
         console.error("[BroadcastError] Erro do Supabase:", broadcastError);
+        logService.error("Erro no envio de broadcast (Supabase)", broadcastError, 'AdminBroadcastModal');
         alert("Erro no banco: " + broadcastError.message);
         throw broadcastError;
       }
@@ -35,6 +38,7 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
       setTimeout(() => { onClose(); }, 2500);
     } catch (e) {
       console.error("[BroadcastError] Erro técnico detalhado:", e);
+      logService.error("Erro técnico no AdminBroadcastModal", { message: e.message, stack: e.stack }, 'AdminBroadcastModal');
       setStatus('error');
     } finally {
       setIsSending(false);

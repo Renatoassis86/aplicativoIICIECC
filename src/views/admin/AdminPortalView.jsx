@@ -58,6 +58,7 @@ import WorkshopsCMS from './modules/WorkshopsCMS';
 import TicketsCMS from './modules/TicketsCMS';
 import DriveSyncCMS from './modules/DriveSyncCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
+import { logService } from './services/logService';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -87,7 +88,31 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
   }, [userType]);
 
   useEffect(() => {
+    // Captura erros globais e joga no Manutenção & Logs
+    const handleGlobalError = (event) => {
+      logService.error(event.message || 'Erro Global', {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error?.stack
+      }, 'GlobalWindow');
+    };
+
+    const handleRejection = (event) => {
+      logService.error('Promessa Rejeitada não tratada', {
+        reason: event.reason
+      }, 'GlobalRejection');
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleRejection);
+    
     loadData();
+
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
   }, []);
 
   const loadData = async () => {
