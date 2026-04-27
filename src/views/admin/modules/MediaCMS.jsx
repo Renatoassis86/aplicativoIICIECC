@@ -308,7 +308,7 @@ const MediaCMS = () => {
                                                 padding: '16px 8px', borderRadius: '16px', border: '2px solid',
                                                 borderColor: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.1)',
                                                 background: mediaType === opt.id ? opt.color : 'rgba(255,255,255,0.05)',
-                                                color: 'white',
+                                                color: mediaType === opt.id ? 'black' : 'white',
                                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
                                                 transition: 'all 0.2s', cursor: 'pointer'
                                             }}

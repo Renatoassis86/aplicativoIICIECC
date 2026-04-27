@@ -25,7 +25,11 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
         sender_name: userName || 'Admin'
       });
       
-      if (broadcastError) throw broadcastError;
+      if (broadcastError) {
+        console.error("[BroadcastError] Erro do Supabase:", broadcastError);
+        alert("Erro no banco: " + broadcastError.message);
+        throw broadcastError;
+      }
 
       setStatus('success');
       setTimeout(() => { onClose(); }, 2500);
