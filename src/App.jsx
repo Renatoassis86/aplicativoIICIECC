@@ -90,22 +90,17 @@ function App() {
           return;
         }
 
-        // Se for admin/organizador e acessou via URL admin, força o portal
-        if (isPathAdmin || isAdminForced) {
-          if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
-            console.log("[App] Acesso administrativo autorizado para:", profile.user_type);
-            setView('admin-portal');
-            setSelectedType(profile.user_type);
-            setUserAvatar(profile.avatar_url);
-            setAuthStatus('logged-in');
-            return;
-          } else {
-            console.error("[App] ACESSO NEGADO: Usuário comum tentando acessar Admin.");
-            window.history.replaceState({}, '', '/'); // Remove /admin da URL
-            setView('app');
-            // Continua fluxo normal
-          }
+        setUser({ ...profile, name: member.name });
+        
+        // SEGURANÇA: Se for admin/organizador, NÃO permite login automático
+        if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
+          console.log("[App] Persistência negada para Admin. Login obrigatório.");
+          setAuthStatus('logged-out');
+          return;
         }
+
+        console.log("[App] Login automático para congressista:", member.name);
+        setAuthStatus('logged-in');
 
         // Fluxo Normal (App Mobile)
         const canBypassInitial = profile.onboarding_completed || 
