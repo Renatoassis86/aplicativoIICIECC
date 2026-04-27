@@ -81,7 +81,7 @@ function App() {
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
-          .eq('cpf', savedCpf)
+          .eq('user_id', savedCpf)
           .single();
 
         if (!profile) {
