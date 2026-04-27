@@ -85,7 +85,8 @@ function App() {
           .single();
 
         if (!profile) {
-          if (!isPathAdmin && !isAdminForced) setAuthStatus('logged-out');
+          console.log("[App] Perfil não encontrado para o CPF salvo.");
+          setAuthStatus('logged-out');
           return;
         }
 

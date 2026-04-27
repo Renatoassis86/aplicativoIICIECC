@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, Plane, Train, Hotel, Utensils, ArrowLeft, ExternalLink, Navigation } from 'lucide-react';
 
 const MapLocationView = ({ onClose }) => {
-  const address = "Rua Loefgren, 1279, Vila Clementino - SP";
+  const address = "Rua Três Rios, 363, Bom Retiro, São Paulo - SP";
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
@@ -50,12 +50,12 @@ const MapLocationView = ({ onClose }) => {
             </h4>
             <div style={{ display: 'grid', gap: '12px' }}>
               <div className="card" style={{ padding: '16px' }}>
-                <strong style={{ fontSize: '14px' }}>Estação Santa Cruz (Metrô)</strong>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Linhas 1-Azul e 5-Lilás. 8 minutos de caminhada.</p>
+                <strong style={{ fontSize: '14px' }}>Estação Tiradentes (Metrô)</strong>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Linha 1-Azul. Aprox. 10 minutos de caminhada.</p>
               </div>
               <div className="card" style={{ padding: '16px' }}>
-                <strong style={{ fontSize: '14px' }}>Aeroporto de Congonhas</strong>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Aprox. 6 km. Táxi/Uber média de 15 minutos.</p>
+                <strong style={{ fontSize: '14px' }}>Estação Luz (Metrô/CPTM)</strong>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Hub de integração. Aprox. 15 minutos de caminhada.</p>
               </div>
             </div>
           </section>
