@@ -50,9 +50,9 @@ const Home = ({ userName }) => {
             <div className="flex items-center gap-12 mt-16">
               <div className="flex items-center gap-4 bg-white/10 px-8 py-4 rounded-full border border-white/20">
                 <div className="w-6 h-6 bg-accent rounded-full"></div>
-                <span className="text-white text-[10px] font-bold">FALTAM 12 DIAS</span>
+                <span className="text-white text-[10px] font-bold uppercase">EM BREVE</span>
               </div>
-              <span className="text-white/60 text-[10px] font-bold uppercase tracking-wider">São Paulo, SP</span>
+              <span className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Bom Retiro, São Paulo - SP</span>
             </div>
             <button className="mt-24 w-full bg-white text-primary py-12 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-8 shadow-xl">
               Explorar Evento <ArrowRight size={14} />

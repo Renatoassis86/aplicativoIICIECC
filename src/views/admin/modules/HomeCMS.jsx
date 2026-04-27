@@ -6,10 +6,10 @@ const HomeCMS = () => {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState({
     home_badge_text: 'II EDIÇÃO • 2026',
-    home_title: 'II CIECC 2026:',
-    home_subtitle: 'Educação que permanece',
-    home_location: 'São Paulo, SP',
-    home_date_range: '01 e 02 Mai',
+    home_title: 'II CIECC 2026',
+    home_subtitle: 'II Congresso Internacional de Educação Cristã Clássica',
+    home_location: 'Bom Retiro, São Paulo - SP',
+    home_date_range: '01 e 02 de Maio de 2026',
     home_video_url: 'https://www.youtube.com/embed/t5CB9rnexOY',
     home_countdown_date: '2026-05-01T08:00:00'
   });
