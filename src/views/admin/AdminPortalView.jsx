@@ -58,7 +58,7 @@ import WorkshopsCMS from './modules/WorkshopsCMS';
 import TicketsCMS from './modules/TicketsCMS';
 import DriveSyncCMS from './modules/DriveSyncCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
-import { logService } from './services/logService';
+import { logService } from '../../services/logService';
 
 export default function AdminPortalView({ onLogout, onBackToApp, userName, userCpf, userType }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
