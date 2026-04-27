@@ -75,27 +75,9 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
 
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Helper to calculate dynamic capacity for a workshop
-  const getDynamicCapacity = (workshop) => {
-    // Pegamos todas as oficinas do mesmo horário
-    const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
-    
-    // As oficinas que "reivindicaram" as salas maiores são as que já têm mais inscritos
-    // Ordenamos para ver quem está no topo
-    const sorted = [...slotWorkshops].sort((a, b) => b.registrations - a.registrations);
-    
-    // 1ª colocada (mais inscritos) -> Sala de 100
-    if (workshop.id === sorted[0]?.id) return 100;
-    
-    // 2ª e 3ª colocadas -> Salas de 60
-    if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
-    
-    return 30; // Limite padrão para as demais
-  };
-
   const isFull = (workshop) => {
-    const capacity = getDynamicCapacity(workshop);
-    return workshop.registrations >= capacity;
+    const capacity = workshop.capacity || 30;
+    return (workshop.registrations || 0) >= capacity;
   };
 
   const hasFinished = registrations.length >= 2;
@@ -183,8 +165,8 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
   };
 
   const slots = {
-    'Horário 1 (14:15h às 15:15h)': workshops.filter(w => w.start_time === '14:15:00'),
-    'Horário 2 (15:15h às 16:15h)': workshops.filter(w => w.start_time === '15:15:00')
+    '1º Horário (14:15h às 15:15h)': workshops.filter(w => w.start_time?.startsWith('14:15')),
+    '2º Horário (15:30h às 16:30h)': workshops.filter(w => w.start_time?.startsWith('15:30'))
   };
 
   const matchesSearch = (w) => 
@@ -316,7 +298,9 @@ const WorkshopsView = ({ userCpf, userName, onClose }) => {
                             <Check size={12} /> SELECIONADO
                           </div>
                         ) : full ? (
-                          <span style={{ fontSize: '11px', fontWeight: '800', color: '#E53E3E', textTransform: 'uppercase' }}>Indisponível</span>
+                          <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
+                            INSCRIÇÕES ENCERRADAS
+                          </div>
                         ) : sameInOtherSlot ? (
                           <span style={{ fontSize: '10px', fontWeight: '700', color: '#718096' }}>Já escolhido em outro horário</span>
                         ) : null}
