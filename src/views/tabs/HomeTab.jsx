@@ -614,7 +614,7 @@ const HomeTab = ({
                       onOpenNotifications();
                     }
                   }}
-                  className="card" 
+                  className="card"
                   style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                 >
                 <div style={{ 
