@@ -92,16 +92,18 @@ function App() {
 
         // Se for admin/organizador e acessou via URL admin, força o portal
         if (isPathAdmin || isAdminForced) {
-          if (['organizador', 'admin', 'staff'].includes(profile.user_type)) {
+          if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
+            console.log("[App] Acesso administrativo autorizado para:", profile.user_type);
             setView('admin-portal');
-            setAuthStatus('logged-in');
             setSelectedType(profile.user_type);
             setUserAvatar(profile.avatar_url);
+            setAuthStatus('logged-in');
             return;
           } else {
-            console.warn("[App] Tentativa de acesso não autorizado ao Admin por:", savedCpf);
+            console.error("[App] ACESSO NEGADO: Usuário comum tentando acessar Admin.");
+            window.history.replaceState({}, '', '/'); // Remove /admin da URL
             setView('app');
-            // Continua fluxo normal para congressista
+            // Continua fluxo normal
           }
         }
 
