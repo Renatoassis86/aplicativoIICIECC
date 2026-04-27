@@ -324,8 +324,8 @@ const MediaCMS = () => {
                                 <label style={labelStyle}>Título e Categoria</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                     <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Título da mídia" />
-                                    <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={inputStyle}>
-                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                    <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={{ ...inputStyle, background: '#1A1A1A' }}>
+                                        {categories.map(cat => <option key={cat} value={cat} style={{ background: '#1A1A1A', color: 'white' }}>{cat}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -540,7 +540,7 @@ const MediaCMS = () => {
 };
 
 const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', display: 'block', letterSpacing: '1px' };
-const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '14px', outline: 'none' };
+const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: '14px', outline: 'none' };
 const btnSaveStyle = { width: '100%', padding: '18px', borderRadius: '18px', background: 'var(--brand)', color: 'black', fontWeight: '900', border: 'none', cursor: 'pointer', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' };
 const tabStyle = { padding: '12px 20px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: '800', fontSize: '12px' };
 const actionBtnStyle = { height: '38px', width: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
