@@ -47,6 +47,14 @@ export const fetchInbox = async (userCpf, userRole = 'congressista') => {
       allNotifications = notifications;
     }
 
+    // Deduplica por id (a query .or() pode retornar a mesma linha múltiplas vezes)
+    const seen = new Set();
+    const unique = (allNotifications || []).filter(n => {
+      if (seen.has(n.id)) return false;
+      seen.add(n.id);
+      return true;
+    });
+
     // Read status — table may not exist pre-migration, handle gracefully
     let readIds = new Set();
     try {
@@ -57,7 +65,7 @@ export const fetchInbox = async (userCpf, userRole = 'congressista') => {
       if (!readErr && reads) readIds = new Set(reads.map(r => r.notification_id));
     } catch (_) {}
 
-    return (allNotifications || []).map(n => ({
+    return unique.map(n => ({
       ...n,
       isRead: readIds.has(n.id)
     }));
