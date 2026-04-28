@@ -14,7 +14,19 @@ const WorkshopsCMS = () => {
   const [editingRoom, setEditingRoom] = useState(null); // { id, value }
   const [savingRoom, setSavingRoom] = useState(false);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+
+    // Realtime: atualiza automaticamente quando alguém se inscreve
+    const channel = supabase
+      .channel('workshop_registrations_admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'workshop_registrations' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -28,12 +40,22 @@ const WorkshopsCMS = () => {
 
       const { data: regs } = await supabase
         .from('workshop_registrations')
-        .select('workshop_id, created_at, members(name, cpf, institution, email)');
+        .select('workshop_id, user_cpf, created_at');
+
+      const cpfs = [...new Set((regs || []).map(r => r.user_cpf))];
+      const { data: membersData } = cpfs.length > 0
+        ? await supabase.from('members').select('cpf, name, institution, email').in('cpf', cpfs)
+        : { data: [] };
+
+      const membersMap = (membersData || []).reduce((acc, m) => { acc[m.cpf] = m; return acc; }, {});
 
       const participantsList = (regs || []).map(r => ({
         workshop_id: r.workshop_id,
         registered_at: r.created_at,
-        ...r.members
+        cpf: r.user_cpf,
+        name: membersMap[r.user_cpf]?.name || r.user_cpf,
+        institution: membersMap[r.user_cpf]?.institution || '',
+        email: membersMap[r.user_cpf]?.email || '',
       }));
 
       setWorkshops(sessions || []);
