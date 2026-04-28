@@ -317,16 +317,16 @@ CREATE POLICY "notif_reads_all" ON system_notifications_reads FOR ALL USING (tru
 -- Chaves necessárias para o app funcionar
 -- ==============================
 INSERT INTO content_registry (section, key, value) VALUES
-  ('home', 'home_badge_text',      'II EDIÇÃO • 2026'),
-  ('home', 'home_title',           'II CIECC 2026'),
-  ('home', 'home_subtitle',        'II Congresso Internacional de Educação Cristã Clássica'),
-  ('home', 'home_location',        'Bom Retiro, São Paulo - SP'),
-  ('home', 'home_date_range',      '01 e 02 de Maio de 2026'),
-  ('home', 'home_video_url',       'https://www.youtube.com/embed/t5CB9rnexOY'),
-  ('home', 'home_countdown_date',  '2026-05-01T08:00:00'),
-  ('titles', 'page_agenda',        'Programação'),
-  ('titles', 'page_network',       'Networking'),
-  ('titles', 'page_media',         'Mídias')
+  ('home', 'home_badge_text',      '"II EDIÇÃO • 2026"'),
+  ('home', 'home_title',           '"II CIECC 2026"'),
+  ('home', 'home_subtitle',        '"II Congresso Internacional de Educação Cristã Clássica"'),
+  ('home', 'home_location',        '"Bom Retiro, São Paulo - SP"'),
+  ('home', 'home_date_range',      '"01 e 02 de Maio de 2026"'),
+  ('home', 'home_video_url',       '"https://www.youtube.com/embed/t5CB9rnexOY"'),
+  ('home', 'home_countdown_date',  '"2026-05-01T08:00:00"'),
+  ('titles', 'page_agenda',        '"Programação"'),
+  ('titles', 'page_network',       '"Networking"'),
+  ('titles', 'page_media',         '"Mídias"')
 ON CONFLICT (key) DO NOTHING;
 
 -- ==============================
