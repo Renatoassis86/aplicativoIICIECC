@@ -1,30 +1,58 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, Eye, EyeOff, Edit2, AlertTriangle, X } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
 
+const USER_TYPES = [
+  { value: 'admin',               label: 'Organizador / Admin' },
+  { value: 'congressista',        label: 'Congressista Comum' },
+  { value: 'professor_basico',    label: 'Professor Básico' },
+  { value: 'aluno_ficv',          label: 'Aluno FICV' },
+  { value: 'colaborador_cv',      label: 'Colaborador CV' },
+  { value: 'gestor',              label: 'Gestor / Diretor' },
+  { value: 'coordenador',         label: 'Coordenador' },
+  { value: 'academico',           label: 'Acadêmico' },
+  { value: 'servo_kids',          label: 'Rede Kids / Voluntário' },
+  { value: 'patrocinador_ouro',   label: 'Patrocinador Ouro' },
+  { value: 'patrocinador_prata',  label: 'Patrocinador Prata' },
+  { value: 'patrocinador_bronze', label: 'Patrocinador Bronze' },
+  { value: 'staff',               label: 'Staff Evento' },
+  { value: 'palestrante',         label: 'Palestrante / GTs' },
+  { value: 'familia_educadora',   label: 'Família Educadora' },
+  { value: 'pai_parceira',        label: 'Pai Parceiro' },
+  { value: 'diretor',             label: 'Diretor de Escola' },
+];
+
+const EMPTY_USER = { name: '', cpf: '', email: '', user_type: 'staff', password: '' };
+
 const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, currentUserCpf = null }) => {
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
     const [users, setUsers] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
-    const [newUser, setNewUser] = useState({
-        name: '',
-        cpf: '',
-        email: '',
-        user_type: 'staff',
-        password: ''
-    });
-    const [showPassword, setShowPassword] = useState(false);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    // Modal de criação (formulário lateral)
+    const [newUser, setNewUser] = useState(EMPTY_USER);
+    const [showPassword, setShowPassword] = useState(false);
+    const [createStatus, setCreateStatus] = useState(null); // 'success' | 'error' | null
+
+    // Modal de edição
+    const [editModal, setEditModal] = useState(null);   // usuário sendo editado
+    const [editPwd, setEditPwd] = useState('');
+    const [showEditPwd, setShowEditPwd] = useState(false);
+    const [editSaving, setEditSaving] = useState(false);
+    const [editStatus, setEditStatus] = useState(null);
+
+    // Modal de exclusão
+    const [deleteModal, setDeleteModal] = useState(null); // usuário a excluir
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
+    useEffect(() => { loadData(); }, []);
 
     useEffect(() => {
         if (initialUser) {
-            setNewUser(initialUser);
-            setIsEditing(true);
+            setNewUser({ ...initialUser, password: '' });
         }
     }, [initialUser]);
 
@@ -33,321 +61,307 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
         try {
             const members = await fetchAllMembers();
             const profiles = await fetchAllProfiles();
-            
             const combined = members.map(m => {
                 const profile = profiles.find(p => p.cpf === m.cpf);
-                return {
-                    ...m,
-                    user_type: profile ? profile.user_type : 'congressista'
-                };
+                return { ...m, user_type: profile?.user_type || 'congressista' };
             });
-            
             setUsers(combined);
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
         setLoading(false);
     };
 
-    const handleCreateUser = async () => {
+    const handleCreate = async () => {
         if (!newUser.name || !newUser.cpf || !newUser.user_type) {
-            alert('Preencha os campos obrigatórios.');
+            setCreateStatus('error');
             return;
         }
-
-        setLoading(true);
+        setSaving(true);
+        setCreateStatus(null);
         try {
             await createOrUpdateAdminUser(newUser);
-            alert(isEditing ? 'Perfil atualizado com sucesso!' : 'Novo usuário configurado!');
-            setNewUser({ name: '', cpf: '', email: '', user_type: 'staff', password: '' });
-            setIsEditing(false);
+            setNewUser(EMPTY_USER);
             onClearSelection();
-            loadData();
+            setCreateStatus('success');
+            await loadData();
+            setTimeout(() => setCreateStatus(null), 3000);
         } catch (e) {
-            alert('Erro: ' + e.message);
+            setCreateStatus('error');
         }
-        setLoading(false);
+        setSaving(false);
     };
 
-    const handleDelete = async (cpf, name) => {
-        if (!window.confirm(`Tem certeza que deseja excluir permanentemente ${name}? Esta ação não pode ser desfeita.`)) return;
-        
-        setLoading(true);
+    const handleEditSave = async () => {
+        if (!editModal) return;
+        setEditSaving(true);
+        setEditStatus(null);
         try {
-            await deleteMember(cpf);
-            alert('Usuário excluído com sucesso do banco de dados.');
-            // Limpa o termo de busca para garantir que a lista atualizada apareça sem filtros que possam confundir
+            await createOrUpdateAdminUser({
+                name: editModal.name,
+                cpf: editModal.cpf,
+                email: editModal.email,
+                user_type: editModal.user_type,
+                password: editPwd || null,
+            });
+            setEditStatus('success');
+            await loadData();
+            setTimeout(() => { setEditModal(null); setEditStatus(null); setEditPwd(''); }, 1500);
+        } catch (e) {
+            setEditStatus('error');
+        }
+        setEditSaving(false);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal) return;
+        setDeleteLoading(true);
+        try {
+            await deleteMember(deleteModal.cpf);
+            setDeleteModal(null);
             setSearchTerm('');
             await loadData();
         } catch (e) {
             alert('Erro ao excluir: ' + e.message);
         }
-        setLoading(false);
+        setDeleteLoading(false);
     };
 
-    const [filterType, setFilterType] = useState('all');
-
     const filteredUsers = users.filter(u => {
-        const matchesSearch = u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            u.cpf?.includes(searchTerm);
+        const q = searchTerm.toLowerCase();
+        const matchesSearch = !q || u.name?.toLowerCase().includes(q) || u.cpf?.includes(q);
         if (!matchesSearch) return false;
-
         if (filterType === 'all') return true;
         if (filterType === 'congressista') return u.user_type === 'congressista';
-        if (filterType === 'organizer') return ['admin', 'staff', 'apoio'].includes(u.user_type);
-        if (filterType === 'sponsor') return ['patrocinador_ouro', 'patrocinador_prata', 'patrocinador_bronze'].includes(u.user_type);
+        if (filterType === 'organizer') return ['admin', 'staff', 'apoio', 'organizador'].includes(u.user_type);
+        if (filterType === 'sponsor') return u.user_type?.startsWith('patrocinador');
         if (filterType === 'palestrante') return u.user_type === 'palestrante';
         return true;
     });
 
+    const typeLabel = (type) => USER_TYPES.find(t => t.value === type)?.label || type;
+
     return (
         <div className="responsive-grid">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div style={{ 
-                    background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', 
-                    border: isEditing ? '2px solid var(--gold)' : '1px solid var(--border-color)', 
-                    backdropFilter: 'blur(10px)', position: 'relative' 
-                }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
-                        {isEditing ? <Shield size={20} color="var(--gold)" /> : <UserPlus size={20} color="var(--gold)" />}
-                        {isEditing ? 'Edição de Perfil' : 'Configurar Acesso'}
+
+            {/* ── FORMULÁRIO DE CRIAÇÃO ── */}
+            <div>
+                <div style={{ background: 'var(--card-bg)', padding: '28px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
+                    <h3 style={{ fontWeight: '800', fontSize: '16px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
+                        <UserPlus size={18} color="var(--gold)" /> Configurar Acesso
                     </h3>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '24px' }}>
-                        {isEditing ? `Alterando dados de ${newUser.name}` : 'Adicione ou atualize permissões de usuários.'}
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '20px' }}>
+                        Adicione ou atualize permissões de usuários.
                     </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Nome Completo</label>
-                            <input 
-                                type="text" 
-                                value={newUser.name} 
-                                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                                style={inputStyle}
-                                placeholder="Ex: João Silva"
-                            />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={groupStyle}>
+                            <label style={labelStyle}>Nome Completo *</label>
+                            <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} style={inputStyle} placeholder="Ex: João Silva" />
                         </div>
-
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>CPF</label>
-                            <input 
-                                type="text" 
-                                value={newUser.cpf} 
-                                onChange={(e) => setNewUser({...newUser, cpf: e.target.value})}
-                                style={inputStyle}
-                                placeholder="Apenas números"
-                                autoComplete="off"
-                            />
+                        <div style={groupStyle}>
+                            <label style={labelStyle}>CPF *</label>
+                            <input type="text" value={newUser.cpf} onChange={e => setNewUser({...newUser, cpf: e.target.value})} style={inputStyle} placeholder="Apenas números" autoComplete="off" />
                         </div>
-
-                        <div style={inputGroupStyle}>
+                        <div style={groupStyle}>
                             <label style={labelStyle}>E-mail</label>
-                            <input 
-                                type="email" 
-                                value={newUser.email} 
-                                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                                style={inputStyle}
-                                placeholder="usuario@email.com"
-                                autoComplete="off"
-                            />
+                            <input type="email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} style={inputStyle} placeholder="usuario@email.com" autoComplete="off" />
                         </div>
-
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Tipo de Usuário</label>
-                            <select
-                                value={newUser.user_type}
-                                onChange={(e) => setNewUser({...newUser, user_type: e.target.value})}
-                                style={inputStyle}
-                            >
-                                {/* Apenas o Master Admin pode criar outros Admins/Organizadores */}
-                                {(['05875164450', '36284400845'].includes(currentUserCpf) || newUser.user_type === 'admin') && (
-                                    <option value="admin">Organizador / Admin</option>
-                                )}
-                                
-                                <option value="congressista">Congressista Comum</option>
-                                <option value="professor_basico">Professor Básico</option>
-                                <option value="aluno_ficv">Aluno FICV</option>
-                                <option value="colaborador_cv">Colaborador CV</option>
-                                <option value="gestor">Gestor / Diretor</option>
-                                <option value="coordenador">Coordenador</option>
-                                <option value="academico">Acadêmico</option>
-                                <option value="servo_kids">Rede Kids / Voluntário</option>
-                                <option value="patrocinador_ouro">Patrocinador Ouro</option>
-                                <option value="patrocinador_prata">Patrocinador Prata</option>
-                                <option value="patrocinador_bronze">Patrocinador Bronze</option>
-                                <option value="staff">Staff Evento</option>
-                                <option value="palestrante">Palestrante / GTs</option>
-                                <option value="familia_educadora">Família Educadora</option>
-                                <option value="pai_parceira">Pai Parceiro</option>
+                        <div style={groupStyle}>
+                            <label style={labelStyle}>Tipo de Usuário *</label>
+                            <select value={newUser.user_type} onChange={e => setNewUser({...newUser, user_type: e.target.value})} style={inputStyle}>
+                                {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845'].includes(currentUserCpf)).map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
                             </select>
                         </div>
-
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>{isEditing ? 'Nova Senha (deixe em branco para manter)' : 'Senha de Acesso'}</label>
+                        <div style={groupStyle}>
+                            <label style={labelStyle}>Senha de Acesso</label>
                             <div style={{ position: 'relative' }}>
-                                <input 
-                                    type={showPassword ? "text" : "password"} 
-                                    value={newUser.password} 
-                                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                                    style={inputStyle}
-                                    placeholder={isEditing ? "Alterar senha..." : "Senha inicial"}
-                                />
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
-                                >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                <input type={showPassword ? 'text' : 'password'} value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} style={inputStyle} placeholder="Senha inicial (padrão: congresso2026)" autoComplete="new-password" />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}>
+                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
                         </div>
 
-                        <button 
-                            onClick={handleCreateUser}
-                            disabled={loading}
-                            className="btn-primary"
-                            style={{ 
-                                width: '100%', textTransform: 'uppercase', height: '48px', 
-                                background: isEditing ? 'var(--gold)' : 'var(--primary)',
-                                color: isEditing ? '#000' : '#FFF'
-                             }}
-                        >
-                            {isEditing ? <Save size={18} /> : <UserPlus size={18} />} 
-                            {isEditing ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR ACESSO'}
-                        </button>
-
-                        {isEditing && (
-                            <button 
-                                onClick={() => {
-                                    setIsEditing(false);
-                                    setNewUser({ name: '', cpf: '', email: '', user_type: 'staff', password: '' });
-                                    onClearSelection();
-                                }}
-                                style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                            >
-                                <X size={14} /> CANCELAR EDIÇÃO
-                            </button>
+                        {createStatus === 'success' && (
+                            <div style={{ background: '#F0FFF4', color: '#22543D', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700' }}>
+                                ✓ Usuário criado com sucesso!
+                            </div>
                         )}
+                        {createStatus === 'error' && (
+                            <div style={{ background: '#FFF5F5', color: '#C53030', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700' }}>
+                                Preencha nome, CPF e tipo. Tente novamente.
+                            </div>
+                        )}
+
+                        <button onClick={handleCreate} disabled={saving} className="btn-primary" style={{ width: '100%', height: '48px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            {saving ? 'SALVANDO...' : <><UserPlus size={16} /> CONFIRMAR ACESSO</>}
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '18px', color: '#FFFFFF' }}>Gerenciamento de Usuários</h3>
-                    <button 
-                        type="button" 
-                        disabled={loading}
-                        onClick={loadData}
-                        style={{ width: 'auto', padding: '12px 20px', borderRadius: '12px', background: 'var(--primary)', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                    >
-                        {loading ? <div className="animate-spin">⌛</div> : <><RefreshCw size={16} /> RECARREGAR</>}
+            {/* ── LISTA DE USUÁRIOS ── */}
+            <div style={{ background: 'var(--card-bg)', padding: '28px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ fontWeight: '800', fontSize: '16px', color: '#FFFFFF' }}>
+                        Gerenciamento de Usuários <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: '500' }}>({filteredUsers.length})</span>
+                    </h3>
+                    <button onClick={loadData} disabled={loading} style={{ padding: '8px 16px', borderRadius: '10px', background: 'var(--primary)', color: 'white', fontWeight: '800', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+                        <RefreshCw size={14} /> {loading ? '...' : 'ATUALIZAR'}
                     </button>
                 </div>
 
-                {/* Filtros por Categoria */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                {/* Filtros */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
                     {[
                         { id: 'all', label: 'Todos' },
                         { id: 'congressista', label: 'Congressistas' },
                         { id: 'organizer', label: 'Organizadores' },
                         { id: 'sponsor', label: 'Patrocinadores' },
-                        { id: 'palestrante', label: 'Palestras/GTs' }
+                        { id: 'palestrante', label: 'Palestras/GTs' },
                     ].map(f => (
-                        <button
-                            key={f.id}
-                            onClick={() => setFilterType(f.id)}
-                            style={{
-                                padding: '8px 16px',
-                                borderRadius: '100px',
-                                border: '1px solid var(--border-color)',
-                                background: filterType === f.id ? 'var(--gold)' : 'rgba(255,255,255,0.05)',
-                                color: filterType === f.id ? '#000' : 'rgba(255,255,255,0.6)',
-                                fontSize: '11px',
-                                fontWeight: '800',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
+                        <button key={f.id} onClick={() => setFilterType(f.id)} style={{ padding: '6px 14px', borderRadius: '100px', border: '1px solid var(--border-color)', background: filterType === f.id ? 'var(--gold)' : 'rgba(255,255,255,0.05)', color: filterType === f.id ? '#000' : 'rgba(255,255,255,0.6)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                             {f.label}
                         </button>
                     ))}
                 </div>
 
-                <div style={{ position: 'relative', marginBottom: '20px' }}>
-                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar por nome ou CPF..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ ...inputStyle, paddingLeft: '40px' }}
-                    />
+                {/* Busca */}
+                <div style={{ position: 'relative', marginBottom: '16px' }}>
+                    <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                    <input type="text" placeholder="Buscar por nome ou CPF..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ ...inputStyle, paddingLeft: '38px' }} />
                 </div>
 
-                <div style={{ maxHeight: '600px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Lista */}
+                <div style={{ maxHeight: '560px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {filteredUsers.map(u => (
-                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
-                            <div style={{ 
-                                width: '40px', height: '40px', borderRadius: '10px', 
-                                background: u.user_type === 'admin' ? 'rgba(212, 193, 156, 0.1)' : 'rgba(255,255,255,0.05)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: u.user_type === 'admin' ? 'var(--gold)' : '#94A3B8'
-                            }}>
-                                {u.user_type === 'admin' ? <Shield size={20} /> : <Briefcase size={20} />}
+                        <div key={u.cpf} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: u.user_type === 'admin' ? 'rgba(212,193,156,0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                {u.user_type === 'admin' ? <Shield size={18} color="var(--gold)" /> : <Briefcase size={18} color="#94A3B8" />}
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <ShieldCheck size={18} color="var(--gold)" />
-                                        <div>
-                                            <p style={{ fontWeight: '800', fontSize: '14px', color: '#FFFFFF' }}>{u.name}</p>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button 
-                                            onClick={() => {
-                                                setNewUser({
-                                                    name: u.name || '',
-                                                    cpf: u.cpf || '',
-                                                    email: u.email || '',
-                                                    user_type: u.user_type || 'congressista'
-                                                });
-                                                setIsEditing(true);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }}
-                                            style={{ background: 'rgba(212, 193, 156, 0.1)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', border: 'none', cursor: 'pointer' }}
-                                        >
-                                            EDITAR
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDelete(u.cpf, u.name)}
-                                            style={{ background: 'rgba(229, 62, 62, 0.1)', color: '#E53E3E', padding: '6px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                                    <ShieldCheck size={14} color="var(--gold)" />
+                                    <p style={{ fontWeight: '800', fontSize: '13px', color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
                                 </div>
-                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
+                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
+                                <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '700' }}>{typeLabel(u.user_type)}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                                <button
+                                    onClick={() => { setEditModal({ ...u }); setEditPwd(''); setEditStatus(null); }}
+                                    style={{ background: 'rgba(212,193,156,0.15)', color: 'var(--gold)', padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                    <Edit2 size={12} /> EDITAR
+                                </button>
+                                <button
+                                    onClick={() => setDeleteModal(u)}
+                                    style={{ background: 'rgba(229,62,62,0.1)', color: '#E53E3E', padding: '6px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
+                                >
+                                    <Trash2 size={14} />
+                                </button>
                             </div>
                         </div>
                     ))}
-                    {filteredUsers.length === 0 && <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>Nenhum usuário encontrado.</p>}
+                    {filteredUsers.length === 0 && !loading && (
+                        <p style={{ textAlign: 'center', color: '#94A3B8', padding: '40px 0', fontSize: '14px' }}>Nenhum usuário encontrado.</p>
+                    )}
                 </div>
             </div>
 
-            <style dangerouslySetInnerHTML={{__html: `
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                .animate-spin { animation: spin 1s linear infinite; }
-            `}} />
+            {/* ══════════ MODAL DE EDIÇÃO ══════════ */}
+            {editModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ background: '#1A1F2E', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '460px', border: '1px solid var(--border-color)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ color: 'white', fontWeight: '900', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Edit2 size={18} color="var(--gold)" /> Editar Usuário
+                            </h3>
+                            <button onClick={() => setEditModal(null)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'white' }}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>Nome Completo</label>
+                                <input type="text" value={editModal.name} onChange={e => setEditModal({...editModal, name: e.target.value})} style={inputStyle} />
+                            </div>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>CPF</label>
+                                <input type="text" value={formatCPF(editModal.cpf)} disabled style={{ ...inputStyle, opacity: 0.5, cursor: 'not-allowed' }} />
+                            </div>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>E-mail</label>
+                                <input type="email" value={editModal.email || ''} onChange={e => setEditModal({...editModal, email: e.target.value})} style={inputStyle} />
+                            </div>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>Tipo de Usuário</label>
+                                <select value={editModal.user_type} onChange={e => setEditModal({...editModal, user_type: e.target.value})} style={inputStyle}>
+                                    {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845'].includes(currentUserCpf)).map(t => (
+                                        <option key={t.value} value={t.value}>{t.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>Nova Senha <span style={{ fontWeight: '400', opacity: 0.6 }}>(deixe em branco para manter)</span></label>
+                                <div style={{ position: 'relative' }}>
+                                    <input type={showEditPwd ? 'text' : 'password'} value={editPwd} onChange={e => setEditPwd(e.target.value)} style={inputStyle} placeholder="Nova senha..." autoComplete="new-password" />
+                                    <button type="button" onClick={() => setShowEditPwd(!showEditPwd)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}>
+                                        {showEditPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {editStatus === 'success' && <div style={{ background: '#F0FFF4', color: '#22543D', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}>✓ Salvo com sucesso!</div>}
+                            {editStatus === 'error' && <div style={{ background: '#FFF5F5', color: '#C53030', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}>Erro ao salvar. Tente novamente.</div>}
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                                <button onClick={() => setEditModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
+                                    CANCELAR
+                                </button>
+                                <button onClick={handleEditSave} disabled={editSaving} style={{ flex: 2, padding: '14px', borderRadius: '14px', background: 'var(--gold)', border: 'none', color: '#000', fontWeight: '900', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                    <Save size={15} /> {editSaving ? 'SALVANDO...' : 'SALVAR ALTERAÇÕES'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════════ MODAL DE EXCLUSÃO ══════════ */}
+            {deleteModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ background: '#1A1F2E', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '400px', border: '1px solid rgba(229,62,62,0.3)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)', textAlign: 'center' }}>
+                        <div style={{ width: '64px', height: '64px', background: 'rgba(229,62,62,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                            <AlertTriangle size={28} color="#E53E3E" />
+                        </div>
+                        <h3 style={{ color: 'white', fontWeight: '900', fontSize: '18px', marginBottom: '10px' }}>Excluir Usuário?</h3>
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
+                            Você está prestes a excluir permanentemente:
+                        </p>
+                        <p style={{ color: 'white', fontWeight: '800', fontSize: '15px', marginBottom: '6px' }}>{deleteModal.name}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginBottom: '24px' }}>{formatCPF(deleteModal.cpf)}</p>
+                        <p style={{ color: '#E53E3E', fontSize: '12px', fontWeight: '700', marginBottom: '24px' }}>Esta ação não pode ser desfeita.</p>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={() => setDeleteModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
+                                CANCELAR
+                            </button>
+                            <button onClick={handleDeleteConfirm} disabled={deleteLoading} style={{ flex: 1, padding: '14px', borderRadius: '14px', background: '#E53E3E', border: 'none', color: 'white', fontWeight: '900', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                <Trash2 size={14} /> {deleteLoading ? 'EXCLUINDO...' : 'SIM, EXCLUIR'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '8px' };
-const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#FFFFFF' };
-
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '14px', outline: 'none', color: '#111111', background: '#FFFFFF' };
+const groupStyle = { display: 'flex', flexDirection: 'column', gap: '6px' };
+const labelStyle = { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.7)' };
+const inputStyle = { width: '100%', padding: '11px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', fontSize: '14px', outline: 'none', color: '#111111', background: '#FFFFFF', boxSizing: 'border-box' };
 
 export default UserManagementCMS;
