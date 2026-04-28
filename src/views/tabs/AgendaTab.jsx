@@ -329,6 +329,7 @@ const AgendaTab = ({ userCpf }) => {
         session={selectedSession} 
         isFavorite={selectedSession ? favorites.includes(selectedSession.id) : false}
         onToggleFavorite={toggleFavorite}
+        userCpf={userCpf}
         onOpenSpeaker={(speaker) => {
            if (!speaker) return;
            const mappedSpeaker = {
