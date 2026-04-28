@@ -75,7 +75,7 @@ const HomeTab = ({
     let isMounted = true;
 
     async function fetchSponsors() {
-      const { data } = await supabase.from('sponsors').select('*').eq('active', true).order('order_index');
+      const { data } = await supabase.from('sponsors').select('*').order('order_index');
       if (data && isMounted) setSponsors(data);
     }
     async function fetchWorkshops() {

@@ -58,7 +58,7 @@ const SocialManagementCMS = () => {
     };
 
     const loadSponsors = async () => {
-        const { data } = await supabase.from('sponsors').select('*').eq('active', true).order('name');
+        const { data } = await supabase.from('sponsors').select('*').order('name');
         if (data) setSponsors(data);
     };
 

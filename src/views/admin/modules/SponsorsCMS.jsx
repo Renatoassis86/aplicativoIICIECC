@@ -33,8 +33,7 @@ export default function SponsorsCMS() {
     order_index: 0,
     tagline: '',
     bio: '',
-    booth: '',
-    active: true
+    booth: ''
   });
 
   useEffect(() => {
@@ -83,7 +82,6 @@ export default function SponsorsCMS() {
             tagline: sponsorData.tagline,
             bio: sponsorData.bio,
             booth: sponsorData.booth,
-            active: true,
             updated_at: new Date().toISOString()
         };
 
@@ -94,7 +92,7 @@ export default function SponsorsCMS() {
 
         if (error) throw error;
 
-        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
+        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '' });
         setUploadFile(null);
         setIsEditing(false);
         setEditingId(null);
@@ -235,7 +233,7 @@ export default function SponsorsCMS() {
                 onClick={() => {
                     setIsEditing(false);
                     setEditingId(null);
-                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '', active: true });
+                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '' });
                 }}
                 style={{ width: '100%', marginTop: '12px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: '800', cursor: 'pointer' }}
             >
