@@ -267,7 +267,7 @@ const ScheduleCMS = () => {
 
                             <input name="room" placeholder="Local / Sala" defaultValue={editingSession.room} style={inputStyle} />
 
-                            <select name="speaker_id" defaultValue={editingSession.speaker_id} style={inputStyle}>
+                            <select name="speaker_id" defaultValue={editingSession.speaker_id} style={{ ...inputStyle, color: '#111111', backgroundColor: 'rgba(255,255,255,0.9)' }}>
                                 <option value="">Sem palestrante vinculado</option>
                                 {speakers.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
                             </select>

@@ -156,6 +156,12 @@ input, select, textarea {
     border: 1px solid #E2E8F0;
 }
 
+/* Garante legibilidade das opções em selects nativos (fundo branco, texto preto) */
+select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #050810; }

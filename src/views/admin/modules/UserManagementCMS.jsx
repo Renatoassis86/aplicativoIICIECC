@@ -154,10 +154,10 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Tipo de Usuário</label>
-                            <select 
+                            <select
                                 value={newUser.user_type}
                                 onChange={(e) => setNewUser({...newUser, user_type: e.target.value})}
-                                style={inputStyle}
+                                style={{ ...inputStyle, color: '#111111', background: 'rgba(255,255,255,0.9)' }}
                             >
                                 {/* Apenas o Master Admin pode criar outros Admins/Organizadores */}
                                 {(['05875164450', '36284400845'].includes(currentUserCpf) || newUser.user_type === 'admin') && (

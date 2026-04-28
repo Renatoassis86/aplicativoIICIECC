@@ -324,8 +324,8 @@ const MediaCMS = () => {
                                 <label style={labelStyle}>Título e Categoria</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                     <input name="title" defaultValue={editingItem?.title} required style={inputStyle} placeholder="Título da mídia" />
-                                    <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={{ ...inputStyle, background: '#1A1A1A' }}>
-                                        {categories.map(cat => <option key={cat} value={cat} style={{ background: '#1A1A1A', color: 'white' }}>{cat}</option>)}
+                                    <select name="category" defaultValue={editingItem?.category || 'Memórias'} style={{ ...inputStyle, background: 'rgba(255,255,255,0.9)', color: '#111111' }}>
+                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                     </select>
                                 </div>
                             </div>

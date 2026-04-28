@@ -306,8 +306,8 @@ const SocialManagementCMS = () => {
                             </div>
                             
                             {isSponsorPost ? (
-                                <select 
-                                    style={inputStyle}
+                                <select
+                                    style={{ ...inputStyle, color: '#111111', background: 'rgba(255,255,255,0.9)', appearance: 'auto' }}
                                     onChange={(e) => {
                                         const sp = sponsors.find(s => s.id === e.target.value);
                                         setSelectedSponsor(sp);
