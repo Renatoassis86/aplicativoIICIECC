@@ -307,7 +307,7 @@ const SocialManagementCMS = () => {
                             
                             {isSponsorPost ? (
                                 <select
-                                    style={{ ...inputStyle, color: '#111111', background: 'rgba(255,255,255,0.9)', appearance: 'auto' }}
+                                    style={inputStyle}
                                     onChange={(e) => {
                                         const sp = sponsors.find(s => s.id === e.target.value);
                                         setSelectedSponsor(sp);
@@ -535,7 +535,7 @@ const SocialManagementCMS = () => {
 };
 
 const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', marginBottom: '10px', display: 'block', letterSpacing: '1px' };
-const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '14px', outline: 'none', appearance: 'none' };
+const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '16px', background: '#FFFFFF', border: '1px solid rgba(255,255,255,0.2)', color: '#111111', fontSize: '14px', outline: 'none', appearance: 'none' };
 const btnSaveStyle = { width: '100%', padding: '18px', borderRadius: '18px', background: 'var(--brand)', color: 'black', fontWeight: '900', border: 'none', cursor: 'pointer', marginTop: '10px', fontSize: '14px', letterSpacing: '1px' };
 const tabStyle = { padding: '12px 20px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: '800', fontSize: '12px' };
 const actionBtnStyle = { height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: '800', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' };

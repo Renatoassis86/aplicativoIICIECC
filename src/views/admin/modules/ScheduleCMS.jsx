@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Users, Plus, Trash2, Edit2, Save, X, Clock, MapPin, Image as ImageIcon, LayoutGrid, List } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
@@ -267,7 +267,7 @@ const ScheduleCMS = () => {
 
                             <input name="room" placeholder="Local / Sala" defaultValue={editingSession.room} style={inputStyle} />
 
-                            <select name="speaker_id" defaultValue={editingSession.speaker_id} style={{ ...inputStyle, color: '#111111', backgroundColor: 'rgba(255,255,255,0.9)' }}>
+                            <select name="speaker_id" defaultValue={editingSession.speaker_id} style={inputStyle}>
                                 <option value="">Sem palestrante vinculado</option>
                                 {speakers.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
                             </select>
@@ -340,7 +340,7 @@ const iconBtnDeleteStyle = { ...iconBtnStyle, color: '#EF4444', borderColor: 'rg
 const metaStyle = { fontSize: '13px', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '700' };
 const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
 const modalStyle = { background: '#0F172A', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', color: '#FFFFFF', border: '1px solid var(--border-color)' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.05)' };
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '14px', outline: 'none', color: '#111111', backgroundColor: '#FFFFFF' };
 const labelStyle = { fontSize: '12px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', display: 'block' };
 const btnSaveStyle = { padding: '16px', borderRadius: '14px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '8px', width: '100%' };
 const viewToggleStyle = { border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' };

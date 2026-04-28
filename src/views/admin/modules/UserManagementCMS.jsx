@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
@@ -157,7 +157,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                             <select
                                 value={newUser.user_type}
                                 onChange={(e) => setNewUser({...newUser, user_type: e.target.value})}
-                                style={{ ...inputStyle, color: '#111111', background: 'rgba(255,255,255,0.9)' }}
+                                style={inputStyle}
                             >
                                 {/* Apenas o Master Admin pode criar outros Admins/Organizadores */}
                                 {(['05875164450', '36284400845'].includes(currentUserCpf) || newUser.user_type === 'admin') && (
@@ -195,7 +195,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                                 <button 
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}
+                                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -347,7 +347,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
 
 const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '8px' };
 const labelStyle = { fontSize: '13px', fontWeight: '700', color: '#FFFFFF' };
-const badgeStyle = { fontSize: '10px', fontWeight: '900', color: 'var(--gold)', background: 'rgba(212, 193, 156, 0.1)', padding: '4px 10px', borderRadius: '6px', textTransform: 'uppercase' };
-const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '14px', outline: 'none', color: '#FFFFFF', background: 'rgba(255,255,255,0.05)' };
+
+const inputStyle = { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '14px', outline: 'none', color: '#111111', background: '#FFFFFF' };
 
 export default UserManagementCMS;

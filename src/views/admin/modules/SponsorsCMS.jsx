@@ -352,6 +352,6 @@ export default function SponsorsCMS() {
 }
 
 const labelStyle = { fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', display: 'block', textTransform: 'uppercase', letterSpacing: '1px' };
-const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '14px', border: '1px solid var(--border-color)', fontSize: '15px', outline: 'none', color: 'white', backgroundColor: 'rgba(255,255,255,0.05)', fontWeight: '700' };
+const inputStyle = { width: '100%', padding: '14px 18px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)', fontSize: '15px', outline: 'none', color: '#111111', backgroundColor: '#FFFFFF', fontWeight: '700' };
 const btnSaveStyle = { width: '100%', padding: '20px', borderRadius: '16px', background: 'var(--primary)', color: 'white', fontWeight: '900', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontSize: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' };
 const cardStyle = { background: 'var(--card-bg)', padding: '24px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' };
