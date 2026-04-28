@@ -57,8 +57,8 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     const loadDrivePhotos = async () => {
       try {
         const configs = await driveService.getSyncConfigs();
-        const conf2026 = configs.find(c => c.category === 'Flashes 2026');
-        const conf2025 = configs.find(c => c.category === 'Memórias');
+        const conf2026 = configs.find(c => c.category === 'CIECC 2026' || c.category === 'Flashes 2026');
+        const conf2025 = configs.find(c => c.category === 'Galeria Oficial' || c.category === 'Memórias');
 
         if (conf2026) {
           const photos = await driveService.fetchPhotosFromFolder(conf2026.folder_id);
@@ -219,14 +219,14 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
            </div>
         </div>
 
-        {/* 2. FLASHES DO II CIECC 2026 (CARROSSEL FOTOS) */}
-        <CarouselSection 
-          title="Flashes 2026"
+        {/* 2. FOTOS CONGRESSO 2026 (CARROSSEL FOTOS) */}
+        <CarouselSection
+          title="Congresso 2026"
           items={finalLivePhotos}
           renderItem={(img, index) => (
-            <div 
-              onClick={() => onOpenMedia({ 
-                ...img, type: 'gallery', photos: livePhotos, startIndex: index, title: 'Flashes 2026' 
+            <div
+              onClick={() => onOpenMedia({
+                ...img, type: 'gallery', photos: livePhotos, startIndex: index, title: 'Congresso 2026'
               })}
               style={{ 
                 width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',
@@ -275,14 +275,14 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
           )}
         />
 
-        {/* 5. MEMÓRIAS (CARROSSEL) */}
-        <CarouselSection 
-          title="Memórias"
+        {/* 5. CONGRESSO 2025 (CARROSSEL) */}
+        <CarouselSection
+          title="Congresso 2025"
           items={allMemories}
           renderItem={(img, index) => (
-            <div 
-              onClick={() => onOpenMedia({ 
-                ...img, type: 'gallery', photos: allMemories, startIndex: index, title: 'Memórias' 
+            <div
+              onClick={() => onOpenMedia({
+                ...img, type: 'gallery', photos: allMemories, startIndex: index, title: 'Congresso 2025'
               })}
               style={{ 
                 width: '180px', height: '120px', borderRadius: '16px', overflow: 'hidden',

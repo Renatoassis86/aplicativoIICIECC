@@ -314,6 +314,16 @@ INSERT INTO content_registry (section, key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- ==============================
+-- 19. DRIVE SYNC: pastas de fotos do congresso
+-- Garante folder_id correto para as duas galerias principais
+-- ==============================
+UPDATE drive_sync SET folder_id = '1_t3QhE2N_KMrLq47-iE8QkyyumZn3C8z', updated_at = NOW()
+WHERE category = 'CIECC 2026';
+
+UPDATE drive_sync SET folder_id = '1eanm3HneYNQFGE7SQ4_myD4uwHGm2Zod', updated_at = NOW()
+WHERE category = 'Galeria Oficial';
+
+-- ==============================
 -- FIM DA MIGRAÇÃO
 -- ==============================
 SELECT 'Migração concluída com sucesso!' AS status;
