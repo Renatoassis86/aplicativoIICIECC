@@ -16,22 +16,24 @@ export default function AdminBroadcastModal({ onClose, staffCpf, userName }) {
     setIsSending(true);
     setStatus(null);
     try {
-      // O banco de dados possui um gatilho (tr_broadcast_to_notifications_v2) 
-      // que cria automaticamente o registro em system_notifications ao inserir em broadcasts.
-      // Isso é mais seguro e evita falhas de RLS para o usuário.
-      const { error: broadcastError } = await supabase.from('broadcasts').insert({
+      // Insere diretamente em system_notifications — sem trigger intermediário.
+      // Evita duplicatas causadas por múltiplos triggers legados na tabela broadcasts.
+      const { error } = await supabase.from('system_notifications').insert({
         title: title.trim(),
         message: message.trim(),
+        body: message.trim(),
         target_role: audience,
-        sender_id: staffCpf,
-        sender_name: userName || 'Admin'
+        sender_role: 'admin',
+        sender_name: userName || 'Organização CIECC',
+        author_id: staffCpf,
+        type: 'broadcast'
       });
-      
-      if (broadcastError) {
-        console.error("[BroadcastError] Erro do Supabase:", broadcastError);
-        logService.error("Erro no envio de broadcast (Supabase)", broadcastError, 'AdminBroadcastModal');
-        alert("Erro no banco: " + broadcastError.message);
-        throw broadcastError;
+
+      if (error) {
+        console.error("[BroadcastError] Erro do Supabase:", error);
+        logService.error("Erro no envio de broadcast (Supabase)", error, 'AdminBroadcastModal');
+        alert("Erro no banco: " + error.message);
+        throw error;
       }
 
       setStatus('success');

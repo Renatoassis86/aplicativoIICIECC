@@ -161,39 +161,20 @@ CREATE INDEX IF NOT EXISTS idx_profiles_cpf ON profiles(cpf);
 CREATE INDEX IF NOT EXISTS idx_members_cpf ON members(cpf);
 
 -- ==============================
--- 14. TRIGGER: broadcasts → system_notifications
--- Cria notificação automática quando um broadcast é inserido
+-- 14. REMOVER TODOS OS TRIGGERS em broadcasts
+-- O app agora insere diretamente em system_notifications (sem intermediário).
+-- Triggers duplicados eram a causa de N notificações por 1 envio.
 -- ==============================
-CREATE OR REPLACE FUNCTION fn_broadcast_to_notification()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  INSERT INTO system_notifications (
-    title,
-    message,
-    body,
-    target_role,
-    sender_role,
-    sender_name,
-    type,
-    author_id
-  ) VALUES (
-    NEW.title,
-    NEW.message,
-    NEW.message,
-    NEW.target_role,
-    'admin',
-    COALESCE(NEW.sender_name, 'Organização CIECC'),
-    'broadcast',
-    NEW.sender_id
-  );
-  RETURN NEW;
-END;
-$$;
-
+DROP TRIGGER IF EXISTS tr_broadcast_to_notifications ON broadcasts;
+DROP TRIGGER IF EXISTS tr_broadcast_to_notifications_v1 ON broadcasts;
 DROP TRIGGER IF EXISTS tr_broadcast_to_notifications_v2 ON broadcasts;
-CREATE TRIGGER tr_broadcast_to_notifications_v2
-  AFTER INSERT ON broadcasts
-  FOR EACH ROW EXECUTE FUNCTION fn_broadcast_to_notification();
+DROP TRIGGER IF EXISTS broadcast_to_notification ON broadcasts;
+DROP FUNCTION IF EXISTS fn_broadcast_to_notification() CASCADE;
+
+-- Política RLS permissiva para system_notifications (necessária para insert via anon key)
+ALTER TABLE system_notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "system_notifications_all" ON system_notifications;
+CREATE POLICY "system_notifications_all" ON system_notifications FOR ALL USING (true) WITH CHECK (true);
 
 -- ==============================
 -- 15. FUNÇÃO RPC: admin_upsert_user
