@@ -176,10 +176,11 @@ export const createPost = async (authorName, authorRole, authorTier, contentType
     const notifications = taggedUserIds.map(targetId => ({
       title: "Você foi marcado!",
       message: `${authorName} marcou você em uma nova publicação no feed.`,
-      target_user_cpf: targetId, // CPF do congressista
+      target_user_cpf: targetId,
       type: 'tag',
       author_id: userId,
-      target_role: 'congressista' // Fallback para role geral
+      sender_name: authorName,
+      target_role: 'congressista'
     }));
 
     await supabase.from('system_notifications').insert(notifications);

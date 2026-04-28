@@ -53,6 +53,7 @@ UPDATE system_notifications SET target_user_cpf = user_cpf WHERE target_user_cpf
 ALTER TABLE system_notifications ADD COLUMN IF NOT EXISTS target_role TEXT DEFAULT 'all';
 ALTER TABLE system_notifications ADD COLUMN IF NOT EXISTS body TEXT;
 ALTER TABLE system_notifications ADD COLUMN IF NOT EXISTS sender_role TEXT;
+ALTER TABLE system_notifications ADD COLUMN IF NOT EXISTS sender_name TEXT;
 
 -- ==============================
 -- 5. CORRIGIR TABELA: sponsors
@@ -172,6 +173,7 @@ BEGIN
     body,
     target_role,
     sender_role,
+    sender_name,
     type,
     author_id
   ) VALUES (
@@ -180,6 +182,7 @@ BEGIN
     NEW.message,
     NEW.target_role,
     'admin',
+    COALESCE(NEW.sender_name, 'Organização CIECC'),
     'broadcast',
     NEW.sender_id
   );
