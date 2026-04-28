@@ -1,13 +1,6 @@
 import { supabase } from '../../lib/supabase';
 
-/**
- * SERVIÇO DE INGRESSOS E CHECK-IN CIECC
- * Lida com emissões, bloqueios e o motor de leitura do Scanner Staff.
- */
-
-// ==============================
-// 1. CARREGAR TICKET DO USUÁRIO
-// ==============================
+// ── 1. TICKET DO USUÁRIO (APP) ──────────────────────────────────────────────
 export const fetchUserTicket = async (cpf) => {
   try {
     if (!cpf) return { status: 'not_generated', message: 'Inscrição não encontrada.' };
@@ -19,10 +12,7 @@ export const fetchUserTicket = async (cpf) => {
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-         // Ticket não achado = cria pra simular importação tardia/auto-emissão (mock flexível)
-         return generateTicketForNewUser(cpf);
-      }
+      if (error.code === 'PGRST116') return generateTicketForNewUser(cpf);
       throw error;
     }
 
@@ -33,49 +23,28 @@ export const fetchUserTicket = async (cpf) => {
       status: ticket.status,
       created_at: ticket.created_at
     };
-
   } catch (error) {
-    console.error("Erro ao buscar ticket no banco:", error);
-    return { status: 'error', message: 'Erro na conexão com o servidor.' };
+    console.error('Erro ao buscar ticket:', error);
+    return { status: 'error', message: 'Erro na conexão.' };
   }
 };
 
 const generateTicketForNewUser = async (cpf) => {
-  const { data, error } = await supabase.from('system_tickets').insert({
-    member_cpf: cpf,
-    ticket_type: 'Geral', // Default caso não lido ainda do Admin
-    status: 'active'
-  }).select().single();
+  const { data, error } = await supabase
+    .from('system_tickets')
+    .insert({ member_cpf: cpf, ticket_type: 'Geral', status: 'active' })
+    .select()
+    .single();
 
   if (error) {
-    console.warn("Auto-emission failed");
-    // Fallback Mock Seguro se não rodou o script SQL ainda 
-    return {
-      ticket_id: `mock-uuid-${Date.now()}`,
-      cpf: cpf,
-      ticket_type: 'Presencial Padrão',
-      status: 'active',
-      created_at: new Date().toISOString()
-    };
+    return { ticket_id: `mock-${Date.now()}`, cpf, ticket_type: 'Presencial', status: 'active', created_at: new Date().toISOString() };
   }
-
-  return {
-    ticket_id: data.id,
-    cpf: data.member_cpf,
-    ticket_type: data.ticket_type,
-    status: data.status,
-    created_at: data.created_at
-  };
+  return { ticket_id: data.id, cpf: data.member_cpf, ticket_type: data.ticket_type, status: data.status, created_at: data.created_at };
 };
 
-// ==================================
-// 2. SCANNER STAFF (MOTOR DE CHECK-IN)
-// ==================================
+// ── 2. SCANNER / CHECK-IN (STAFF) ───────────────────────────────────────────
 export const validateScannedTicket = async (qrPayload, staffUserId) => {
   try {
-    // 2.1 Pega usando CPF (visto que o gerador de QR atual joga o CPF, ou ID)
-    // Nosso QR de mock tá jogando string mista, mas idealmente usa o CPF
-    // Ex: "ciecc:ticket:12345678909"
     const parsedCpf = qrPayload.split(':').pop();
 
     const { data: ticket, error: ticketErr } = await supabase
@@ -89,10 +58,9 @@ export const validateScannedTicket = async (qrPayload, staffUserId) => {
       return { success: false, message: 'Ingresso Inválido ou Adulterado.' };
     }
 
-    // 2.2 Avalia a política de Status
     if (ticket.status === 'blocked') {
       await logScan(ticket.id, staffUserId, false, 'Tentativa em Ingresso Bloqueado');
-      return { success: false, message: 'Ingresso encontra-se Bloqueado pela Organização.', ticket };
+      return { success: false, message: 'Ingresso bloqueado pela Organização.', ticket };
     }
 
     if (ticket.status === 'scanned') {
@@ -100,94 +68,146 @@ export const validateScannedTicket = async (qrPayload, staffUserId) => {
       return { success: false, message: 'Este ingresso já foi utilizado no Check-in!', ticket };
     }
 
-    if (ticket.status === 'active') {
-      // 2.3 Faz Checkin OFICIAL via Transaction / Update Lock
-      const { error: updateErr } = await supabase
-        .from('system_tickets')
-        .update({ status: 'scanned' })
-        .eq('id', ticket.id);
+    const { error: updateErr } = await supabase
+      .from('system_tickets')
+      .update({ status: 'scanned' })
+      .eq('id', ticket.id);
 
-      if (updateErr) throw updateErr;
+    if (updateErr) throw updateErr;
 
-      // Log Triunfante
-      await logScan(ticket.id, staffUserId, true, 'Check-in Sucesso');
-      
-      return { success: true, message: 'Acesso Liberado com Sucesso!', ticket };
-    }
-
-    return { success: false, message: 'Erro desconhecido de status.' };
+    await logScan(ticket.id, staffUserId, true, 'Check-in Sucesso');
+    return { success: true, message: 'Acesso Liberado com Sucesso!', ticket };
   } catch (err) {
-     console.error("Erro interno no Motor de Scanner:", err);
-     return { success: false, message: 'Falha Técnica Remota. Tente de novo.' };
+    console.error('Erro no Scanner:', err);
+    return { success: false, message: 'Falha Técnica. Tente de novo.' };
   }
 };
 
 const logScan = async (ticketId, scannerId, success, message) => {
   await supabase.from('system_ticket_scans').insert({
-    ticket_id: ticketId,
-    scanner_user_id: scannerId,
-    success: success,
-    scan_message: message
+    ticket_id: ticketId, scanner_user_id: scannerId, success, scan_message: message
   });
 };
-// ===================================
-// 3. ADMIN: GESTÃO CENTRAL DE TICKETS
-// ===================================
 
-/**
- * Busca todos os tickets com dados do membro associado
- */
+// ── 3. ADMIN: LISTAGEM ──────────────────────────────────────────────────────
 export const fetchAllTickets = async () => {
   try {
-    const { data, error } = await supabase
+    const { data: tickets, error } = await supabase
       .from('system_tickets')
-      .select(`
-        *,
-        member:members(name, email, phone)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    if (!tickets || tickets.length === 0) return [];
+
+    // Busca members separadamente (sem FK)
+    const cpfs = [...new Set(tickets.map(t => t.member_cpf).filter(Boolean))];
+    const { data: members } = cpfs.length > 0
+      ? await supabase.from('members').select('cpf, name, email, ticket_type').in('cpf', cpfs)
+      : { data: [] };
+
+    const membersMap = (members || []).reduce((acc, m) => { acc[m.cpf] = m; return acc; }, {});
+
+    return tickets.map(t => ({
+      ...t,
+      member: membersMap[t.member_cpf] || null
+    }));
   } catch (error) {
-    console.error("Erro ao buscar base de tickets:", error);
+    console.error('Erro ao buscar tickets:', error);
     return [];
   }
 };
 
-/**
- * Altera status do ingresso (Manual Override)
- */
+// ── 4. ADMIN: ESTATÍSTICAS ──────────────────────────────────────────────────
+export const fetchTicketStats = async () => {
+  try {
+    const [resTotal, resScanned, resBlocked] = await Promise.all([
+      supabase.from('system_tickets').select('*', { count: 'exact', head: true }),
+      supabase.from('system_tickets').select('*', { count: 'exact', head: true }).eq('status', 'scanned'),
+      supabase.from('system_tickets').select('*', { count: 'exact', head: true }).eq('status', 'blocked'),
+    ]);
+    return {
+      total:   resTotal.count   ?? 0,
+      scanned: resScanned.count ?? 0,
+      blocked: resBlocked.count ?? 0,
+    };
+  } catch {
+    return { total: 0, scanned: 0, blocked: 0 };
+  }
+};
+
+// ── 5. ADMIN: ALTERAR STATUS ─────────────────────────────────────────────────
 export const updateTicketStatus = async (ticketId, newStatus) => {
   try {
     const { error } = await supabase
       .from('system_tickets')
       .update({ status: newStatus })
       .eq('id', ticketId);
-
     if (error) throw error;
     return { success: true };
   } catch (error) {
-    console.error("Erro ao atualizar ticket:", error);
     return { success: false, message: error.message };
   }
 };
 
-/**
- * Busca estatísticas rápidas para o painel
- */
-export const fetchTicketStats = async () => {
-    try {
-        const { data: total } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true });
-        const { data: scanned } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true }).eq('status', 'scanned');
-        const { data: blocked } = await supabase.from('system_tickets').select('id', { count: 'exact', head: true }).eq('status', 'blocked');
+// ── 6. ADMIN: CRIAR INGRESSO MANUAL ─────────────────────────────────────────
+export const createTicket = async (memberCpf, ticketType = 'Geral') => {
+  try {
+    // Verifica se já existe
+    const { data: existing } = await supabase
+      .from('system_tickets')
+      .select('id')
+      .eq('member_cpf', memberCpf)
+      .single();
 
-        return {
-            total: total?.length || 0, // Fallback if count head doesn't work as expected with length
-            scanned: scanned?.length || 0,
-            blocked: blocked?.length || 0
-        };
-    } catch (e) {
-        return { total: 0, scanned: 0, blocked: 0 };
-    }
+    if (existing) return { success: false, message: 'Já existe um ingresso para este CPF.' };
+
+    const { error } = await supabase
+      .from('system_tickets')
+      .insert({ member_cpf: memberCpf, ticket_type: ticketType, status: 'active' });
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+// ── 7. ADMIN: EXCLUIR INGRESSO ───────────────────────────────────────────────
+export const deleteTicket = async (ticketId) => {
+  try {
+    const { error } = await supabase
+      .from('system_tickets')
+      .delete()
+      .eq('id', ticketId);
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+// ── 8. ADMIN: GERAR EM MASSA para todos os members sem ticket ────────────────
+export const generateMissingTickets = async () => {
+  try {
+    const { data: members } = await supabase.from('members').select('cpf, ticket_type');
+    const { data: existing } = await supabase.from('system_tickets').select('member_cpf');
+
+    const existingCpfs = new Set((existing || []).map(t => t.member_cpf));
+    const missing = (members || []).filter(m => !existingCpfs.has(m.cpf));
+
+    if (missing.length === 0) return { success: true, created: 0 };
+
+    const toInsert = missing.map(m => ({
+      member_cpf: m.cpf,
+      ticket_type: m.ticket_type || 'Geral',
+      status: 'active'
+    }));
+
+    const { error } = await supabase.from('system_tickets').insert(toInsert);
+    if (error) throw error;
+    return { success: true, created: missing.length };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
 };
