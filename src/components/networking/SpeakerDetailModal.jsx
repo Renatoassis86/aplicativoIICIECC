@@ -4,6 +4,11 @@ import { X, Calendar, Clock, Bookmark, Share2 } from 'lucide-react';
 export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite }) {
   if (!speaker) return null;
 
+  const scrollRef = React.useRef(null);
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [speaker]);
+
   return (
     <div style={{
       position: 'fixed', inset: 0,
@@ -28,7 +33,7 @@ export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite })
         </button>
       </header>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 40px' }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '0 0 40px' }}>
         
         {/* Foto e Header Diagramado */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: '#f8f9fa' }}>

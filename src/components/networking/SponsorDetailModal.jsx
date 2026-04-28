@@ -4,6 +4,11 @@ import { ArrowLeft, ExternalLink, Globe, Instagram, Mail, MapPin, Share2, Bookma
 export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite }) {
   if (!sponsor) return null;
 
+  const scrollRef = React.useRef(null);
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [sponsor]);
+
   // Normalização de dados para o modal
   const logoUrl = sponsor.logo_url || sponsor.logo || '/logo.png';
   const tier = (sponsor.tier || 'ouro').toLowerCase();
@@ -143,7 +148,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* CONTEÚDO EDITORIAL */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '48px 32px 100px', background: '#FFFFFF' }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 32px 100px', background: '#FFFFFF' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.2s' }}>
            <h1 style={{ 
