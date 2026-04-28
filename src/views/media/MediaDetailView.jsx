@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-  X, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  ArrowLeft,
+import {
+  X,
+  Heart,
+  MessageCircle,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
   Play,
   Pause,
   SkipForward,
@@ -19,6 +20,68 @@ import {
   Bookmark
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+
+// ── Visualizador de galeria fullscreen com swipe touch ──────────────────────
+const GalleryViewer = ({ photos, index, onIndexChange, onClose }) => {
+  const touchStartX = useRef(null);
+  const total = photos.length;
+  const prev = () => onIndexChange(i => (i - 1 + total) % total);
+  const next = () => onIndexChange(i => (i + 1) % total);
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+    touchStartX.current = null;
+  };
+
+  const photo = photos[index];
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 99999, display: 'flex', flexDirection: 'column' }}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Fechar + contador */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: 'calc(env(safe-area-inset-top,16px) + 12px) 16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10, background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)' }}>
+        <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <X size={20} color="white" />
+        </button>
+        <span style={{ color: 'white', fontSize: '13px', fontWeight: '800', background: 'rgba(0,0,0,0.5)', padding: '4px 14px', borderRadius: '20px' }}>
+          {index + 1} / {total}
+        </span>
+        <div style={{ width: 40 }} />
+      </div>
+
+      {/* Foto */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img
+          key={photo?.url}
+          src={photo?.url}
+          alt=""
+          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', userSelect: 'none', WebkitUserDrag: 'none' }}
+        />
+      </div>
+
+      {/* Botões prev/next */}
+      <button onClick={prev} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <ChevronLeft size={24} color="white" />
+      </button>
+      <button onClick={next} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <ChevronRight size={24} color="white" />
+      </button>
+
+      {/* Barra de progresso */}
+      <div style={{ position: 'absolute', bottom: 'calc(env(safe-area-inset-bottom,0px) + 20px)', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '4px' }}>
+        {total <= 20 && photos.map((_, i) => (
+          <div key={i} onClick={() => onIndexChange(i)} style={{ width: i === index ? '20px' : '6px', height: '6px', borderRadius: '3px', background: i === index ? 'white' : 'rgba(255,255,255,0.35)', transition: 'all 0.2s', cursor: 'pointer' }} />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -152,6 +215,19 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
   const isPodcast = media.type === 'podcast';
   const isGallery = media.type === 'gallery';
   const isVideo = (media.type === 'story' || media.type === 'video' || media.type === 'youtube');
+
+  // Galeria: renderiza viewer fullscreen direto, sem o portal de media
+  if (isGallery && media.photos?.length > 0) {
+    return createPortal(
+      <GalleryViewer
+        photos={media.photos}
+        index={activeGalleryIndex}
+        onIndexChange={setActiveGalleryIndex}
+        onClose={onClose}
+      />,
+      document.body
+    );
+  }
   const videoUrl = media.videoUrl || (isVideo ? media.url : null);
   const isYouTube = videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
 
@@ -234,13 +310,6 @@ const MediaDetailView = ({ media, onClose, userCpf, userName }) => {
                    <Volume2 size={24} color="#666" />
                  </div>
                </div>
-            </div>
-          ) : isGallery ? (
-            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <img src={media.photos[activeGalleryIndex]?.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-               <div style={{ position: 'absolute', bottom: '20px', background: 'rgba(0,0,0,0.5)', padding: '6px 16px', borderRadius: '20px', color: 'white', fontSize: '13px', fontWeight: '800' }}>{activeGalleryIndex + 1} / {media.photos.length}</div>
-               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev - 1 + media.photos.length) % media.photos.length); }} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ArrowLeft size={24} /></button>
-               <button onClick={(e) => { e.stopPropagation(); setActiveGalleryIndex(prev => (prev + 1) % media.photos.length); }} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: '12px', color: 'white' }}><ArrowLeft size={24} style={{ transform: 'rotate(180deg)' }} /></button>
             </div>
           ) : (
             <img src={media.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />

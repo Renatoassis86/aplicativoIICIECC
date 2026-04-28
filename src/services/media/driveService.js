@@ -1,45 +1,67 @@
 import { supabase } from '../../lib/supabase';
 
-/**
- * DriveService
- * Fornece integração dinâmica com pastas do Google Drive
- */
+// Extrai IDs de arquivo do HTML do embeddedfolderview
+const parseFileIdsFromHtml = (html) => {
+  const ids = [];
+  const seen = new Set();
+
+  // Padrão principal: entry-{fileId}
+  const entryRegex = /"entry-([a-zA-Z0-9_-]{10,})"/g;
+  for (const m of html.matchAll(entryRegex)) {
+    if (!seen.has(m[1])) { seen.add(m[1]); ids.push(m[1]); }
+  }
+
+  // Fallback: thumbnail?id={fileId}
+  if (ids.length === 0) {
+    const thumbRegex = /thumbnail\?id=([a-zA-Z0-9_-]{10,})/g;
+    for (const m of html.matchAll(thumbRegex)) {
+      if (!seen.has(m[1])) { seen.add(m[1]); ids.push(m[1]); }
+    }
+  }
+
+  return ids;
+};
+
+const buildPhotos = (ids) =>
+  ids.map(id => ({ id, name: id, url: `https://lh3.googleusercontent.com/d/${id}=w800` }));
+
 export const driveService = {
-  /**
-   * Obtém as configurações de sincronização do banco
-   */
   async getSyncConfigs() {
     const { data, error } = await supabase.from('drive_sync').select('*');
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
-  /**
-   * Busca fotos de uma pasta do Google Drive.
-   * Utiliza um proxy Apps Script ou Edge Function para listar os arquivos automaticamente.
-   */
   async fetchPhotosFromFolder(folderId) {
+    if (!folderId) return [];
+
+    // Método 1: Edge Function (quando deployada)
     try {
       const { data, error } = await supabase.functions.invoke('get-drive-photos', {
         body: { folderId }
       });
+      if (!error && data?.files?.length > 0) {
+        return data.files;
+      }
+    } catch (_) { /* fallback */ }
 
-      if (error) throw error;
-      return data.files || [];
-    } catch (e) {
-      console.error('Erro ao buscar do Drive:', e);
-      return [];
+    // Método 2: CORS proxy → scraping HTML
+    const driveUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
+    const proxies = [
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(driveUrl)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(driveUrl)}`,
+    ];
+
+    for (const proxyUrl of proxies) {
+      try {
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) continue;
+        const html = await res.text();
+        const ids = parseFileIdsFromHtml(html);
+        if (ids.length > 0) return buildPhotos(ids);
+      } catch (_) { /* try next */ }
     }
-  },
 
-  /**
-   * Proxy manual para demonstração ou quando a Edge Function não está disponível.
-   * Em produção, recomenda-se o uso da Edge Function com Service Account.
-   */
-  async getManualDriveProxy(folderId) {
-    // Nota: Em um mundo ideal sem API Key, usaríamos um Apps Script público.
-    // Como estamos implementando agora, retornaremos um array vazio para o componente carregar
-    // e mostraremos ao usuário como ativar a sincronização real.
     return [];
-  }
+  },
 };
