@@ -147,7 +147,7 @@ function App() {
         await supabase
           .from('profiles')
           .update({ onboarding_completed: true })
-          .eq('cpf', cpf);
+          .eq('user_id', cpf);
         return true;
       }
       return false;
@@ -224,11 +224,11 @@ function App() {
     try {
       const { data: updatedProfile } = await supabase
         .from('profiles')
-        .update({ 
-          password_reset: true, 
-          current_password: newPassword 
+        .update({
+          password_reset: true,
+          current_password: newPassword
         })
-        .eq('cpf', currentUserCpf)
+        .eq('user_id', currentUserCpf)
         .select()
         .single();
       
@@ -266,7 +266,7 @@ function App() {
       await supabase
         .from('profiles')
         .update({ user_type: typeId })
-        .eq('cpf', currentUserCpf);
+        .eq('user_id', currentUserCpf);
       
       setSelectedType(typeId);
 
@@ -297,7 +297,7 @@ function App() {
       await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
-        .eq('cpf', currentUserCpf);
+        .eq('user_id', currentUserCpf);
 
       // GARANTE EMISSÃO DO INGRESSO IMEDIATAMENTE APÓS QUESTIONÁRIO
       console.log("[App] Questionário concluído. Gerando ingresso para:", currentUserCpf);

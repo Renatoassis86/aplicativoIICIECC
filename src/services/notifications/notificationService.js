@@ -25,25 +25,39 @@ export const fetchInbox = async (userCpf, userRole = 'congressista') => {
     
     console.log(`[NotificationService] Fetching inbox for ${userCpf} (Role: ${userRole})`);
 
+    // Try new schema (post-migration: target_user_cpf, target_role)
+    let allNotifications;
     const { data: notifications, error } = await supabase
       .from('system_notifications')
       .select('*')
       .or(`target_user_cpf.eq.${userCpf},target_role.eq.all,target_role.eq.${userRole}`)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error && error.code === '42703') {
+      // Pre-migration fallback: columns don't exist yet, fetch all
+      const fallback = await supabase
+        .from('system_notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (fallback.error) return [];
+      allNotifications = fallback.data;
+    } else if (error) {
+      throw error;
+    } else {
+      allNotifications = notifications;
+    }
 
-    // Busca as notificações já lidas por este usuário
-    const { data: reads, error: readErr } = await supabase
-      .from('system_notifications_reads')
-      .select('notification_id')
-      .eq('user_id', userCpf);
+    // Read status — table may not exist pre-migration, handle gracefully
+    let readIds = new Set();
+    try {
+      const { data: reads, error: readErr } = await supabase
+        .from('system_notifications_reads')
+        .select('notification_id')
+        .eq('user_id', userCpf);
+      if (!readErr && reads) readIds = new Set(reads.map(r => r.notification_id));
+    } catch (_) {}
 
-    if (readErr) throw readErr;
-
-    const readIds = new Set((reads || []).map(r => r.notification_id));
-
-    return (notifications || []).map(n => ({
+    return (allNotifications || []).map(n => ({
       ...n,
       isRead: readIds.has(n.id)
     }));

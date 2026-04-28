@@ -48,7 +48,7 @@ export default function ProfileCMS({ userCpf }) {
     setLoading(true);
     try {
         const { data: memberData } = await supabase.from('members').select('*').eq('cpf', userCpf).single();
-        const { data: profileData } = await supabase.from('profiles').select('*').eq('cpf', userCpf).single();
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('user_id', userCpf).single();
         
         if (memberData) setMember(memberData);
         if (profileData) {
@@ -85,7 +85,7 @@ export default function ProfileCMS({ userCpf }) {
             job_title: formData.job_title,
             linkedin_url: formData.linkedin_url,
             current_password: formData.current_password
-        }).eq('cpf', userCpf);
+        }).eq('user_id', userCpf);
 
         setSuccessMsg('Configurações de perfil salvas com sucesso!');
         setShowSuccess(true);

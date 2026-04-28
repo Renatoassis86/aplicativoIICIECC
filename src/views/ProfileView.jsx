@@ -24,7 +24,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('cpf', userCpf).single();
+      const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', userCpf).single();
       if (profile) {
         setBio(profile.bio || '');
         setJobTitle(profile.job_title || '');
@@ -45,7 +45,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      await supabase.from('profiles').update({ bio, job_title: jobTitle, linkedin_url: linkedinUrl }).eq('cpf', userCpf);
+      await supabase.from('profiles').update({ bio, job_title: jobTitle, linkedin_url: linkedinUrl }).eq('user_id', userCpf);
       await supabase.from('members').update({ phone, institution, city, state, email }).eq('cpf', userCpf);
       alert('Seu perfil foi atualizado no banco de dados!');
     } catch (err) {
@@ -71,7 +71,7 @@ const ProfileView = ({ onClose, userName, userCpf, userType, userAvatar: initial
          setAvatar(reader.result);
          const fileName = `avatars/${userCpf}_${Date.now()}.jpg`;
          const publicUrlOrBase64 = await ImagePersistenceService.uploadToStorage('profiles', fileName, file);
-         await supabase.from('profiles').update({ avatar_url: publicUrlOrBase64 }).eq('cpf', userCpf);
+         await supabase.from('profiles').update({ avatar_url: publicUrlOrBase64 }).eq('user_id', userCpf);
          if (onAvatarUpdate) onAvatarUpdate(publicUrlOrBase64);
          setUploading(false);
       };

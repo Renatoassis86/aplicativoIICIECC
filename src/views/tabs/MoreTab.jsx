@@ -37,7 +37,7 @@ const MoreTab = ({
          setLocalAvatar(reader.result);
          const fileName = `avatars/${userCpf}_${Date.now()}.jpg`;
          const publicUrl = await ImagePersistenceService.uploadToStorage('profiles', fileName, file);
-         await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('cpf', userCpf);
+         await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('user_id', userCpf);
          if (onAvatarUpdate) onAvatarUpdate(publicUrl);
          setUploading(false);
       };

@@ -19,7 +19,7 @@ const MyTicketModal = ({ onClose, userName, userCpf }) => {
         setTicketData(tData);
 
         // Fetch Profile for Badge Info
-        const { data: profile } = await supabase.from('profiles').select('job_title, avatar_url').eq('cpf', userCpf).single();
+        const { data: profile } = await supabase.from('profiles').select('job_title, avatar_url').eq('user_id', userCpf).single();
         const { data: member } = await supabase.from('members').select('institution').eq('cpf', userCpf).single();
         
         setProfileData({

@@ -50,7 +50,7 @@ export const fetchMemberStatus = async (rawCpf) => {
   }
 
   // 2. O aplicativo já criou o Perfil associado a ele?
-  const { data: profile, error: profErr } = await supabase.from('profiles').select('*').eq('cpf', cpf).single();
+  const { data: profile, error: profErr } = await supabase.from('profiles').select('*').eq('user_id', cpf).single();
 
   if (profErr || !profile) {
     // Está na lista mas ainda não tem conta ativa, não fez login

@@ -67,12 +67,16 @@ const processPostsResponse = async (rawPosts, userId) => {
           .in('post_id', postIds)
           .order('created_at', { ascending: true });
 
-        // 2. Fetch only relevant engagements
-        // Note: Using broad fetch for engagements since they are usually fewer than comments
-        const { data: engagements } = await supabase
+        // 2. Fetch engagements for posts and their comments
+        const commentIds = (allComments || []).map(c => c.id);
+        const { data: postEngs } = await supabase
           .from('social_engagements')
           .select('*')
           .in('post_id', postIds);
+        const { data: commentEngs } = commentIds.length > 0
+          ? await supabase.from('social_engagements').select('*').in('comment_id', commentIds)
+          : { data: [] };
+        const engagements = [...(postEngs || []), ...(commentEngs || [])];
 
         const hydratedPosts = await Promise.all(rawPosts.map(async post => {
           try {

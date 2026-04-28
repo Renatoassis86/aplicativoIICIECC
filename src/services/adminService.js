@@ -57,7 +57,7 @@ export const bulkImportMembers = async (membersArray) => {
 
     // 2. Garante perfil apenas para CPFs que acabaram de ser inseridos (ou tenta upsert com ignore tb)
     const profilesPayload = payload.map(m => ({
-      cpf: m.cpf,
+      user_id: m.cpf,
       user_type: resolveUserType(m.ticket_type),
       onboarding_completed: false,
       password_reset: false,
@@ -67,9 +67,9 @@ export const bulkImportMembers = async (membersArray) => {
 
     const { error: profilesErr } = await supabase
       .from('profiles')
-      .upsert(profilesPayload, { 
-        onConflict: 'cpf',
-        ignoreDuplicates: true 
+      .upsert(profilesPayload, {
+        onConflict: 'user_id',
+        ignoreDuplicates: true
       });
 
     if (profilesErr) throw profilesErr;
@@ -95,13 +95,15 @@ export const fetchAllMembers = async () => {
 
 /**
  * Busca todos os perfis (onde mora o user_type)
+ * A coluna de identificação do membro é 'user_id' (= CPF) na tabela profiles.
+ * Retorna com a propriedade 'cpf' para compatibilidade com o restante do código.
  */
 export const fetchAllProfiles = async () => {
     const { data, error } = await supabase
         .from('profiles')
-        .select('cpf, user_type, avatar_url, job_title, linkedin_url');
+        .select('user_id, user_type, avatar_url, job_title');
     if (error) throw error;
-    return data;
+    return (data || []).map(p => ({ ...p, cpf: p.user_id }));
 };
 
 /**
