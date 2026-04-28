@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Check, Clock, ChevronLeft, Search,
-  AlertCircle, Users, Lock
+  AlertCircle, Users, Lock, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 const WorkshopsView = ({ userCpf, onClose }) => {
   const [workshops, setWorkshops] = useState([]);
-  const [registrations, setRegistrations] = useState([]); // IDs confirmados no DB
+  const [confirmed, setConfirmed] = useState([]); // IDs salvos definitivamente no DB
+  const [pending, setPending] = useState({});     // { [slotKey]: workshopId } — seleção local ainda não confirmada
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Fluxo de confirmação da 2ª oficina
-  const [pendingWorkshop, setPendingWorkshop] = useState(null); // workshop a confirmar
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -22,14 +20,11 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: sessions, error: sessionError } = await supabase
+      const { data: sessions } = await supabase
         .from('agenda_sessions')
         .select('*, speakers(*)')
         .eq('category', 'Oficina')
-        .order('session_date')
         .order('start_time');
-
-      if (sessionError) throw sessionError;
 
       const { data: userRegs } = await supabase
         .from('workshop_registrations')
@@ -45,12 +40,21 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         return acc;
       }, {});
 
-      setWorkshops((sessions || []).map(s => ({
+      const mapped = (sessions || []).map(s => ({
         ...s,
         registrations: countsMap[s.id] || 0,
         speakerName: s.speakers?.name || 'A confirmar'
-      })));
-      setRegistrations((userRegs || []).map(r => r.workshop_id));
+      }));
+
+      setWorkshops(mapped);
+
+      const regIds = (userRegs || []).map(r => r.workshop_id);
+      setConfirmed(regIds);
+
+      // Se já tem inscrições confirmadas, limpa o pending
+      if (regIds.length > 0) {
+        setPending({});
+      }
     } catch (err) {
       console.error('Error fetching workshop data:', err);
     } finally {
@@ -67,106 +71,91 @@ const WorkshopsView = ({ userCpf, onClose }) => {
     return 30;
   };
 
-  const isFull = (workshop) => (workshop.registrations || 0) >= getCapacity(workshop);
+  const isFull = (w) => (w.registrations || 0) >= getCapacity(w);
 
-  const hasFinished = registrations.length >= 2;
+  // Já confirmou as 2 → tudo bloqueado
+  const isFinished = confirmed.length >= 2;
 
-  const getRegisteredWorkshops = () => workshops.filter(w => registrations.includes(w.id));
+  const slotKeys = ['14:15', '15:30'];
+  const slotLabels = {
+    '14:15': '1º Horário — 14h15 às 15h15',
+    '15:30': '2º Horário — 15h30 às 16h30'
+  };
 
-  const handleClickWorkshop = (workshop) => {
-    if (saving) return;
+  const getSlotKey = (w) => w.start_time?.substring(0, 5);
 
-    // Se já confirmou as duas, bloqueado
-    if (hasFinished) {
-      alert('Suas inscrições já foram finalizadas e não podem ser alteradas.');
+  const getWorkshopById = (id) => workshops.find(w => w.id === id);
+
+  const pendingList = Object.values(pending).map(id => getWorkshopById(id)).filter(Boolean);
+  const confirmedList = confirmed.map(id => getWorkshopById(id)).filter(Boolean);
+
+  const handleSelect = (workshop) => {
+    if (saving || isFinished) return;
+
+    const slotKey = getSlotKey(workshop);
+    if (!slotKey) return;
+
+    // Toggle: se já está pendente neste slot, desmarca
+    if (pending[slotKey] === workshop.id) {
+      setPending(prev => {
+        const next = { ...prev };
+        delete next[slotKey];
+        return next;
+      });
       return;
     }
 
-    const isRegistered = registrations.includes(workshop.id);
+    // Bloquear lotada
+    if (isFull(workshop)) return;
 
-    // Desmarcar a única seleção (se só tem 1, pode desmarcar)
-    if (isRegistered) {
-      handleRemoveWorkshop(workshop.id);
-      return;
+    // Seleciona neste slot (substituindo qualquer outro do mesmo slot)
+    const newPending = { ...pending, [slotKey]: workshop.id };
+    setPending(newPending);
+
+    // Se os dois slots foram escolhidos, abre modal de confirmação
+    const selectedSlots = Object.keys(newPending);
+    if (selectedSlots.length === 2) {
+      setShowConfirmModal(true);
     }
-
-    // Bloquear conflito de horário
-    const alreadyInSlot = workshops.find(w =>
-      registrations.includes(w.id) && w.start_time === workshop.start_time
-    );
-    if (alreadyInSlot) {
-      alert('Já existe uma oficina selecionada para este horário. Desmarque-a primeiro.');
-      return;
-    }
-
-    // Bloquear se lotada
-    if (isFull(workshop)) {
-      alert('Desculpe, esta oficina já atingiu o limite de vagas.');
-      return;
-    }
-
-    // Primeira oficina: registra direto
-    if (registrations.length === 0) {
-      saveWorkshop(workshop.id);
-      return;
-    }
-
-    // Segunda oficina: abre modal de confirmação
-    setPendingWorkshop(workshop);
-    setShowConfirmModal(true);
   };
 
   const handleConfirm = async () => {
-    if (!pendingWorkshop) return;
+    if (Object.keys(pending).length < 2) return;
+    setSaving(true);
     setShowConfirmModal(false);
-    await saveWorkshop(pendingWorkshop.id);
-    setShowSuccessModal(true);
-    setPendingWorkshop(null);
-  };
-
-  const saveWorkshop = async (workshopId) => {
-    setSaving(true);
     try {
+      const toInsert = Object.values(pending).map(id => ({
+        user_cpf: userCpf,
+        workshop_id: id
+      }));
       const { error } = await supabase
         .from('workshop_registrations')
-        .insert([{ user_cpf: userCpf, workshop_id: workshopId }]);
+        .insert(toInsert);
       if (error) throw error;
-      setRegistrations(prev => [...prev, workshopId]);
+      setConfirmed(Object.values(pending));
+      setPending({});
       await fetchData();
+      setShowSuccessModal(true);
     } catch (err) {
-      console.error('Error saving workshop:', err);
-      alert('Erro ao processar sua inscrição. Tente novamente.');
+      console.error('Error saving workshops:', err);
+      alert('Erro ao confirmar inscrições. Tente novamente.');
+      setShowConfirmModal(true);
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleRemoveWorkshop = async (workshopId) => {
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from('workshop_registrations')
-        .delete()
-        .eq('user_cpf', userCpf)
-        .eq('workshop_id', workshopId);
-      if (error) throw error;
-      setRegistrations(prev => prev.filter(id => id !== workshopId));
-      await fetchData();
-    } catch (err) {
-      console.error('Error removing workshop:', err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const slots = {
-    '1º Horário — 14h15 às 15h15': workshops.filter(w => w.start_time?.startsWith('14:15')),
-    '2º Horário — 15h30 às 16h30': workshops.filter(w => w.start_time?.startsWith('15:30'))
   };
 
   const matchesSearch = (w) =>
+    !searchTerm ||
     w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     w.speakerName.toLowerCase().includes(searchTerm.toLowerCase());
+
+  const getCardState = (workshop) => {
+    const slotKey = getSlotKey(workshop);
+    if (confirmed.includes(workshop.id)) return 'confirmed';
+    if (pending[slotKey] === workshop.id) return 'pending';
+    return 'default';
+  };
 
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', maxWidth: '500px', margin: '0 auto', position: 'relative' }}>
@@ -186,7 +175,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
           }}>
             <ChevronLeft size={20} /> Voltar
           </button>
-          <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#D4C19C' }}>Minhas Oficinas</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#D4C19C' }}>Oficinas</h2>
           <div style={{ width: '80px' }} />
         </div>
 
@@ -194,20 +183,24 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '20px' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '16px', flexShrink: 0,
-            background: hasFinished ? '#48BB78' : '#D4C19C',
+            background: isFinished ? '#48BB78' : '#D4C19C',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '16px', fontWeight: '900', color: '#111'
           }}>
-            {hasFinished ? <Lock size={20} color="#111" /> : `${registrations.length}/2`}
+            {isFinished ? <Lock size={20} color="#111" /> : `${Object.keys(pending).length}/2`}
           </div>
           <div>
             <p style={{ fontSize: '14px', fontWeight: '800' }}>
-              {hasFinished ? 'Inscrições Confirmadas e Bloqueadas' : registrations.length === 1 ? 'Escolha mais uma oficina' : 'Selecione suas Oficinas'}
+              {isFinished
+                ? 'Inscrições Confirmadas'
+                : Object.keys(pending).length === 1
+                  ? 'Falta escolher mais uma'
+                  : 'Escolha suas oficinas'}
             </p>
             <p style={{ fontSize: '11px', opacity: 0.75 }}>
-              {hasFinished
-                ? 'Suas escolhas foram salvas definitivamente.'
-                : 'Escolha uma oficina para cada bloco de horário.'}
+              {isFinished
+                ? 'Suas escolhas são definitivas.'
+                : 'Uma oficina por bloco de horário.'}
             </p>
           </div>
         </div>
@@ -215,17 +208,16 @@ const WorkshopsView = ({ userCpf, onClose }) => {
 
       <div style={{ padding: '24px 20px', paddingBottom: '120px' }}>
 
-        {/* Resumo das escolhas */}
-        {registrations.length > 0 && (
-          <div style={{ marginBottom: '28px', background: 'white', padding: '20px', borderRadius: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: `2px solid ${hasFinished ? '#48BB78' : '#D4C19C'}` }}>
-            <h4 style={{ fontSize: '13px', fontWeight: '900', color: hasFinished ? '#22C55E' : 'var(--primary)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {hasFinished ? <Lock size={14} /> : <Check size={14} />}
-              {hasFinished ? 'INSCRIÇÕES CONFIRMADAS' : 'OFICINAS SELECIONADAS'}
+        {/* Resumo das confirmadas */}
+        {isFinished && (
+          <div style={{ marginBottom: '28px', background: 'white', padding: '20px', borderRadius: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '2px solid #48BB78' }}>
+            <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#22C55E', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Lock size={14} /> INSCRIÇÕES CONFIRMADAS
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {getRegisteredWorkshops().map(w => (
-                <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {confirmedList.map(w => (
+                <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>
                     {w.start_time?.substring(0, 5)}
                   </div>
                   <div>
@@ -235,11 +227,22 @@ const WorkshopsView = ({ userCpf, onClose }) => {
                 </div>
               ))}
             </div>
-            {hasFinished && (
-              <p style={{ fontSize: '11px', color: '#718096', marginTop: '14px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Lock size={10} /> Não é possível alterar após a confirmação.
+            <p style={{ fontSize: '11px', color: '#A0AEC0', marginTop: '14px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Lock size={10} /> Não é possível alterar após a confirmação.
+            </p>
+          </div>
+        )}
+
+        {/* Instrução geral */}
+        {!isFinished && (
+          <div style={{ background: '#FFFBEB', padding: '16px', borderRadius: '20px', border: '1px solid #FCD34D', display: 'flex', gap: '12px', marginBottom: '28px' }}>
+            <AlertCircle size={20} color="#D97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: '800', color: '#92400E', marginBottom: '4px' }}>Como funciona</p>
+              <p style={{ fontSize: '12px', color: '#78350F', lineHeight: '1.6' }}>
+                Escolha <strong>uma oficina para o 1º horário</strong> e <strong>uma para o 2º horário</strong>. Após confirmar as duas escolhas, <strong>não será possível alterar</strong>.
               </p>
-            )}
+            </div>
           </div>
         )}
 
@@ -260,87 +263,107 @@ const WorkshopsView = ({ userCpf, onClose }) => {
             <p style={{ color: '#718096', fontSize: '14px' }}>Carregando oficinas...</p>
           </div>
         ) : (
-          Object.entries(slots).map(([slotName, items]) => (
-            <div key={slotName} style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                <Clock size={15} color="var(--primary)" />
-                <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {slotName}
-                </h4>
-              </div>
+          slotKeys.map(slotKey => {
+            const slotWorkshops = workshops.filter(w => getSlotKey(w) === slotKey).filter(matchesSearch);
+            const selectedInSlot = pending[slotKey] || confirmed.find(id => {
+              const w = getWorkshopById(id);
+              return w && getSlotKey(w) === slotKey;
+            });
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {items.filter(matchesSearch).map(workshop => {
-                  const isRegistered = registrations.includes(workshop.id);
-                  const full = isFull(workshop);
-                  const capacity = getCapacity(workshop);
-                  const isBlocked = !isRegistered && (full || hasFinished);
+            return (
+              <div key={slotKey} style={{ marginBottom: '36px' }}>
 
-                  return (
-                    <div
-                      key={workshop.id}
-                      onClick={() => handleClickWorkshop(workshop)}
-                      style={{
-                        background: 'white', borderRadius: '20px', padding: '18px 20px',
-                        border: isRegistered ? '2px solid var(--primary)' : '2px solid transparent',
-                        boxShadow: isRegistered ? '0 6px 20px rgba(107,20,26,0.1)' : '0 3px 10px rgba(0,0,0,0.04)',
-                        opacity: isBlocked ? 0.45 : 1,
-                        transition: 'all 0.2s ease',
-                        cursor: isBlocked ? 'not-allowed' : 'pointer',
-                        position: 'relative'
-                      }}
-                    >
-                      {/* Título */}
-                      <h3 style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', marginBottom: '4px', lineHeight: '1.4' }}>
-                        {workshop.title}
-                      </h3>
+                {/* Cabeçalho do bloco */}
+                <div style={{
+                  background: 'white', borderRadius: '16px', padding: '14px 16px',
+                  marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  borderLeft: `4px solid ${selectedInSlot ? '#22C55E' : 'var(--primary)'}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <Clock size={15} color="var(--primary)" />
+                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {slotLabels[slotKey]}
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '12px', color: selectedInSlot ? '#22C55E' : '#718096', fontWeight: selectedInSlot ? '700' : '500' }}>
+                    {isFinished
+                      ? selectedInSlot
+                        ? `✓ ${getWorkshopById(selectedInSlot)?.title || ''}`
+                        : '—'
+                      : selectedInSlot
+                        ? `Selecionada: ${getWorkshopById(selectedInSlot)?.title || ''}`
+                        : 'Escolha uma oficina abaixo para este horário'}
+                  </p>
+                </div>
 
-                      {/* Palestrante */}
-                      <p style={{ fontSize: '12px', color: '#718096', marginBottom: '10px' }}>
-                        {workshop.speakerName}
-                      </p>
+                {/* Lista de oficinas */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {slotWorkshops.map(workshop => {
+                    const state = getCardState(workshop);
+                    const full = isFull(workshop);
+                    const capacity = getCapacity(workshop);
+                    const isBlocked = state === 'default' && (full || isFinished);
+                    const isSelectedInOtherSlot = !pending[slotKey] && Object.values(pending).includes(workshop.id);
 
-                      {/* Footer: vagas + status */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <Users size={12} color="#A0AEC0" />
-                          <span style={{ fontSize: '11px', color: '#A0AEC0' }}>
-                            {workshop.registrations}/{capacity} vagas
-                          </span>
+                    return (
+                      <div
+                        key={workshop.id}
+                        onClick={() => !isBlocked && !isSelectedInOtherSlot && handleSelect(workshop)}
+                        style={{
+                          background: state === 'confirmed' ? '#F0FFF4'
+                            : state === 'pending' ? '#FDF2F2'
+                            : 'white',
+                          borderRadius: '20px', padding: '18px 20px',
+                          border: state === 'confirmed' ? '2px solid #48BB78'
+                            : state === 'pending' ? '2px solid var(--primary)'
+                            : '2px solid transparent',
+                          boxShadow: state !== 'default' ? '0 6px 20px rgba(0,0,0,0.08)' : '0 3px 10px rgba(0,0,0,0.04)',
+                          opacity: isBlocked ? 0.4 : 1,
+                          transition: 'all 0.2s ease',
+                          cursor: isBlocked ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        <h3 style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', marginBottom: '4px', lineHeight: '1.4' }}>
+                          {workshop.title}
+                        </h3>
+                        <p style={{ fontSize: '12px', color: '#718096', marginBottom: '10px' }}>
+                          {workshop.speakerName}
+                        </p>
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <Users size={12} color="#A0AEC0" />
+                            <span style={{ fontSize: '11px', color: '#A0AEC0' }}>
+                              {workshop.registrations}/{capacity} vagas
+                            </span>
+                          </div>
+
+                          {state === 'confirmed' ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#22C55E', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
+                              <Lock size={10} /> CONFIRMADO
+                            </div>
+                          ) : state === 'pending' ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
+                              <Check size={11} /> SELECIONADO
+                            </div>
+                          ) : full ? (
+                            <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
+                              ESGOTADO
+                            </div>
+                          ) : null}
                         </div>
-
-                        {isRegistered ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
-                            <Check size={11} /> SELECIONADO
-                          </div>
-                        ) : full ? (
-                          <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
-                            VAGAS ESGOTADAS
-                          </div>
-                        ) : null}
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
-
-        {/* Aviso */}
-        <div style={{ background: '#FFFBEB', padding: '16px', borderRadius: '20px', border: '1px solid #FCD34D', display: 'flex', gap: '12px' }}>
-          <AlertCircle size={20} color="#D97706" style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div>
-            <p style={{ fontSize: '13px', fontWeight: '800', color: '#92400E', marginBottom: '4px' }}>Atenção</p>
-            <p style={{ fontSize: '12px', color: '#78350F', lineHeight: '1.5' }}>
-              Escolha <strong>uma oficina por horário</strong> (14h15 e 15h30). Após confirmar as duas escolhas, não será possível alterar.
-            </p>
-          </div>
-        </div>
       </div>
 
-      {/* ====== MODAL DE CONFIRMAÇÃO (2ª oficina) ====== */}
-      {showConfirmModal && pendingWorkshop && (
+      {/* ====== MODAL DE CONFIRMAÇÃO ====== */}
+      {showConfirmModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(10,15,26,0.85)', backdropFilter: 'blur(16px)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 2000, padding: '20px'
@@ -349,55 +372,53 @@ const WorkshopsView = ({ userCpf, onClose }) => {
             background: 'white', borderRadius: '32px 32px 28px 28px', padding: '32px 24px',
             width: '100%', maxWidth: '420px', boxShadow: '0 -10px 40px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ width: '48px', height: '48px', background: '#FDF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <Lock size={22} color="var(--primary)" />
+            <div style={{ width: '56px', height: '56px', background: '#FDF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Lock size={24} color="var(--primary)" />
             </div>
 
             <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--secondary)', textAlign: 'center', marginBottom: '8px' }}>
-              Confirmar Inscrições?
+              Tem certeza?
             </h3>
-            <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center', marginBottom: '24px', lineHeight: '1.5' }}>
-              Após confirmar, <strong>não será possível alterar</strong> suas escolhas.
+            <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center', marginBottom: '24px', lineHeight: '1.6' }}>
+              Após confirmar, <strong>não será mais possível alterar</strong> suas escolhas. Verifique abaixo se está tudo certo.
             </p>
 
-            {/* Resumo das 2 escolhas */}
-            <div style={{ background: '#F8F9FA', borderRadius: '16px', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {getRegisteredWorkshops().map(w => (
+            {/* Resumo das 2 escolhas pendentes */}
+            <div style={{ background: '#F8F9FA', borderRadius: '16px', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {pendingList.map(w => (
                 <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '4px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', flexShrink: 0 }}>
+                  <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>
                     {w.start_time?.substring(0, 5)}
                   </div>
                   <div>
-                    <p style={{ fontSize: '13px', fontWeight: '700', color: '#1A365D', lineHeight: '1.3' }}>{w.title}</p>
-                    <p style={{ fontSize: '11px', color: '#718096' }}>{w.speakerName}</p>
+                    <p style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', lineHeight: '1.3' }}>{w.title}</p>
+                    <p style={{ fontSize: '12px', color: '#718096', marginTop: '2px' }}>{w.speakerName}</p>
                   </div>
                 </div>
               ))}
-              {/* A que está sendo confirmada agora */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', borderTop: '1px dashed #E2E8F0', paddingTop: '12px' }}>
-                <div style={{ background: '#F0FFF4', color: '#22C55E', padding: '4px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', flexShrink: 0 }}>
-                  {pendingWorkshop.start_time?.substring(0, 5)}
-                </div>
-                <div>
-                  <p style={{ fontSize: '13px', fontWeight: '700', color: '#1A365D', lineHeight: '1.3' }}>{pendingWorkshop.title}</p>
-                  <p style={{ fontSize: '11px', color: '#718096' }}>{pendingWorkshop.speakerName}</p>
-                </div>
-              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button
                 onClick={handleConfirm}
                 disabled={saving}
-                style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', padding: '16px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', width: '100%' }}
+                style={{
+                  background: 'var(--primary)', color: 'white', border: 'none',
+                  borderRadius: '16px', padding: '18px', fontSize: '15px', fontWeight: '900',
+                  cursor: 'pointer', width: '100%'
+                }}
               >
                 {saving ? 'CONFIRMANDO...' : 'SIM, CONFIRMAR MINHAS ESCOLHAS'}
               </button>
               <button
-                onClick={() => { setShowConfirmModal(false); setPendingWorkshop(null); }}
-                style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', width: '100%' }}
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  background: '#F1F5F9', color: '#475569', border: 'none',
+                  borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: '700',
+                  cursor: 'pointer', width: '100%'
+                }}
               >
-                Voltar e Alterar
+                NÃO, VOLTAR E ALTERAR
               </button>
             </div>
           </div>
@@ -416,12 +437,12 @@ const WorkshopsView = ({ userCpf, onClose }) => {
             boxShadow: '0 30px 60px rgba(0,0,0,0.4)'
           }}>
             <div style={{ width: '80px', height: '80px', background: '#F0FDF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <Check size={40} color="#22C55E" strokeWidth={3} />
+              <CheckCircle size={44} color="#22C55E" strokeWidth={2.5} />
             </div>
             <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px' }}>
               Inscrições Confirmadas!
             </h2>
-            <p style={{ fontSize: '14px', color: '#475569', marginBottom: '8px', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '14px', color: '#475569', marginBottom: '8px', lineHeight: '1.6' }}>
               Suas vagas nas oficinas estão garantidas.
             </p>
             <p style={{ fontSize: '12px', color: '#A0AEC0', marginBottom: '28px' }}>
