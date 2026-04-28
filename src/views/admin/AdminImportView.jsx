@@ -1,36 +1,32 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, FileText, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, RefreshCw, LogOut } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, RefreshCw, LogOut, Users } from 'lucide-react';
 import { formatCPF, isValidCPF, stripCPF } from '../../utils/cpfUtils';
 import { bulkImportMembers } from '../../services/adminService';
+import { supabase } from '../../lib/supabase';
 
 const AdminImportView = ({ onBackToApp }) => {
-  const [step, setStep] = useState(1); // 1: Upload, 2: Map, 3: Validate, 4: Result
+  const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [rawData, setRawData] = useState([]);
   const [columns, setColumns] = useState([]);
-  
-  // Mapeamento: chave interna -> nome da coluna no arquivo
-  const [mapping, setMapping] = useState({ 
-    cpf: '', 
-    name: '', 
-    email: '', 
-    phone: '', 
-    institution: '', 
-    city: '', 
-    state: '', 
-    ticket_type: '' 
+  const [totalCadastrados, setTotalCadastrados] = useState(null);
+
+  const [mapping, setMapping] = useState({
+    cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: ''
   });
-  
-  // Filas validadas
+
   const [validRows, setValidRows] = useState([]);
   const [invalidRows, setInvalidRows] = useState([]);
-  
-  // Status final
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
-  
+
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    supabase.from('members').select('*', { count: 'exact', head: true })
+      .then(({ count }) => setTotalCadastrados(count ?? 0));
+  }, []);
 
   // 1. Processar Arquivo Base (CSV ou XLSX)
   const handleFileUpload = (e) => {
@@ -172,6 +168,9 @@ const AdminImportView = ({ onBackToApp }) => {
     setImportResult(result);
     setIsImporting(false);
     setStep(4);
+    // Atualiza contagem real após importação
+    supabase.from('members').select('*', { count: 'exact', head: true })
+      .then(({ count }) => setTotalCadastrados(count ?? 0));
   };
 
   // Funções Utilitárias de Reset e Saída
@@ -207,36 +206,37 @@ const AdminImportView = ({ onBackToApp }) => {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <header style={{ 
-        background: 'linear-gradient(180deg, #4A101D 0%, #6B141A 100%)', 
-        padding: '32px 20px',
+      <header style={{
+        background: 'linear-gradient(180deg, #4A101D 0%, #6B141A 100%)',
+        padding: '32px 20px 20px',
         color: 'white',
         borderBottom: '1px solid var(--border-color)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            background: 'var(--gold)', 
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#000',
-            fontWeight: '900',
-            fontSize: '18px'
-          }}>C</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '40px', height: '40px', background: 'var(--gold)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: '900', fontSize: '18px' }}>C</div>
+            <div>
+              <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>Importar Congressistas</h1>
+              <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Módulo de Importação</p>
+            </div>
+          </div>
+          <button onClick={onBackToApp} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}>
+            <LogOut size={20} />
+          </button>
+        </div>
+
+        {/* CONTADOR REAL DE PARTICIPANTES */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.1)', borderRadius: '16px', padding: '16px 20px', border: '1px solid rgba(255,255,255,0.15)' }}>
+          <div style={{ background: 'var(--gold)', padding: '10px', borderRadius: '12px', display: 'flex' }}>
+            <Users size={22} color="#000" />
+          </div>
           <div>
-            <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>Importar Congressistas</h1>
-            <p style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>Módulo de Importação</p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Total de Participantes Cadastrados</p>
+            <p style={{ fontSize: '28px', fontWeight: '900', color: 'white', margin: 0, lineHeight: 1.1 }}>
+              {totalCadastrados === null ? '...' : totalCadastrados.toLocaleString('pt-BR')}
+            </p>
           </div>
         </div>
-        <button onClick={onBackToApp} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}>
-          <LogOut size={20} />
-        </button>
       </header>
 
       <main style={{ padding: '24px 20px', maxWidth: '800px', margin: '0 auto' }}>
@@ -514,13 +514,13 @@ export default AdminImportView;
 
 const mapLabelStyle = {
   display: 'block', marginBottom: '6px',
-  fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.5)',
+  fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.6)',
   textTransform: 'uppercase', letterSpacing: '1px'
 };
 const mapSelectStyle = {
   width: '100%', padding: '12px 14px', borderRadius: '10px',
-  border: '1px solid rgba(255,255,255,0.15)',
-  background: 'rgba(255,255,255,0.08)',
-  color: '#FFFFFF', fontSize: '14px', fontWeight: '600',
+  border: '1px solid #CBD5E1',
+  background: '#FFFFFF',
+  color: '#1A202C', fontSize: '14px', fontWeight: '600',
   cursor: 'pointer', outline: 'none'
 };
