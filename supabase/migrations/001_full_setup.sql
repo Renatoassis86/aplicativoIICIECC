@@ -296,6 +296,31 @@ ALTER TABLE system_notifications_reads ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "notif_reads_all" ON system_notifications_reads;
 CREATE POLICY "notif_reads_all" ON system_notifications_reads FOR ALL USING (true) WITH CHECK (true);
 
+-- sponsors
+ALTER TABLE sponsors ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "sponsors_all" ON sponsors;
+CREATE POLICY "sponsors_all" ON sponsors FOR ALL USING (true) WITH CHECK (true);
+
+-- agenda_sessions
+ALTER TABLE agenda_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "agenda_sessions_all" ON agenda_sessions;
+CREATE POLICY "agenda_sessions_all" ON agenda_sessions FOR ALL USING (true) WITH CHECK (true);
+
+-- speakers
+ALTER TABLE speakers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "speakers_all" ON speakers;
+CREATE POLICY "speakers_all" ON speakers FOR ALL USING (true) WITH CHECK (true);
+
+-- members
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "members_all" ON members;
+CREATE POLICY "members_all" ON members FOR ALL USING (true) WITH CHECK (true);
+
+-- profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "profiles_all" ON profiles;
+CREATE POLICY "profiles_all" ON profiles FOR ALL USING (true) WITH CHECK (true);
+
 -- ==============================
 -- 18. CONTEÚDO INICIAL: content_registry
 -- Chaves necessárias para o app funcionar

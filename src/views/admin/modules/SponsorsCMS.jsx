@@ -85,10 +85,12 @@ export default function SponsorsCMS() {
             updated_at: new Date().toISOString()
         };
 
-        const { error } = await supabase.from('sponsors').upsert({
-            id: id || undefined,
-            ...dataToSave
-        });
+        let error;
+        if (id) {
+            ({ error } = await supabase.from('sponsors').update(dataToSave).eq('id', id));
+        } else {
+            ({ error } = await supabase.from('sponsors').insert(dataToSave));
+        }
 
         if (error) throw error;
 
