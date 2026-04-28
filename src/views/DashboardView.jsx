@@ -33,7 +33,7 @@ import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import ProfileView from './ProfileView';
 import WorkshopsView from './info/WorkshopsView';
 import MediaDetailView from './media/MediaDetailView';
-import { fetchInbox, initPushNotifications } from '../services/notifications/notificationService';
+import { fetchInbox, initPushNotifications, subscribeToNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
 
@@ -51,15 +51,22 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
   const { content: menuSpeakers } = useContent('nav', 'menu_speakers');
 
   useEffect(() => {
-    // 1. Inicializa Motores de Push Nativo (Para App Stores)
     initPushNotifications(userCpf);
-    
-    // 2. Traz estado atual da Inbox
+
     const syncInbox = async () => {
-      const { unreadCount } = await fetchInbox(userCpf, userType);
-      setUnreadCount(unreadCount || 0);
+      const items = await fetchInbox(userCpf, userType);
+      setUnreadCount((items || []).filter(n => !n.isRead).length);
     };
     syncInbox();
+
+    // Atualiza badge em tempo real quando nova notificação chegar
+    const channel = subscribeToNotifications(() => {
+      setUnreadCount(prev => prev + 1);
+    });
+
+    return () => {
+      if (channel && typeof channel.unsubscribe === 'function') channel.unsubscribe();
+    };
   }, [userCpf]);
 
   useEffect(() => {
@@ -142,8 +149,8 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
             userRole={userType} 
             onClose={() => {
               setCurrentPage(null);
-              fetchInbox(userCpf, userType).then(r => setUnreadCount(r.unreadCount || 0));
-            }} 
+              fetchInbox(userCpf, userType).then(items => setUnreadCount((items || []).filter(n => !n.isRead).length));
+            }}
           />
         )}
         {currentPage === 'faq' && <FAQView onClose={() => setCurrentPage(null)} />}

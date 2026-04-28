@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Bell, CheckCircle, RefreshCcw, BellRing, User, Clock } from 'lucide-react';
-import { fetchInbox, markAsRead, subscribeToNotifications } from '../../services/notifications/notificationService';
+import { fetchInbox, markAsRead } from '../../services/notifications/notificationService';
 
 const formatTime = (iso) => {
   if (!iso) return '';
@@ -29,15 +29,6 @@ const NotificationsSheet = ({ userId, userRole, onClose }) => {
 
   useEffect(() => {
     carregarMensagens();
-
-    // Auto-refresh via Realtime: nova notificação → recarrega inbox
-    const channel = subscribeToNotifications(() => {
-      carregarMensagens();
-    });
-
-    return () => {
-      if (channel && typeof channel.unsubscribe === 'function') channel.unsubscribe();
-    };
   }, [carregarMensagens]);
 
   const handleRead = async (id, isCurrentlyRead) => {
