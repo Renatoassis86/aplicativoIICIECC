@@ -297,11 +297,11 @@ const AdminImportView = ({ onBackToApp }) => {
                 Mapeamento de Colunas
                 </h3>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
+                    <button
                         onClick={() => autoMapColumns(columns)}
                         style={{ fontSize: '11px', fontWeight: '800', background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
                     >Autodetectar</button>
-                    <button 
+                    <button
                         onClick={applyForumPreset}
                         style={{ fontSize: '11px', fontWeight: '800', background: 'var(--gold)', color: '#000', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
                     >Layout Fórum/Moodle</button>
@@ -312,101 +312,67 @@ const AdminImportView = ({ onBackToApp }) => {
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
-              <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">Coluna de CPF/CNPJ (Obrigatório)</label>
-                <select 
-                  className="input-field" 
-                  value={mapping.cpf} 
-                  onChange={(e) => setMapping({...mapping, cpf: e.target.value})}
-                >
+              <div style={{ margin: 0 }}>
+                <label style={mapLabelStyle}>Coluna de CPF/CNPJ (Obrigatório)</label>
+                <select style={mapSelectStyle} value={mapping.cpf} onChange={(e) => setMapping({...mapping, cpf: e.target.value})}>
                   <option value="">Selecione a coluna...</option>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
-              <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">Coluna de Nome (Obrigatório)</label>
-                <select 
-                  className="input-field" 
-                  value={mapping.name} 
-                  onChange={(e) => setMapping({...mapping, name: e.target.value})}
-                >
+              <div style={{ margin: 0 }}>
+                <label style={mapLabelStyle}>Coluna de Nome (Obrigatório)</label>
+                <select style={mapSelectStyle} value={mapping.name} onChange={(e) => setMapping({...mapping, name: e.target.value})}>
                   <option value="">Selecione a coluna...</option>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
-              <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">E-mail (Recomendado)</label>
-                <select 
-                  className="input-field" 
-                  value={mapping.email} 
-                  onChange={(e) => setMapping({...mapping, email: e.target.value})}
-                >
+              <div style={{ margin: 0 }}>
+                <label style={mapLabelStyle}>E-mail (Recomendado)</label>
+                <select style={mapSelectStyle} value={mapping.email} onChange={(e) => setMapping({...mapping, email: e.target.value})}>
                   <option value="">Ignorar ou selecione...</option>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="input-group" style={{ margin: 0 }}>
-                    <label className="input-label">Telefone / Whats</label>
-                    <select 
-                    className="input-field" 
-                    value={mapping.phone} 
-                    onChange={(e) => setMapping({...mapping, phone: e.target.value})}
-                    >
+                <div>
+                  <label style={mapLabelStyle}>Telefone / Whats</label>
+                  <select style={mapSelectStyle} value={mapping.phone} onChange={(e) => setMapping({...mapping, phone: e.target.value})}>
                     <option value="">Ignorar...</option>
                     {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  </select>
                 </div>
-
-                <div className="input-group" style={{ margin: 0 }}>
-                    <label className="input-label">Escola / Instituição</label>
-                    <select 
-                    className="input-field" 
-                    value={mapping.institution} 
-                    onChange={(e) => setMapping({...mapping, institution: e.target.value})}
-                    >
+                <div>
+                  <label style={mapLabelStyle}>Escola / Instituição</label>
+                  <select style={mapSelectStyle} value={mapping.institution} onChange={(e) => setMapping({...mapping, institution: e.target.value})}>
                     <option value="">Ignorar...</option>
                     {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  </select>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="input-group" style={{ margin: 0 }}>
-                    <label className="input-label">Cidade</label>
-                    <select 
-                    className="input-field" 
-                    value={mapping.city} 
-                    onChange={(e) => setMapping({...mapping, city: e.target.value})}
-                    >
+                <div>
+                  <label style={mapLabelStyle}>Cidade</label>
+                  <select style={mapSelectStyle} value={mapping.city} onChange={(e) => setMapping({...mapping, city: e.target.value})}>
                     <option value="">Ignorar...</option>
                     {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  </select>
                 </div>
-
-                <div className="input-group" style={{ margin: 0 }}>
-                    <label className="input-label">UF</label>
-                    <select 
-                    className="input-field" 
-                    value={mapping.state} 
-                    onChange={(e) => setMapping({...mapping, state: e.target.value})}
-                    >
+                <div>
+                  <label style={mapLabelStyle}>UF</label>
+                  <select style={mapSelectStyle} value={mapping.state} onChange={(e) => setMapping({...mapping, state: e.target.value})}>
                     <option value="">Ignorar...</option>
                     {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  </select>
                 </div>
               </div>
 
-              <div className="input-group" style={{ margin: 0 }}>
-                <label className="input-label">Coluna Tipo Ingresso (Opcional)</label>
-                <select 
-                  className="input-field" 
-                  value={mapping.ticket_type} 
-                  onChange={(e) => setMapping({...mapping, ticket_type: e.target.value})}
-                >
+              <div style={{ margin: 0 }}>
+                <label style={mapLabelStyle}>Coluna Tipo Ingresso (Opcional)</label>
+                <select style={mapSelectStyle} value={mapping.ticket_type} onChange={(e) => setMapping({...mapping, ticket_type: e.target.value})}>
                   <option value="">Ignorar ou selecione...</option>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -503,7 +469,8 @@ const AdminImportView = ({ onBackToApp }) => {
                 </div>
                 <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px' }}>Importação Concluída!</h2>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-                  Foram cadastrados/atualizados <strong>{importResult.count} membros</strong> com sucesso no Supabase.
+                  <strong>{importResult.inserted} novos membros</strong> cadastrados.{' '}
+                  {importResult.skipped > 0 && <span>{importResult.skipped} já existentes foram mantidos sem alteração.</span>}
                 </p>
                 <button 
                   className="btn-primary" 
@@ -544,3 +511,16 @@ const AdminImportView = ({ onBackToApp }) => {
 };
 
 export default AdminImportView;
+
+const mapLabelStyle = {
+  display: 'block', marginBottom: '6px',
+  fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.5)',
+  textTransform: 'uppercase', letterSpacing: '1px'
+};
+const mapSelectStyle = {
+  width: '100%', padding: '12px 14px', borderRadius: '10px',
+  border: '1px solid rgba(255,255,255,0.15)',
+  background: 'rgba(255,255,255,0.08)',
+  color: '#FFFFFF', fontSize: '14px', fontWeight: '600',
+  cursor: 'pointer', outline: 'none'
+};

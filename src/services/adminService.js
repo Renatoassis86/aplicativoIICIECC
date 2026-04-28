@@ -44,37 +44,42 @@ export const bulkImportMembers = async (membersArray) => {
       created_at: m.created_at || new Date().toISOString()
     }));
 
-    // 1. Upsert na tabela members - Regra: ignoreDuplicates: true (Não sobrescreve CPFs existentes)
-    const { data: members, error: membersErr } = await supabase
+    // 1. Busca CPFs já existentes para calcular novos vs existentes
+    const incomingCpfs = payload.map(m => m.cpf);
+    const { data: existing } = await supabase
       .from('members')
-      .upsert(payload, { 
-        onConflict: 'cpf',
-        ignoreDuplicates: true 
-      })
-      .select();
+      .select('cpf')
+      .in('cpf', incomingCpfs);
+    const existingSet = new Set((existing || []).map(e => e.cpf));
+    const newOnly = payload.filter(m => !existingSet.has(m.cpf));
+    const skipped = payload.length - newOnly.length;
 
-    if (membersErr) throw membersErr;
+    // 2. Insere apenas os novos (sem sobrescrever os existentes)
+    let inserted = 0;
+    if (newOnly.length > 0) {
+      const { data: members, error: membersErr } = await supabase
+        .from('members')
+        .insert(newOnly)
+        .select();
+      if (membersErr) throw membersErr;
+      inserted = members?.length || newOnly.length;
 
-    // 2. Garante perfil apenas para CPFs que acabaram de ser inseridos (ou tenta upsert com ignore tb)
-    const profilesPayload = payload.map(m => ({
-      user_id: m.cpf,
-      user_type: resolveUserType(m.ticket_type),
-      onboarding_completed: false,
-      password_reset: false,
-      current_password: 'congresso2026',
-      updated_at: new Date().toISOString()
-    }));
+      // 3. Cria perfil apenas para os novos inseridos
+      const profilesPayload = newOnly.map(m => ({
+        user_id: m.cpf,
+        user_type: resolveUserType(m.ticket_type),
+        onboarding_completed: false,
+        password_reset: false,
+        current_password: 'congresso2026',
+        updated_at: new Date().toISOString()
+      }));
+      const { error: profilesErr } = await supabase
+        .from('profiles')
+        .upsert(profilesPayload, { onConflict: 'user_id', ignoreDuplicates: true });
+      if (profilesErr) throw profilesErr;
+    }
 
-    const { error: profilesErr } = await supabase
-      .from('profiles')
-      .upsert(profilesPayload, {
-        onConflict: 'user_id',
-        ignoreDuplicates: true
-      });
-
-    if (profilesErr) throw profilesErr;
-
-    return { success: true, count: payload.length, data: members };
+    return { success: true, inserted, skipped, count: inserted };
   } catch (error) {
     console.error('Falha genérica no adminService:', error);
     return { success: false, error: error.message };
