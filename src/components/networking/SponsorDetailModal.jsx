@@ -9,6 +9,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [sponsor]);
 
+
   // Normalização de dados para o modal
   const logoUrl = sponsor.logo_url || sponsor.logo || '/logo.png';
   const tier = (sponsor.tier || 'ouro').toLowerCase();
@@ -59,11 +60,12 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
   const website = sponsor.website_url || sponsor.website;
 
   return (
-    <div style={{
+    <div ref={scrollRef} style={{
       position: 'fixed', inset: 0,
       background: '#FFFFFF',
       zIndex: 2500,
       display: 'flex', flexDirection: 'column',
+      overflowY: 'auto',
       animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
     }}>
       {/* HEADER COMERCIAL DE IMPACTO */}
@@ -148,7 +150,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* CONTEÚDO EDITORIAL */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 100px', background: '#FFFFFF' }}>
+      <div style={{ padding: '16px 24px 120px', background: '#FFFFFF' }}>
 
         {/* Nome + tagline */}
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
@@ -193,15 +195,16 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* FOOTER FIXO - AÇÕES COMERCIAIS */}
-      <div style={{ 
-        padding: '24px 24px calc(env(safe-area-inset-bottom, 24px) + 16px)', 
-        background: 'rgba(255,255,255,0.95)', 
+      <div style={{
+        position: 'sticky', bottom: 0,
+        padding: '16px 24px calc(env(safe-area-inset-bottom, 16px) + 8px)',
+        background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(20px)',
         borderTop: '1px solid #F1F5F9',
-        boxShadow: '0 -20px 60px rgba(0,0,0,0.08)',
+        boxShadow: '0 -8px 24px rgba(0,0,0,0.06)',
         display: 'grid',
-        gridTemplateColumns: '80px 1fr',
-        gap: '20px',
+        gridTemplateColumns: '64px 1fr',
+        gap: '12px',
         zIndex: 100
       }}>
         <button 
