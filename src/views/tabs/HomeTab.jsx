@@ -446,7 +446,7 @@ const HomeTab = ({
 
       {/* PALESTRANTES CONFIRMADOS - CARROSSEL */}
       <CarouselSection
-         title="Palestras"
+         title="Palestras Principais"
          items={confirmedSpeakers}
          renderItem={(p) => (
            <div 
