@@ -1,17 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Check, Clock, ChevronLeft, Search,
-  AlertCircle, Users, Lock, CheckCircle
+  Check, Clock, ChevronLeft, AlertCircle, Lock, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
+// Agrupa workshops por título e retorna lista de grupos com instâncias por horário
+const groupByTitle = (workshops) => {
+  const map = {};
+  const order = [];
+  workshops.forEach(w => {
+    if (!map[w.title]) {
+      map[w.title] = { title: w.title, speakerName: w.speakerName, slots: {} };
+      order.push(w.title);
+    }
+    map[w.title].slots[w.start_time.substring(0, 5)] = w;
+  });
+  return order.map(t => map[t]);
+};
+
+const SLOT_A = '14:15';
+const SLOT_B = '15:30';
+const SLOT_LABELS = {
+  [SLOT_A]: '14h15',
+  [SLOT_B]: '15h30',
+};
+
 const WorkshopsView = ({ userCpf, onClose }) => {
   const [workshops, setWorkshops] = useState([]);
-  const [confirmed, setConfirmed] = useState([]); // IDs salvos definitivamente no DB
-  const [pending, setPending] = useState({});     // { [slotKey]: workshopId } — seleção local ainda não confirmada
+  // confirmed: { [slotKey]: workshopId } — salvo definitivamente no DB
+  const [confirmed, setConfirmed] = useState({});
+  // pending: { [slotKey]: workshopId } — seleção local ainda não confirmada
+  const [pending, setPending] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -24,6 +45,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         .from('agenda_sessions')
         .select('*, speakers(*)')
         .eq('category', 'Oficina')
+        .order('title')
         .order('start_time');
 
       const { data: userRegs } = await supabase
@@ -43,29 +65,35 @@ const WorkshopsView = ({ userCpf, onClose }) => {
       const mapped = (sessions || []).map(s => ({
         ...s,
         registrations: countsMap[s.id] || 0,
-        speakerName: s.speakers?.name || 'A confirmar'
+        speakerName: s.speakers?.name || 'A confirmar',
+        slotKey: s.start_time.substring(0, 5),
       }));
 
       setWorkshops(mapped);
 
+      // Reconstruir confirmed a partir das inscrições do usuário
       const regIds = (userRegs || []).map(r => r.workshop_id);
-      setConfirmed(regIds);
-
-      // Se já tem inscrições confirmadas, limpa o pending
       if (regIds.length > 0) {
+        const confMap = {};
+        mapped.forEach(w => {
+          if (regIds.includes(w.id)) {
+            confMap[w.slotKey] = w.id;
+          }
+        });
+        setConfirmed(confMap);
         setPending({});
       }
     } catch (err) {
-      console.error('Error fetching workshop data:', err);
+      console.error('Error fetching workshops:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Motor competitivo de capacidade (1º=100, 2º/3º=60, demais=30)
+  // Motor competitivo: dentro de cada horário, mais inscrito = sala maior
   const getCapacity = (workshop) => {
-    const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
-    const sorted = [...slotWorkshops].sort((a, b) => (b.registrations || 0) - (a.registrations || 0));
+    const slotWorkshops = workshops.filter(w => w.slotKey === workshop.slotKey);
+    const sorted = [...slotWorkshops].sort((a, b) => b.registrations - a.registrations);
     if (workshop.id === sorted[0]?.id) return 100;
     if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
     return 30;
@@ -73,48 +101,33 @@ const WorkshopsView = ({ userCpf, onClose }) => {
 
   const isFull = (w) => (w.registrations || 0) >= getCapacity(w);
 
-  // Já confirmou as 2 → tudo bloqueado
-  const isFinished = confirmed.length >= 2;
+  const isFinished = Object.keys(confirmed).length >= 2;
 
-  const slotKeys = ['14:15', '15:30'];
-  const slotLabels = {
-    '14:15': '1º Horário — 14h15 às 15h15',
-    '15:30': '2º Horário — 15h30 às 16h30'
-  };
+  const groups = groupByTitle(workshops);
 
-  const getSlotKey = (w) => w.start_time?.substring(0, 5);
 
-  const getWorkshopById = (id) => workshops.find(w => w.id === id);
 
-  const pendingList = Object.values(pending).map(id => getWorkshopById(id)).filter(Boolean);
-  const confirmedList = confirmed.map(id => getWorkshopById(id)).filter(Boolean);
-
-  const handleSelect = (workshop) => {
+  const handleSelect = (slotKey, workshop) => {
     if (saving || isFinished) return;
+    if (isFull(workshop)) return;
 
-    const slotKey = getSlotKey(workshop);
-    if (!slotKey) return;
-
-    // Toggle: se já está pendente neste slot, desmarca
+    // Toggle: desmarca se já está pendente neste slot
     if (pending[slotKey] === workshop.id) {
-      setPending(prev => {
-        const next = { ...prev };
-        delete next[slotKey];
-        return next;
-      });
+      setPending(prev => { const n = { ...prev }; delete n[slotKey]; return n; });
       return;
     }
 
-    // Bloquear lotada
-    if (isFull(workshop)) return;
+    // Bloqueia se este título já foi escolhido no outro slot (pending ou confirmed)
+    const otherSlot = slotKey === SLOT_A ? SLOT_B : SLOT_A;
+    const otherPendingId = pending[otherSlot] || confirmed[otherSlot];
+    const otherTitle = workshops.find(w => w.id === otherPendingId)?.title;
+    if (otherTitle && otherTitle === workshop.title) return;
 
-    // Seleciona neste slot (substituindo qualquer outro do mesmo slot)
     const newPending = { ...pending, [slotKey]: workshop.id };
     setPending(newPending);
 
-    // Se os dois slots foram escolhidos, abre modal de confirmação
-    const selectedSlots = Object.keys(newPending);
-    if (selectedSlots.length === 2) {
+    // Se os dois slots foram escolhidos, abre confirmação
+    if (Object.keys(newPending).length === 2) {
       setShowConfirmModal(true);
     }
   };
@@ -124,41 +137,37 @@ const WorkshopsView = ({ userCpf, onClose }) => {
     setSaving(true);
     setShowConfirmModal(false);
     try {
-      const toInsert = Object.values(pending).map(id => ({
-        user_cpf: userCpf,
-        workshop_id: id
-      }));
-      const { error } = await supabase
-        .from('workshop_registrations')
-        .insert(toInsert);
+      const toInsert = Object.values(pending).map(id => ({ user_cpf: userCpf, workshop_id: id }));
+      const { error } = await supabase.from('workshop_registrations').insert(toInsert);
       if (error) throw error;
-      setConfirmed(Object.values(pending));
+      const newConfirmed = { ...pending };
+      setConfirmed(newConfirmed);
       setPending({});
       await fetchData();
       setShowSuccessModal(true);
     } catch (err) {
-      console.error('Error saving workshops:', err);
-      alert('Erro ao confirmar inscrições. Tente novamente.');
+      console.error('Error saving:', err);
+      alert('Erro ao confirmar. Tente novamente.');
       setShowConfirmModal(true);
     } finally {
       setSaving(false);
     }
   };
 
-  const matchesSearch = (w) =>
-    !searchTerm ||
-    w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.speakerName.toLowerCase().includes(searchTerm.toLowerCase());
+  const getWorkshopById = (id) => workshops.find(w => w.id === id);
 
-  const getCardState = (workshop) => {
-    const slotKey = getSlotKey(workshop);
-    if (confirmed.includes(workshop.id)) return 'confirmed';
-    if (pending[slotKey] === workshop.id) return 'pending';
-    return 'default';
-  };
+  const pendingList = Object.entries(pending)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([slot, id]) => ({ slot, workshop: getWorkshopById(id) }))
+    .filter(x => x.workshop);
+
+  const confirmedList = Object.entries(confirmed)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([slot, id]) => ({ slot, workshop: getWorkshopById(id) }))
+    .filter(x => x.workshop);
 
   return (
-    <div style={{ background: '#F7F8FA', minHeight: '100vh', maxWidth: '500px', margin: '0 auto', position: 'relative' }}>
+    <div style={{ background: '#F7F8FA', minHeight: '100vh', maxWidth: '500px', margin: '0 auto' }}>
 
       {/* Header */}
       <header style={{
@@ -179,7 +188,6 @@ const WorkshopsView = ({ userCpf, onClose }) => {
           <div style={{ width: '80px' }} />
         </div>
 
-        {/* Status pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '20px' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '16px', flexShrink: 0,
@@ -191,174 +199,159 @@ const WorkshopsView = ({ userCpf, onClose }) => {
           </div>
           <div>
             <p style={{ fontSize: '14px', fontWeight: '800' }}>
-              {isFinished
-                ? 'Inscrições Confirmadas'
-                : Object.keys(pending).length === 1
-                  ? 'Falta escolher mais uma'
-                  : 'Escolha suas oficinas'}
+              {isFinished ? 'Inscrições Confirmadas' : Object.keys(pending).length === 1 ? 'Escolha mais uma oficina' : 'Escolha suas oficinas'}
             </p>
             <p style={{ fontSize: '11px', opacity: 0.75 }}>
-              {isFinished
-                ? 'Suas escolhas são definitivas.'
-                : 'Uma oficina por bloco de horário.'}
+              {isFinished ? 'Suas escolhas são definitivas.' : 'Selecione um horário para cada oficina que irá.'}
             </p>
           </div>
         </div>
       </header>
 
-      <div style={{ padding: '24px 20px', paddingBottom: '120px' }}>
+      <div style={{ padding: '20px', paddingBottom: '120px' }}>
 
         {/* Resumo das confirmadas */}
         {isFinished && (
-          <div style={{ marginBottom: '28px', background: 'white', padding: '20px', borderRadius: '24px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '2px solid #48BB78' }}>
-            <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#22C55E', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Lock size={14} /> INSCRIÇÕES CONFIRMADAS
+          <div style={{ marginBottom: '24px', background: 'white', padding: '20px', borderRadius: '24px', border: '2px solid #48BB78', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+            <h4 style={{ fontSize: '12px', fontWeight: '900', color: '#22C55E', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Lock size={13} /> INSCRIÇÕES CONFIRMADAS
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {confirmedList.map(w => (
-                <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>
-                    {w.start_time?.substring(0, 5)}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: '13px', fontWeight: '700', color: '#1A365D', lineHeight: '1.3' }}>{w.title}</p>
-                    <p style={{ fontSize: '11px', color: '#718096' }}>{w.speakerName}</p>
-                  </div>
+            {confirmedList.map(({ slot, workshop }) => (
+              <div key={workshop.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>
+                  {SLOT_LABELS[slot]}
                 </div>
-              ))}
-            </div>
-            <p style={{ fontSize: '11px', color: '#A0AEC0', marginTop: '14px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: '700', color: '#1A365D', lineHeight: '1.3' }}>{workshop.title}</p>
+                  <p style={{ fontSize: '11px', color: '#718096' }}>{workshop.speakerName}</p>
+                </div>
+              </div>
+            ))}
+            <p style={{ fontSize: '11px', color: '#A0AEC0', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Lock size={10} /> Não é possível alterar após a confirmação.
             </p>
           </div>
         )}
 
-        {/* Instrução geral */}
+        {/* Instrução */}
         {!isFinished && (
-          <div style={{ background: '#FFFBEB', padding: '16px', borderRadius: '20px', border: '1px solid #FCD34D', display: 'flex', gap: '12px', marginBottom: '28px' }}>
-            <AlertCircle size={20} color="#D97706" style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: '800', color: '#92400E', marginBottom: '4px' }}>Como funciona</p>
-              <p style={{ fontSize: '12px', color: '#78350F', lineHeight: '1.6' }}>
-                Escolha <strong>uma oficina para o 1º horário</strong> e <strong>uma para o 2º horário</strong>. Após confirmar as duas escolhas, <strong>não será possível alterar</strong>.
-              </p>
-            </div>
+          <div style={{ background: '#FFFBEB', padding: '14px 16px', borderRadius: '16px', border: '1px solid #FCD34D', display: 'flex', gap: '10px', marginBottom: '24px' }}>
+            <AlertCircle size={18} color="#D97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <p style={{ fontSize: '12px', color: '#78350F', lineHeight: '1.6' }}>
+              Cada oficina acontece nos <strong>dois horários</strong>. Escolha <strong>em qual horário</strong> você vai participar de cada uma. Você <strong>não pode</strong> escolher a mesma oficina nos dois horários. Após confirmar, <strong>não será possível alterar</strong>.
+            </p>
           </div>
         )}
 
-        {/* Search */}
-        <div style={{ background: 'white', padding: '12px 16px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <Search size={18} color="#A0AEC0" />
-          <input
-            type="text"
-            placeholder="Filtrar por nome ou palestrante..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568', background: 'transparent' }}
-          />
-        </div>
+        {/* Cabeçalho de colunas */}
+        {!loading && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 88px 88px', gap: '8px', marginBottom: '12px', padding: '0 4px' }}>
+            <div />
+            {[SLOT_A, SLOT_B].map(slot => (
+              <div key={slot} style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginBottom: '2px' }}>
+                  <Clock size={11} color="var(--primary)" />
+                  <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--primary)' }}>{SLOT_LABELS[slot]}</span>
+                </div>
+                <p style={{ fontSize: '10px', color: '#A0AEC0', fontWeight: '500' }}>
+                  {slot === SLOT_A ? '14h15–15h15' : '15h30–16h30'}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <p style={{ color: '#718096', fontSize: '14px' }}>Carregando oficinas...</p>
           </div>
         ) : (
-          slotKeys.map(slotKey => {
-            const slotWorkshops = workshops.filter(w => getSlotKey(w) === slotKey).filter(matchesSearch);
-            const selectedInSlot = pending[slotKey] || confirmed.find(id => {
-              const w = getWorkshopById(id);
-              return w && getSlotKey(w) === slotKey;
-            });
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {groups.map(group => {
+              const confirmedSlot = Object.entries(confirmed).find(([, id]) => getWorkshopById(id)?.title === group.title)?.[0];
+              const pendingSlot = Object.entries(pending).find(([, id]) => getWorkshopById(id)?.title === group.title)?.[0];
+              const chosenSlot = confirmedSlot || pendingSlot;
 
-            return (
-              <div key={slotKey} style={{ marginBottom: '36px' }}>
-
-                {/* Cabeçalho do bloco */}
-                <div style={{
-                  background: 'white', borderRadius: '16px', padding: '14px 16px',
-                  marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  borderLeft: `4px solid ${selectedInSlot ? '#22C55E' : 'var(--primary)'}`
+              return (
+                <div key={group.title} style={{
+                  background: 'white', borderRadius: '18px', padding: '14px 16px',
+                  boxShadow: chosenSlot ? '0 4px 16px rgba(107,20,26,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
+                  border: chosenSlot ? '2px solid var(--primary)' : '2px solid transparent',
+                  display: 'grid', gridTemplateColumns: '1fr 88px 88px', gap: '8px', alignItems: 'center'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <Clock size={15} color="var(--primary)" />
-                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {slotLabels[slotKey]}
-                    </h4>
+                  {/* Nome + palestrante */}
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: '13px', fontWeight: '800', color: '#1A365D', lineHeight: '1.35', marginBottom: '2px' }}>
+                      {group.title}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#718096' }}>{group.speakerName}</p>
                   </div>
-                  <p style={{ fontSize: '12px', color: selectedInSlot ? '#22C55E' : '#718096', fontWeight: selectedInSlot ? '700' : '500' }}>
-                    {isFinished
-                      ? selectedInSlot
-                        ? `✓ ${getWorkshopById(selectedInSlot)?.title || ''}`
-                        : '—'
-                      : selectedInSlot
-                        ? `Selecionada: ${getWorkshopById(selectedInSlot)?.title || ''}`
-                        : 'Escolha uma oficina abaixo para este horário'}
-                  </p>
-                </div>
 
-                {/* Lista de oficinas */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {slotWorkshops.map(workshop => {
-                    const state = getCardState(workshop);
-                    const full = isFull(workshop);
-                    const capacity = getCapacity(workshop);
-                    const isBlocked = state === 'default' && (full || isFinished);
-                    const isSelectedInOtherSlot = !pending[slotKey] && Object.values(pending).includes(workshop.id);
+                  {/* Botão para cada horário */}
+                  {[SLOT_A, SLOT_B].map(slot => {
+                    const w = group.slots[slot];
+                    if (!w) {
+                      return <div key={slot} style={{ height: '48px' }} />;
+                    }
+
+                    const isConfirmedHere = confirmed[slot] === w.id;
+                    const isPendingHere = pending[slot] === w.id;
+                    const isSelected = isConfirmedHere || isPendingHere;
+                    const full = isFull(w);
+                    const capacity = getCapacity(w);
+
+                    // Bloqueado: já confirmou no outro slot com este mesmo título
+                    const otherSlot = slot === SLOT_A ? SLOT_B : SLOT_A;
+                    const otherChosenId = confirmed[otherSlot] || pending[otherSlot];
+                    const otherTitle = workshops.find(x => x.id === otherChosenId)?.title;
+                    const blockedSameTitle = otherTitle === group.title;
+
+                    const disabled = isFinished || full || blockedSameTitle;
 
                     return (
-                      <div
-                        key={workshop.id}
-                        onClick={() => !isBlocked && !isSelectedInOtherSlot && handleSelect(workshop)}
+                      <button
+                        key={slot}
+                        onClick={() => !disabled && handleSelect(slot, w)}
                         style={{
-                          background: state === 'confirmed' ? '#F0FFF4'
-                            : state === 'pending' ? '#FDF2F2'
-                            : 'white',
-                          borderRadius: '20px', padding: '18px 20px',
-                          border: state === 'confirmed' ? '2px solid #48BB78'
-                            : state === 'pending' ? '2px solid var(--primary)'
-                            : '2px solid transparent',
-                          boxShadow: state !== 'default' ? '0 6px 20px rgba(0,0,0,0.08)' : '0 3px 10px rgba(0,0,0,0.04)',
-                          opacity: isBlocked ? 0.4 : 1,
-                          transition: 'all 0.2s ease',
-                          cursor: isBlocked ? 'not-allowed' : 'pointer',
+                          height: '52px', borderRadius: '14px', border: 'none',
+                          cursor: disabled && !isSelected ? 'not-allowed' : 'pointer',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px',
+                          background: isConfirmedHere ? '#22C55E'
+                            : isPendingHere ? 'var(--primary)'
+                            : blockedSameTitle ? '#F8F9FA'
+                            : full ? '#FEF2F2'
+                            : '#F7F8FA',
+                          opacity: disabled && !isSelected ? 0.4 : 1,
+                          transition: 'all 0.15s',
                         }}
                       >
-                        <h3 style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', marginBottom: '4px', lineHeight: '1.4' }}>
-                          {workshop.title}
-                        </h3>
-                        <p style={{ fontSize: '12px', color: '#718096', marginBottom: '10px' }}>
-                          {workshop.speakerName}
-                        </p>
-
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <Users size={12} color="#A0AEC0" />
-                            <span style={{ fontSize: '11px', color: '#A0AEC0' }}>
-                              {workshop.registrations}/{capacity} vagas
-                            </span>
-                          </div>
-
-                          {state === 'confirmed' ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#22C55E', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
-                              <Lock size={10} /> CONFIRMADO
-                            </div>
-                          ) : state === 'pending' ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
-                              <Check size={11} /> SELECIONADO
-                            </div>
-                          ) : full ? (
-                            <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '4px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: '900' }}>
-                              ESGOTADO
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
+                        {isConfirmedHere ? (
+                          <>
+                            <Lock size={14} color="white" />
+                            <span style={{ fontSize: '9px', fontWeight: '900', color: 'white' }}>CONFIRMADO</span>
+                          </>
+                        ) : isPendingHere ? (
+                          <>
+                            <Check size={14} color="white" />
+                            <span style={{ fontSize: '9px', fontWeight: '900', color: 'white' }}>ESCOLHIDO</span>
+                          </>
+                        ) : blockedSameTitle ? (
+                          <span style={{ fontSize: '9px', fontWeight: '700', color: '#A0AEC0', textAlign: 'center', lineHeight: '1.3', padding: '0 4px' }}>já escolheu este</span>
+                        ) : full ? (
+                          <span style={{ fontSize: '9px', fontWeight: '800', color: '#EF4444', textAlign: 'center', lineHeight: '1.3', padding: '0 4px' }}>esgotado</span>
+                        ) : (
+                          <>
+                            <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)' }}>{SLOT_LABELS[slot]}</span>
+                            <span style={{ fontSize: '9px', color: '#A0AEC0' }}>{w.registrations}/{capacity}</span>
+                          </>
+                        )}
+                      </button>
                     );
                   })}
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -375,24 +368,22 @@ const WorkshopsView = ({ userCpf, onClose }) => {
             <div style={{ width: '56px', height: '56px', background: '#FDF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <Lock size={24} color="var(--primary)" />
             </div>
-
             <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--secondary)', textAlign: 'center', marginBottom: '8px' }}>
               Tem certeza?
             </h3>
             <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center', marginBottom: '24px', lineHeight: '1.6' }}>
-              Após confirmar, <strong>não será mais possível alterar</strong> suas escolhas. Verifique abaixo se está tudo certo.
+              Após confirmar, <strong>não será possível alterar</strong> suas escolhas.
             </p>
 
-            {/* Resumo das 2 escolhas pendentes */}
             <div style={{ background: '#F8F9FA', borderRadius: '16px', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {pendingList.map(w => (
-                <div key={w.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              {pendingList.map(({ slot, workshop }) => (
+                <div key={workshop.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                   <div style={{ background: '#FDF2F2', color: 'var(--primary)', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900', flexShrink: 0 }}>
-                    {w.start_time?.substring(0, 5)}
+                    {SLOT_LABELS[slot]}
                   </div>
                   <div>
-                    <p style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', lineHeight: '1.3' }}>{w.title}</p>
-                    <p style={{ fontSize: '12px', color: '#718096', marginTop: '2px' }}>{w.speakerName}</p>
+                    <p style={{ fontSize: '14px', fontWeight: '800', color: '#1A365D', lineHeight: '1.3' }}>{workshop.title}</p>
+                    <p style={{ fontSize: '12px', color: '#718096', marginTop: '2px' }}>{workshop.speakerName}</p>
                   </div>
                 </div>
               ))}
@@ -402,21 +393,13 @@ const WorkshopsView = ({ userCpf, onClose }) => {
               <button
                 onClick={handleConfirm}
                 disabled={saving}
-                style={{
-                  background: 'var(--primary)', color: 'white', border: 'none',
-                  borderRadius: '16px', padding: '18px', fontSize: '15px', fontWeight: '900',
-                  cursor: 'pointer', width: '100%'
-                }}
+                style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', padding: '18px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', width: '100%' }}
               >
                 {saving ? 'CONFIRMANDO...' : 'SIM, CONFIRMAR MINHAS ESCOLHAS'}
               </button>
               <button
                 onClick={() => setShowConfirmModal(false)}
-                style={{
-                  background: '#F1F5F9', color: '#475569', border: 'none',
-                  borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: '700',
-                  cursor: 'pointer', width: '100%'
-                }}
+                style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', width: '100%' }}
               >
                 NÃO, VOLTAR E ALTERAR
               </button>
@@ -433,21 +416,14 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         }}>
           <div style={{
             background: 'white', borderRadius: '32px', padding: '40px 24px',
-            width: '100%', maxWidth: '340px', textAlign: 'center',
-            boxShadow: '0 30px 60px rgba(0,0,0,0.4)'
+            width: '100%', maxWidth: '340px', textAlign: 'center', boxShadow: '0 30px 60px rgba(0,0,0,0.4)'
           }}>
             <div style={{ width: '80px', height: '80px', background: '#F0FDF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <CheckCircle size={44} color="#22C55E" strokeWidth={2.5} />
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px' }}>
-              Inscrições Confirmadas!
-            </h2>
-            <p style={{ fontSize: '14px', color: '#475569', marginBottom: '8px', lineHeight: '1.6' }}>
-              Suas vagas nas oficinas estão garantidas.
-            </p>
-            <p style={{ fontSize: '12px', color: '#A0AEC0', marginBottom: '28px' }}>
-              Você receberá o local das salas no dia do evento.
-            </p>
+            <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--primary)', marginBottom: '12px' }}>Inscrições Confirmadas!</h2>
+            <p style={{ fontSize: '14px', color: '#475569', marginBottom: '8px', lineHeight: '1.6' }}>Suas vagas nas oficinas estão garantidas.</p>
+            <p style={{ fontSize: '12px', color: '#A0AEC0', marginBottom: '28px' }}>Você receberá o local das salas no dia do evento.</p>
             <button
               onClick={() => setShowSuccessModal(false)}
               style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '16px', padding: '16px', fontSize: '15px', fontWeight: '900', cursor: 'pointer', width: '100%' }}
@@ -458,7 +434,6 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         </div>
       )}
 
-      {/* Saving overlay */}
       {saving && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }}>
           <div style={{ background: '#1A365D', color: 'white', padding: '16px 32px', borderRadius: '16px', fontWeight: '800', fontSize: '14px' }}>PROCESSANDO...</div>
