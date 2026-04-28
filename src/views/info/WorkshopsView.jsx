@@ -90,12 +90,20 @@ const WorkshopsView = ({ userCpf, onClose }) => {
     }
   };
 
-  // Motor competitivo: dentro de cada horário, mais inscrito = sala maior
+  // Motor competitivo por threshold:
+  // 1ª a ultrapassar 60 inscritos → Plenária (100 vagas)
+  // 2ª e 3ª a ultrapassar 30 inscritos → Sala Média (60 vagas)
+  // Demais → Sala Pequena (30 vagas)
   const getCapacity = (workshop) => {
     const slotWorkshops = workshops.filter(w => w.slotKey === workshop.slotKey);
     const sorted = [...slotWorkshops].sort((a, b) => b.registrations - a.registrations);
-    if (workshop.id === sorted[0]?.id) return 100;
-    if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
+
+    const plenaria = sorted.find(w => w.registrations > 60);
+    if (plenaria && workshop.id === plenaria.id) return 100;
+
+    const medias = sorted.filter(w => w.id !== plenaria?.id && w.registrations > 30).slice(0, 2);
+    if (medias.some(w => w.id === workshop.id)) return 60;
+
     return 30;
   };
 

@@ -45,7 +45,10 @@ const WorkshopsCMS = () => {
     }
   };
 
-  // Motor de capacidade competitiva — igual ao WorkshopsView do usuário
+  // Motor de capacidade por threshold:
+  // 1ª a ultrapassar 60 inscritos → Plenária (100)
+  // 2ª e 3ª a ultrapassar 30 inscritos → Sala Média (60)
+  // Demais → Sala Pequena (30)
   const getCompetitiveCapacity = (workshop) => {
     const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
     const sorted = [...slotWorkshops].sort((a, b) => {
@@ -53,8 +56,15 @@ const WorkshopsCMS = () => {
       const bCount = participants.filter(p => p.workshop_id === b.id).length;
       return bCount - aCount;
     });
-    if (workshop.id === sorted[0]?.id) return 100;
-    if (workshop.id === sorted[1]?.id || workshop.id === sorted[2]?.id) return 60;
+
+    const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
+
+    const plenaria = sorted.find(w => counts(w) > 60);
+    if (plenaria && workshop.id === plenaria.id) return 100;
+
+    const medias = sorted.filter(w => w.id !== plenaria?.id && counts(w) > 30).slice(0, 2);
+    if (medias.some(w => w.id === workshop.id)) return 60;
+
     return 30;
   };
 
@@ -148,8 +158,8 @@ const WorkshopsCMS = () => {
         <div>
           <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Salas — Motor Competitivo</p>
           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6' }}>
-            Por horário: a oficina com <strong style={{ color: 'white' }}>mais inscritos → Plenária (100 vagas)</strong>.
-            A 2ª e 3ª mais populares → <strong style={{ color: '#60A5FA' }}>Salas Médias (60 vagas)</strong>.
+            A 1ª oficina a <strong style={{ color: 'white' }}>ultrapassar 60 inscritos → Plenária (100 vagas)</strong>.
+            A 2ª e 3ª a <strong style={{ color: '#60A5FA' }}>ultrapassar 30 inscritos → Salas Médias (60 vagas)</strong>.
             As demais → <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Salas Pequenas (30 vagas)</strong>.
             <br />O nome real da sala será informado no dia — clique em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} /> para editar.
           </p>
