@@ -150,70 +150,45 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       {/* CONTEÚDO EDITORIAL */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 100px', background: '#FFFFFF' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '20px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.2s' }}>
-           <h1 style={{
-             fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-serif)',
-             color: '#0F172A', marginBottom: '8px', letterSpacing: '-1px', lineHeight: '1.1'
-           }}>
-             {sponsor.name}
-           </h1>
-           <div style={{ width: '60px', height: '3px', background: tierColor, margin: '0 auto 12px', borderRadius: '2px' }}></div>
-           <p style={{ fontSize: '15px', color: '#475569', fontWeight: '600', lineHeight: '1.4', maxWidth: '500px', margin: '0 auto' }}>
-             {sponsor.tagline || 'Parceiro Estratégico II CIECC 2026'}
-           </p>
+        {/* Nome + tagline */}
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-serif)', color: '#0F172A', marginBottom: '8px', letterSpacing: '-1px', lineHeight: '1.1' }}>
+            {sponsor.name}
+          </h1>
+          <div style={{ width: '50px', height: '3px', background: tierColor, margin: '0 auto 10px', borderRadius: '2px' }} />
+          {sponsor.tagline && (
+            <p style={{ fontSize: '14px', color: '#475569', fontWeight: '600', lineHeight: '1.4', maxWidth: '500px', margin: '0 auto' }}>
+              {sponsor.tagline}
+            </p>
+          )}
         </div>
 
-        {/* BIOGRAFIA / IMPACTO */}
-        <div style={{ marginBottom: '20px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.4s' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ height: '1px', flex: 1, background: '#E2E8F0' }} />
-            <h4 style={{ 
-              fontSize: '11px', fontWeight: '900', color: '#94A3B8', 
-              textTransform: 'uppercase', letterSpacing: '4px'
-            }}>Trajetória e Visão</h4>
-            <div style={{ height: '1px', flex: 1, background: '#E2E8F0' }} />
+        {/* BIOGRAFIA — só exibe se preenchida */}
+        {sponsor.bio && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ height: '1px', flex: 1, background: '#E2E8F0' }} />
+              <h4 style={{ fontSize: '10px', fontWeight: '900', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '3px' }}>Trajetória e Visão</h4>
+              <div style={{ height: '1px', flex: 1, background: '#E2E8F0' }} />
+            </div>
+            <p style={{ fontSize: '15px', lineHeight: '1.7', color: '#1E293B', textAlign: 'justify', whiteSpace: 'pre-line' }}>
+              {sponsor.bio}
+            </p>
           </div>
-          <p style={{ 
-            fontSize: '18px', lineHeight: '1.9', color: '#1E293B', 
-            textAlign: 'justify', whiteSpace: 'pre-line', fontWeight: '450',
-            fontFamily: 'Inter, system-ui, sans-serif'
-          }}>
-            {sponsor.bio || 'Informações institucionais em processamento pela curadoria do congresso...'}
-          </p>
-        </div>
+        )}
 
-        {/* INFO DE EVENTO - LOCALIZAÇÃO NO PAVILHÃO */}
-        <div style={{ animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.6s' }}>
-          <div style={{
-            background: '#F8FAFC',
-            padding: '20px',
-            borderRadius: '20px',
-            border: '1px solid #E2E8F0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ 
-              background: info.bg, padding: '20px', borderRadius: '22px', 
-              boxShadow: `0 15px 35px ${info.glow}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <MapPin size={36} color="white" />
+        {/* ESTANDE — só exibe se preenchido */}
+        {sponsor.booth && (
+          <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '16px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ background: info.bg, padding: '14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MapPin size={24} color="white" />
             </div>
-            <div style={{ flex: 1 }}>
-               <p style={{ fontSize: '13px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>Localização no Evento</p>
-               <h3 style={{ fontSize: '28px', fontWeight: '950', color: '#0F172A', letterSpacing: '-0.5px' }}>
-                 Estande {sponsor.booth || 'Setor Comercial'}
-               </h3>
-            </div>
-            {/* Elemento Decorativo Mínimo */}
-            <div style={{ position: 'absolute', right: '-20px', top: '-20px', opacity: 0.05 }}>
-               <Globe size={120} color="#000" />
+            <div>
+              <p style={{ fontSize: '11px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>Localização no Evento</p>
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0F172A', margin: '2px 0 0' }}>Estande {sponsor.booth}</h3>
             </div>
           </div>
-        </div>
+        )}
 
       </div>
 
