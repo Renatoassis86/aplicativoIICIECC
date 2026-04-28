@@ -30,7 +30,7 @@ export default function SponsorsCMS() {
     logo_url: '',
     website_url: '',
     tier: 'ouro',
-    order_index: 0,
+    display_order: 0,
     tagline: '',
     bio: '',
     booth: ''
@@ -45,7 +45,7 @@ export default function SponsorsCMS() {
     const { data } = await supabase
       .from('sponsors')
       .select('*')
-      .order('order_index', { ascending: true });
+      .order('display_order', { ascending: true });
     if (data) setSponsors(data);
     setLoading(false);
   };
@@ -78,7 +78,7 @@ export default function SponsorsCMS() {
             logo_url: finalLogoUrl,
             website_url: sponsorData.website_url,
             tier: sponsorData.tier,
-            order_index: sponsorData.order_index,
+            display_order: sponsorData.display_order,
             tagline: sponsorData.tagline,
             bio: sponsorData.bio,
             booth: sponsorData.booth,
@@ -92,7 +92,7 @@ export default function SponsorsCMS() {
 
         if (error) throw error;
 
-        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '' });
+        setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', display_order: sponsors.length + 1, tagline: '', bio: '', booth: '' });
         setUploadFile(null);
         setIsEditing(false);
         setEditingId(null);
@@ -164,8 +164,8 @@ export default function SponsorsCMS() {
             <label style={labelStyle}>Ordem</label>
             <input 
               type="number"
-              value={newSponsor.order_index}
-              onChange={e => setNewSponsor({...newSponsor, order_index: parseInt(e.target.value)})}
+              value={newSponsor.display_order}
+              onChange={e => setNewSponsor({...newSponsor, display_order: parseInt(e.target.value)})}
               style={inputStyle}
             />
           </div>
@@ -233,7 +233,7 @@ export default function SponsorsCMS() {
                 onClick={() => {
                     setIsEditing(false);
                     setEditingId(null);
-                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', order_index: sponsors.length + 1, tagline: '', bio: '', booth: '' });
+                    setNewSponsor({ name: '', logo_url: '', website_url: '', tier: 'ouro', display_order: sponsors.length + 1, tagline: '', bio: '', booth: '' });
                 }}
                 style={{ width: '100%', marginTop: '12px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: '800', cursor: 'pointer' }}
             >
