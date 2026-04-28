@@ -148,23 +148,23 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* CONTEÚDO EDITORIAL */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 32px 100px', background: '#FFFFFF' }}>
-        
-        <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.2s' }}>
-           <h1 style={{ 
-             fontSize: '36px', fontWeight: '900', fontFamily: 'var(--font-serif)', 
-             color: '#0F172A', marginBottom: '16px', letterSpacing: '-1.5px', lineHeight: '1.1' 
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 100px', background: '#FFFFFF' }}>
+
+        <div style={{ textAlign: 'center', marginBottom: '20px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.2s' }}>
+           <h1 style={{
+             fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-serif)',
+             color: '#0F172A', marginBottom: '8px', letterSpacing: '-1px', lineHeight: '1.1'
            }}>
              {sponsor.name}
            </h1>
-           <div style={{ width: '80px', height: '4px', background: tierColor, margin: '0 auto 24px', borderRadius: '2px', boxShadow: `0 2px 10px ${info.glow}` }}></div>
-           <p style={{ fontSize: '20px', color: '#475569', fontWeight: '600', lineHeight: '1.4', maxWidth: '500px', margin: '0 auto' }}>
+           <div style={{ width: '60px', height: '3px', background: tierColor, margin: '0 auto 12px', borderRadius: '2px' }}></div>
+           <p style={{ fontSize: '15px', color: '#475569', fontWeight: '600', lineHeight: '1.4', maxWidth: '500px', margin: '0 auto' }}>
              {sponsor.tagline || 'Parceiro Estratégico II CIECC 2026'}
            </p>
         </div>
 
         {/* BIOGRAFIA / IMPACTO */}
-        <div style={{ marginBottom: '56px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.4s' }}>
+        <div style={{ marginBottom: '20px', animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.4s' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
             <div style={{ height: '1px', flex: 1, background: '#E2E8F0' }} />
             <h4 style={{ 
@@ -184,14 +184,14 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
 
         {/* INFO DE EVENTO - LOCALIZAÇÃO NO PAVILHÃO */}
         <div style={{ animation: 'fadeInUp 0.6s ease-out both', animationDelay: '0.6s' }}>
-          <div style={{ 
-            background: '#F8FAFC', 
-            padding: '40px', 
-            borderRadius: '32px', 
+          <div style={{
+            background: '#F8FAFC',
+            padding: '20px',
+            borderRadius: '20px',
             border: '1px solid #E2E8F0',
             display: 'flex',
             alignItems: 'center',
-            gap: '32px',
+            gap: '20px',
             position: 'relative',
             overflow: 'hidden'
           }}>
