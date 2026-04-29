@@ -149,7 +149,7 @@ const HomeTab = ({
     // REALTIME NEWS: Sincroniza quando algo novo é postado
     const newsSub = supabase
       .channel('home_news_sync')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'social_posts' }, () => fetchNews())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_posts' }, () => fetchNews())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'media_assets' }, () => fetchNews())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'member_inbox', filter: `user_cpf=eq.${userCpf}` }, () => fetchNews())
       .subscribe();
