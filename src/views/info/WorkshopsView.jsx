@@ -90,23 +90,24 @@ const WorkshopsView = ({ userCpf, onClose }) => {
     }
   };
 
-  // Motor competitivo por threshold:
-  // 1ª a ultrapassar 60 inscritos → Plenária (100 vagas)
-  // 2ª e 3ª a ultrapassar 30 inscritos → Sala Média (60 vagas)
-  // Demais → Sala Pequena (30 vagas)
-  const getCapacity = (workshop) => {
-    const slotWorkshops = workshops.filter(w => w.slotKey === workshop.slotKey);
-    const sorted = [...slotWorkshops].sort((a, b) => b.registrations - a.registrations);
+  // Regras de lotação:
+  // As 2 primeiras (global, qualquer slot) a atingir 100 → Auditório Principal, trava em 100
+  // As demais que atingirem 30 → Sala (A definir), trava em 30
+  const LIMIT_AUDITORIO = 100;
+  const LIMIT_SALA = 30;
+  const MAX_AUDITORIO = 2; // máximo de oficinas no auditório principal
 
-    const plenaria = sorted.find(w => w.registrations > 60);
-    if (plenaria && workshop.id === plenaria.id) return 100;
+  const auditorioIds = React.useMemo(() => {
+    // Quais workshops já atingiram 100 (os primeiros 2)
+    const reached = workshops
+      .filter(w => w.registrations >= LIMIT_AUDITORIO)
+      .sort((a, b) => b.registrations - a.registrations)
+      .slice(0, MAX_AUDITORIO)
+      .map(w => w.id);
+    return new Set(reached);
+  }, [workshops]);
 
-    const medias = sorted.filter(w => w.id !== plenaria?.id && w.registrations > 30).slice(0, 2);
-    if (medias.some(w => w.id === workshop.id)) return 60;
-
-    return 30;
-  };
-
+  const getCapacity = (w) => auditorioIds.has(w.id) ? LIMIT_AUDITORIO : LIMIT_SALA;
   const isFull = (w) => (w.registrations || 0) >= getCapacity(w);
 
   const isFinished = Object.keys(confirmed).length >= 2;
@@ -350,7 +351,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
                         ) : (
                           <>
                             <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)' }}>{SLOT_LABELS[slot]}</span>
-                            <span style={{ fontSize: '9px', color: '#A0AEC0' }}>{w.registrations}/{capacity}</span>
+                            <span style={{ fontSize: '9px', color: '#A0AEC0' }}>{w.registrations} inscritos</span>
                           </>
                         )}
                       </button>
@@ -376,12 +377,15 @@ const WorkshopsView = ({ userCpf, onClose }) => {
             <div style={{ width: '56px', height: '56px', background: '#FDF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <Lock size={24} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--secondary)', textAlign: 'center', marginBottom: '8px' }}>
-              Tem certeza?
+            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--secondary)', textAlign: 'center', marginBottom: '12px' }}>
+              Confirmar inscrições?
             </h3>
-            <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center', marginBottom: '24px', lineHeight: '1.6' }}>
-              Após confirmar, <strong>não será possível alterar</strong> suas escolhas.
-            </p>
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '14px', padding: '14px 16px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <AlertCircle size={18} color="#DC2626" style={{ flexShrink: 0, marginTop: '1px' }} />
+              <p style={{ fontSize: '13px', color: '#991B1B', lineHeight: '1.6', fontWeight: '600', margin: 0 }}>
+                <strong>Atenção!</strong> Após confirmar, <strong>não será possível alterar</strong> suas escolhas de oficinas. Esta decisão é definitiva.
+              </p>
+            </div>
 
             <div style={{ background: '#F8F9FA', borderRadius: '16px', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {pendingList.map(({ slot, workshop }) => (

@@ -67,34 +67,33 @@ const WorkshopsCMS = () => {
     }
   };
 
-  // Motor de capacidade por threshold:
-  // 1ª a ultrapassar 60 inscritos → Plenária (100)
-  // 2ª e 3ª a ultrapassar 30 inscritos → Sala Média (60)
-  // Demais → Sala Pequena (30)
-  const getCompetitiveCapacity = (workshop) => {
-    const slotWorkshops = workshops.filter(w => w.start_time === workshop.start_time);
-    const sorted = [...slotWorkshops].sort((a, b) => {
-      const aCount = participants.filter(p => p.workshop_id === a.id).length;
-      const bCount = participants.filter(p => p.workshop_id === b.id).length;
-      return bCount - aCount;
-    });
+  // Regras de lotação global:
+  // As 2 primeiras a atingir 100 inscritos → Auditório Principal (trava em 100)
+  // As demais que atingirem 30 → Sala (A definir) (trava em 30)
+  const LIMIT_AUDITORIO = 100;
+  const LIMIT_SALA = 30;
+  const MAX_AUDITORIO = 2;
 
+  const auditorioIds = React.useMemo(() => {
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
+    const reached = [...workshops]
+      .filter(w => counts(w) >= LIMIT_AUDITORIO)
+      .sort((a, b) => counts(b) - counts(a))
+      .slice(0, MAX_AUDITORIO)
+      .map(w => w.id);
+    return new Set(reached);
+  }, [workshops, participants]);
 
-    const plenaria = sorted.find(w => counts(w) > 60);
-    if (plenaria && workshop.id === plenaria.id) return 100;
-
-    const medias = sorted.filter(w => w.id !== plenaria?.id && counts(w) > 30).slice(0, 2);
-    if (medias.some(w => w.id === workshop.id)) return 60;
-
-    return 30;
-  };
+  const getCompetitiveCapacity = (workshop) =>
+    auditorioIds.has(workshop.id) ? LIMIT_AUDITORIO : LIMIT_SALA;
 
   const getRoomLabel = (workshop) => {
-    const cap = getCompetitiveCapacity(workshop);
-    if (cap === 100) return { label: 'Plenária (100 vagas)', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' };
-    if (cap === 60)  return { label: 'Sala Média (60 vagas)', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' };
-    return            { label: 'Sala Pequena (30 vagas)', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)' };
+    const wsCount = participants.filter(p => p.workshop_id === workshop.id).length;
+    if (auditorioIds.has(workshop.id))
+      return { label: 'Auditório Principal', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
+    if (wsCount >= LIMIT_SALA)
+      return { label: 'Sala — A definir', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
+    return { label: `Sala — A definir (${wsCount}/${LIMIT_SALA})`, color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', locked: false };
   };
 
   const handleSaveRoom = async (workshopId) => {
@@ -178,12 +177,11 @@ const WorkshopsCMS = () => {
       <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
         <Info size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
-          <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Salas — Motor Competitivo</p>
+          <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Alocação de Salas</p>
           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6' }}>
-            A 1ª oficina a <strong style={{ color: 'white' }}>ultrapassar 60 inscritos → Plenária (100 vagas)</strong>.
-            A 2ª e 3ª a <strong style={{ color: '#60A5FA' }}>ultrapassar 30 inscritos → Salas Médias (60 vagas)</strong>.
-            As demais → <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Salas Pequenas (30 vagas)</strong>.
-            <br />O nome real da sala será informado no dia — clique em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} /> para editar.
+            As <strong style={{ color: '#F59E0B' }}>2 primeiras a atingir 100 inscritos → Auditório Principal</strong> (inscrições travadas).
+            As demais que <strong style={{ color: '#60A5FA' }}>atingirem 30 inscritos → Sala (A definir)</strong> (inscrições travadas).
+            <br />Todas as oficinas ficam abertas até atingir o limite. O nome da sala pode ser editado clicando em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} />.
           </p>
         </div>
       </div>
