@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calendar, Clock, Bookmark, Share2 } from 'lucide-react';
 
 export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite }) {
@@ -9,7 +10,7 @@ export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite })
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [speaker]);
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
@@ -116,6 +117,7 @@ export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite })
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
       `}} />
-    </div>
+    </div>,
+    document.body
   );
 }

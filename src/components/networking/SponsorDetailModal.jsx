@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowLeft, ExternalLink, Globe, Instagram, Mail, MapPin, Share2, Bookmark, ShieldCheck, Star } from 'lucide-react';
 
 export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite }) {
@@ -59,7 +60,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
   const tierColor = info.color;
   const website = sponsor.website_url || sponsor.website;
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
@@ -263,6 +264,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
           to { transform: translateY(0); opacity: 1; }
         }
       `}} />
-    </div>
+    </div>,
+    document.body
   );
 }
