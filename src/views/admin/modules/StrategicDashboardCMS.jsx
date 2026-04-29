@@ -15,8 +15,9 @@ const COLORS = ['#D4C19C', '#6B141A', '#1E293B', '#38A169', '#E53E3E', '#805AD5'
 const StrategicDashboardCMS = () => {
     const [loading, setLoading] = useState(true);
     const [rawData, setRawData] = useState({ profiles: [], surveys: [], membersCount: 0 });
-    const [selectedTypes, setSelectedTypes] = useState([]); // Array para aglutinação
+    const [selectedTypes, setSelectedTypes] = useState([]);
     const [showFilter, setShowFilter] = useState(false);
+    const [ticketCounts, setTicketCounts] = useState({ presencial: 0, online: 0 });
 
     useEffect(() => {
         loadDeepMetrics();
@@ -29,10 +30,14 @@ const StrategicDashboardCMS = () => {
             const { data: pData } = await supabase.from('profiles').select('cpf, user_type, created_at');
             const { data: sData } = await supabase.from('survey_responses').select('*');
 
-            setRawData({ 
-                profiles: pData || [], 
-                surveys: sData || [], 
-                membersCount: mCount || 0 
+            const { count: presencialCount } = await supabase.from('members').select('*', { count: 'exact', head: true }).ilike('ticket_type', '%presencial%');
+            const { count: onlineCount } = await supabase.from('members').select('*', { count: 'exact', head: true }).ilike('ticket_type', '%online%');
+            setTicketCounts({ presencial: presencialCount || 0, online: onlineCount || 0 });
+
+            setRawData({
+                profiles: pData || [],
+                surveys: sData || [],
+                membersCount: mCount || 0
             });
             
             // Inicia com todos selecionados
@@ -151,11 +156,27 @@ const StrategicDashboardCMS = () => {
 
             {/* KPI ROW */}
             <div className="stats-grid">
-                <MetricCard 
-                    title="Amostra Analisada" 
-                    value={processedStats.activeCount} 
-                    trend="Base Ativa" 
-                    icon={<Users size={20} />} 
+                <MetricCard
+                    title="Inscritos Presencial"
+                    value={ticketCounts.presencial}
+                    trend="Modalidade"
+                    icon={<Users size={20} />}
+                    description="Participantes com ingresso presencial"
+                    positive={true}
+                />
+                <MetricCard
+                    title="Inscritos Online"
+                    value={ticketCounts.online}
+                    trend="Modalidade"
+                    icon={<Target size={20} />}
+                    description="Participantes com ingresso online"
+                    positive={true}
+                />
+                <MetricCard
+                    title="Amostra Analisada"
+                    value={processedStats.activeCount}
+                    trend="Base Ativa"
+                    icon={<Users size={20} />}
                     description="Público aglutinado no filtro"
                 />
                 <MetricCard 
