@@ -150,7 +150,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* CONTEÚDO EDITORIAL */}
-      <div style={{ padding: '16px 24px 120px', background: '#FFFFFF' }}>
+      <div style={{ padding: '16px 24px 24px', background: '#FFFFFF' }}>
 
         {/* Nome + tagline */}
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
