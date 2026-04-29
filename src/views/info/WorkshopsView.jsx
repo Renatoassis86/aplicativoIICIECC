@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Check, Clock, ChevronLeft, AlertCircle, Lock, CheckCircle
 } from 'lucide-react';
@@ -97,7 +97,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   const LIMIT_SALA = 30;
   const MAX_AUDITORIO = 2; // máximo de oficinas no auditório principal
 
-  const auditorioIds = React.useMemo(() => {
+  const auditorioIds = useMemo(() => {
     // Quais workshops já atingiram 100 (os primeiros 2)
     const reached = workshops
       .filter(w => w.registrations >= LIMIT_AUDITORIO)

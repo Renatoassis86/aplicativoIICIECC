@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users, Search, Download, Briefcase, ChevronRight, ChevronDown,
   MapPin, Clock, Edit3, Check, X as XIcon, Info
@@ -74,7 +74,7 @@ const WorkshopsCMS = () => {
   const LIMIT_SALA = 30;
   const MAX_AUDITORIO = 2;
 
-  const auditorioIds = React.useMemo(() => {
+  const auditorioIds = useMemo(() => {
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
     const reached = [...workshops]
       .filter(w => counts(w) >= LIMIT_AUDITORIO)
