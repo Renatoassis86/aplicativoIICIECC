@@ -13,7 +13,7 @@ const AdminImportView = ({ onBackToApp }) => {
   const [totalCadastrados, setTotalCadastrados] = useState(null);
 
   const [mapping, setMapping] = useState({
-    cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: ''
+    cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: '', modality: ''
   });
 
   const [validRows, setValidRows] = useState([]);
@@ -69,17 +69,18 @@ const AdminImportView = ({ onBackToApp }) => {
 
   // Tenta acelerar a vida do administrador conectando colunas prováveis
   const autoMapColumns = (headers) => {
-    let initialMap = { cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: '' };
+    let initialMap = { cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: '', modality: '' };
     headers.forEach(h => {
       const lower = h.toString().toLowerCase().trim();
       if (lower === 'cpf') initialMap.cpf = h;
-      else if (lower === 'cnpj' && !initialMap.cpf) initialMap.cpf = h; // Fallback CNPJ se não houver CPF
+      else if (lower === 'cnpj' && !initialMap.cpf) initialMap.cpf = h;
       else if (lower.includes('nome') || lower.includes('name')) initialMap.name = h;
       else if (lower.includes('email') || lower.includes('e-mail')) initialMap.email = h;
       else if (lower.includes('telefone') || lower.includes('phone') || lower.includes('celular')) initialMap.phone = h;
       else if (lower.includes('escola') || lower.includes('instituicao')) initialMap.institution = h;
       else if (lower.includes('cidade') || lower.includes('city')) initialMap.city = h;
       else if (lower.includes('uf') || lower.includes('estado')) initialMap.state = h;
+      else if (lower === 'lote') initialMap.modality = h; // "Lote" → modality (ex: "3º LOTE - PRESENCIAL")
       else if (lower.includes('tipo') || lower.includes('ticket')) initialMap.ticket_type = h;
     });
     setMapping(prev => ({ ...prev, ...initialMap }));
@@ -131,6 +132,7 @@ const AdminImportView = ({ onBackToApp }) => {
           city: mapping.city ? row[mapping.city] : null,
           state: mapping.state ? row[mapping.state] : null,
           ticket_type: mapping.ticket_type ? row[mapping.ticket_type] : 'Fórum/Prover',
+          modality: mapping.modality ? row[mapping.modality] : null,
           originalRow: index + 2
         });
       } else {
@@ -160,7 +162,8 @@ const AdminImportView = ({ onBackToApp }) => {
       institution: r.institution,
       city: r.city,
       state: r.state,
-      ticket_type: r.ticket_type
+      ticket_type: r.ticket_type,
+      modality: r.modality
     }));
 
     const result = await bulkImportMembers(payload);
@@ -178,7 +181,7 @@ const AdminImportView = ({ onBackToApp }) => {
     setStep(1);
     setFile(null);
     setRawData([]);
-    setMapping({ cpf: '', name: '', email: '', birth_date: '', ticket_type: '' });
+    setMapping({ cpf: '', name: '', email: '', phone: '', institution: '', city: '', state: '', ticket_type: '', modality: '' });
     setValidRows([]);
     setInvalidRows([]);
     setImportResult(null);
@@ -370,12 +373,21 @@ const AdminImportView = ({ onBackToApp }) => {
                 </div>
               </div>
 
-              <div style={{ margin: 0 }}>
-                <label style={mapLabelStyle}>Coluna Tipo Ingresso (Opcional)</label>
-                <select style={mapSelectStyle} value={mapping.ticket_type} onChange={(e) => setMapping({...mapping, ticket_type: e.target.value})}>
-                  <option value="">Ignorar ou selecione...</option>
-                  {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={mapLabelStyle}>Lote / Modalidade (Presencial/Online)</label>
+                  <select style={mapSelectStyle} value={mapping.modality} onChange={(e) => setMapping({...mapping, modality: e.target.value})}>
+                    <option value="">Ignorar ou selecione...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={mapLabelStyle}>Tipo de Ingresso / Perfil</label>
+                  <select style={mapSelectStyle} value={mapping.ticket_type} onChange={(e) => setMapping({...mapping, ticket_type: e.target.value})}>
+                    <option value="">Ignorar ou selecione...</option>
+                    {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 

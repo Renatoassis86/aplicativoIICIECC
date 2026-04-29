@@ -47,6 +47,7 @@ export const bulkImportMembers = async (membersArray) => {
         state: m.state || null,
         birth_date: m.birth_date || null,
         ticket_type: m.ticket_type || null,
+        modality: m.modality || null,
         created_at: m.created_at || new Date().toISOString()
       };
     });
