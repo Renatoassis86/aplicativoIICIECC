@@ -11,10 +11,13 @@ export default function SpeakerDetailModal({ speaker, onClose, onSaveFavorite })
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      width: '100%', height: '100%',
       background: 'white',
       zIndex: 1000,
       display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
       animation: 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       {/* Header Sticky */}

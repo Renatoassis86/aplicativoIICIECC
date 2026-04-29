@@ -61,10 +61,13 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      width: '100%', height: '100%',
       background: '#FFFFFF',
       zIndex: 2500,
       display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
       animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
     }}>
       {/* HEADER COMERCIAL DE IMPACTO */}
