@@ -470,7 +470,8 @@ const AdminImportView = ({ onBackToApp }) => {
                 <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px' }}>Importação Concluída!</h2>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
                   <strong>{importResult.inserted} novos membros</strong> cadastrados.{' '}
-                  {importResult.skipped > 0 && <span>{importResult.skipped} já existentes foram mantidos sem alteração.</span>}
+                  {importResult.skipped > 0 && <span>{importResult.skipped} já existentes foram mantidos. </span>}
+                  {importResult.duplicatesInFile > 0 && <span>{importResult.duplicatesInFile} duplicatas na planilha ignoradas.</span>}
                 </p>
                 <button 
                   className="btn-primary" 

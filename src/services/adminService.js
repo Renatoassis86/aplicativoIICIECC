@@ -31,7 +31,7 @@ export const bulkImportMembers = async (membersArray) => {
     };
 
     // Sanitiza e prepara payload apenas com colunas que existem em 'members'
-    const payload = membersArray.map(m => ({
+    const rawPayload = membersArray.map(m => ({
       cpf: stripCPF(m.cpf),
       name: m.name,
       email: m.email || null,
@@ -43,6 +43,15 @@ export const bulkImportMembers = async (membersArray) => {
       ticket_type: m.ticket_type || null,
       created_at: m.created_at || new Date().toISOString()
     }));
+
+    // Remove duplicatas dentro da própria planilha (mesmo CPF/CNPJ, mantém primeiro)
+    const seenInFile = new Set();
+    const payload = rawPayload.filter(m => {
+      if (!m.cpf || seenInFile.has(m.cpf)) return false;
+      seenInFile.add(m.cpf);
+      return true;
+    });
+    const duplicatesInFile = rawPayload.length - payload.length;
 
     const CHUNK = 500;
 
@@ -90,7 +99,7 @@ export const bulkImportMembers = async (membersArray) => {
       }
     }
 
-    return { success: true, inserted, skipped, count: inserted };
+    return { success: true, inserted, skipped, duplicatesInFile, count: inserted };
   } catch (error) {
     console.error('Falha genérica no adminService:', error);
     return { success: false, error: error.message };
