@@ -34,20 +34,7 @@ export const fetchFeedPosts = async (userId) => {
       return [];
     }
     
-    if (!rawPosts || rawPosts.length === 0) {
-      console.log("[SocialService] Feed empty, seeding mock posts...");
-      const seeded = await seedMockPosts(userId);
-      if (seeded) {
-        const { data: retryPosts } = await supabase
-          .from('social_posts')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        return processPostsResponse(retryPosts || [], userId);
-      }
-    }
-
-    return processPostsResponse(rawPosts, userId);
+    return processPostsResponse(rawPosts || [], userId);
   } catch (err) {
     console.error("[SocialService] Critical Error: ", err);
     return [];
