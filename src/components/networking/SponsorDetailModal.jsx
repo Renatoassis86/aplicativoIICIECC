@@ -60,25 +60,25 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
   const website = sponsor.website_url || sponsor.website;
 
   return (
-    <div ref={scrollRef} style={{
+    <div style={{
       position: 'fixed', inset: 0,
       background: '#FFFFFF',
       zIndex: 2500,
       display: 'flex', flexDirection: 'column',
-      overflowY: 'auto',
       animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
     }}>
       {/* HEADER COMERCIAL DE IMPACTO */}
-      <div style={{ 
-        height: '380px', 
-        background: info.bg, 
+      <div style={{
+        height: '260px',
+        background: info.bg,
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        flexShrink: 0
       }}>
         {/* Camadas Decorativas de Fundo */}
         <div style={{ 
@@ -120,9 +120,9 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
         </div>
 
         {/* LOGO EM FRAME PREMIUM */}
-        <div style={{ 
-          width: '200px', height: '200px', background: 'white', borderRadius: '40px',
-          padding: '24px', boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
+        <div style={{
+          width: '140px', height: '140px', background: 'white', borderRadius: '28px',
+          padding: '16px', boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative', zIndex: 20,
           animation: 'logoScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -150,7 +150,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
       </div>
 
       {/* CONTEÚDO EDITORIAL */}
-      <div style={{ padding: '16px 24px 24px', background: '#FFFFFF' }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px', background: '#FFFFFF' }}>
 
         {/* Nome + tagline */}
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
@@ -196,7 +196,7 @@ export default function SponsorDetailModal({ sponsor, onClose, onSaveFavorite })
 
       {/* FOOTER FIXO - AÇÕES COMERCIAIS */}
       <div style={{
-        position: 'sticky', bottom: 0,
+        flexShrink: 0,
         padding: '16px 24px calc(env(safe-area-inset-bottom, 16px) + 8px)',
         background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(20px)',
