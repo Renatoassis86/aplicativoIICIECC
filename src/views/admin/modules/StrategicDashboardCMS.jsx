@@ -34,6 +34,11 @@ const StrategicDashboardCMS = () => {
             const { count: onlineCount } = await supabase.from('members').select('*', { count: 'exact', head: true }).ilike('ticket_type', '%online%');
             setTicketCounts({ presencial: presencialCount || 0, online: onlineCount || 0 });
 
+            // Debug: listar valores distintos de ticket_type para diagnóstico
+            const { data: ticketSample } = await supabase.from('members').select('ticket_type').limit(200);
+            const distinct = [...new Set((ticketSample || []).map(m => m.ticket_type).filter(Boolean))];
+            console.log('[Dashboard] ticket_type distintos (amostra):', distinct);
+
             setRawData({
                 profiles: pData || [],
                 surveys: sData || [],
