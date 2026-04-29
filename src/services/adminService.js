@@ -74,7 +74,8 @@ export const bulkImportMembers = async (membersArray) => {
     }
 
     const newOnly = payload.filter(m => !existingSet.has(m.cpf));
-    const skipped = payload.length - newOnly.length;
+    const existing = payload.filter(m => existingSet.has(m.cpf));
+    const skipped = existing.length;
 
     // 2. Insere apenas os novos em lotes
     let inserted = 0;
@@ -86,6 +87,15 @@ export const bulkImportMembers = async (membersArray) => {
         .select();
       if (membersErr) throw membersErr;
       inserted += members?.length || batch.length;
+    }
+
+    // 3. Atualiza modality nos registros já existentes (quando fornecido na planilha)
+    const toUpdateModality = existing.filter(m => m.modality);
+    for (let i = 0; i < toUpdateModality.length; i += CHUNK) {
+      const batch = toUpdateModality.slice(i, i + CHUNK);
+      await Promise.all(batch.map(m =>
+        supabase.from('members').update({ modality: m.modality }).eq('cpf', m.cpf)
+      ));
     }
 
     // 3. Cria perfil para os novos em lotes
