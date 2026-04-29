@@ -44,27 +44,36 @@ export const bulkImportMembers = async (membersArray) => {
       created_at: m.created_at || new Date().toISOString()
     }));
 
-    // 1. Busca CPFs já existentes para calcular novos vs existentes
+    const CHUNK = 500;
+
+    // 1. Busca CPFs já existentes em lotes (evita limite do .in())
     const incomingCpfs = payload.map(m => m.cpf);
-    const { data: existing } = await supabase
-      .from('members')
-      .select('cpf')
-      .in('cpf', incomingCpfs);
-    const existingSet = new Set((existing || []).map(e => e.cpf));
+    const existingSet = new Set();
+    for (let i = 0; i < incomingCpfs.length; i += CHUNK) {
+      const { data: chunk } = await supabase
+        .from('members')
+        .select('cpf')
+        .in('cpf', incomingCpfs.slice(i, i + CHUNK));
+      (chunk || []).forEach(e => existingSet.add(e.cpf));
+    }
+
     const newOnly = payload.filter(m => !existingSet.has(m.cpf));
     const skipped = payload.length - newOnly.length;
 
-    // 2. Insere apenas os novos (sem sobrescrever os existentes)
+    // 2. Insere apenas os novos em lotes
     let inserted = 0;
-    if (newOnly.length > 0) {
+    for (let i = 0; i < newOnly.length; i += CHUNK) {
+      const batch = newOnly.slice(i, i + CHUNK);
       const { data: members, error: membersErr } = await supabase
         .from('members')
-        .insert(newOnly)
+        .insert(batch)
         .select();
       if (membersErr) throw membersErr;
-      inserted = members?.length || newOnly.length;
+      inserted += members?.length || batch.length;
+    }
 
-      // 3. Cria perfil apenas para os novos inseridos
+    // 3. Cria perfil para os novos em lotes
+    if (newOnly.length > 0) {
       const profilesPayload = newOnly.map(m => ({
         user_id: m.cpf,
         user_type: resolveUserType(m.ticket_type),
@@ -73,10 +82,12 @@ export const bulkImportMembers = async (membersArray) => {
         current_password: 'congresso2026',
         updated_at: new Date().toISOString()
       }));
-      const { error: profilesErr } = await supabase
-        .from('profiles')
-        .upsert(profilesPayload, { onConflict: 'user_id', ignoreDuplicates: true });
-      if (profilesErr) throw profilesErr;
+      for (let i = 0; i < profilesPayload.length; i += CHUNK) {
+        const { error: profilesErr } = await supabase
+          .from('profiles')
+          .upsert(profilesPayload.slice(i, i + CHUNK), { onConflict: 'user_id', ignoreDuplicates: true });
+        if (profilesErr) throw profilesErr;
+      }
     }
 
     return { success: true, inserted, skipped, count: inserted };
