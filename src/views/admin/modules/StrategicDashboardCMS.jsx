@@ -154,24 +154,22 @@ const StrategicDashboardCMS = () => {
                 </div>
             )}
 
+            {/* INSCRITOS POR MODALIDADE */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                <div style={{ background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                    <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Presencial</p>
+                    <p style={{ fontSize: '48px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '6px' }}>{ticketCounts.presencial.toLocaleString('pt-BR')}</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Participantes com ingresso presencial</p>
+                </div>
+                <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                    <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Online</p>
+                    <p style={{ fontSize: '48px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '6px' }}>{ticketCounts.online.toLocaleString('pt-BR')}</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Participantes com ingresso online</p>
+                </div>
+            </div>
+
             {/* KPI ROW */}
             <div className="stats-grid">
-                <MetricCard
-                    title="Inscritos Presencial"
-                    value={ticketCounts.presencial}
-                    trend="Modalidade"
-                    icon={<Users size={20} />}
-                    description="Participantes com ingresso presencial"
-                    positive={true}
-                />
-                <MetricCard
-                    title="Inscritos Online"
-                    value={ticketCounts.online}
-                    trend="Modalidade"
-                    icon={<Target size={20} />}
-                    description="Participantes com ingresso online"
-                    positive={true}
-                />
                 <MetricCard
                     title="Amostra Analisada"
                     value={processedStats.activeCount}
