@@ -30,23 +30,12 @@ export const bulkImportMembers = async (membersArray) => {
       return typeMap[key] || 'congressista';
     };
 
-    // Conta quantas vezes cada CPF/CNPJ aparece na planilha
-    const cpfCount = {};
-    membersArray.forEach(m => {
-      const id = stripCPF(m.cpf || '');
-      if (id) cpfCount[id] = (cpfCount[id] || 0) + 1;
-    });
-
-    // Sanitiza payload: se CNPJ/CPF repetido, usa CNPJ+email como chave única
+    // Sanitiza payload: usa CPF se for válido (11 dígitos), senão usa e-mail como identificador
     const seenInFile = new Set();
     const rawPayload = membersArray.map(m => {
-      const baseCpf = stripCPF(m.cpf || '');
-      let uniqueKey = baseCpf;
-
-      // Se esse CNPJ aparece mais de uma vez, cria chave composta com email
-      if (cpfCount[baseCpf] > 1 && m.email) {
-        uniqueKey = baseCpf + '_' + m.email.trim().toLowerCase();
-      }
+      const cleanCpf = stripCPF(m.cpf || '');
+      const isCpf = cleanCpf.length === 11;
+      const uniqueKey = isCpf ? cleanCpf : (m.email ? m.email.trim().toLowerCase() : cleanCpf);
 
       return {
         cpf: uniqueKey,
@@ -62,7 +51,7 @@ export const bulkImportMembers = async (membersArray) => {
       };
     });
 
-    // Remove duplicatas absolutas (mesma chave gerada duas vezes)
+    // Remove duplicatas dentro da própria planilha
     const payload = rawPayload.filter(m => {
       if (!m.cpf || seenInFile.has(m.cpf)) return false;
       seenInFile.add(m.cpf);
