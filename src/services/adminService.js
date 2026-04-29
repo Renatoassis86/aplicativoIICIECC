@@ -30,22 +30,39 @@ export const bulkImportMembers = async (membersArray) => {
       return typeMap[key] || 'congressista';
     };
 
-    // Sanitiza e prepara payload apenas com colunas que existem em 'members'
-    const rawPayload = membersArray.map(m => ({
-      cpf: stripCPF(m.cpf),
-      name: m.name,
-      email: m.email || null,
-      phone: m.phone || null,
-      institution: m.institution || null,
-      city: m.city || null,
-      state: m.state || null,
-      birth_date: m.birth_date || null,
-      ticket_type: m.ticket_type || null,
-      created_at: m.created_at || new Date().toISOString()
-    }));
+    // Conta quantas vezes cada CPF/CNPJ aparece na planilha
+    const cpfCount = {};
+    membersArray.forEach(m => {
+      const id = stripCPF(m.cpf || '');
+      if (id) cpfCount[id] = (cpfCount[id] || 0) + 1;
+    });
 
-    // Remove duplicatas dentro da própria planilha (mesmo CPF/CNPJ, mantém primeiro)
+    // Sanitiza payload: se CNPJ/CPF repetido, usa CNPJ+email como chave única
     const seenInFile = new Set();
+    const rawPayload = membersArray.map(m => {
+      const baseCpf = stripCPF(m.cpf || '');
+      let uniqueKey = baseCpf;
+
+      // Se esse CNPJ aparece mais de uma vez, cria chave composta com email
+      if (cpfCount[baseCpf] > 1 && m.email) {
+        uniqueKey = baseCpf + '_' + m.email.trim().toLowerCase();
+      }
+
+      return {
+        cpf: uniqueKey,
+        name: m.name,
+        email: m.email || null,
+        phone: m.phone || null,
+        institution: m.institution || null,
+        city: m.city || null,
+        state: m.state || null,
+        birth_date: m.birth_date || null,
+        ticket_type: m.ticket_type || null,
+        created_at: m.created_at || new Date().toISOString()
+      };
+    });
+
+    // Remove duplicatas absolutas (mesma chave gerada duas vezes)
     const payload = rawPayload.filter(m => {
       if (!m.cpf || seenInFile.has(m.cpf)) return false;
       seenInFile.add(m.cpf);
