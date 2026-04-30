@@ -168,16 +168,32 @@ export const fetchAllProfiles = async () => {
 
 /**
  * Cria ou atualiza um usuário administrativo (organizador, staff, patrocinador)
+ * Garante que o membro exista na tabela members antes de chamar o RPC.
  */
 export const createOrUpdateAdminUser = async (userData) => {
     const { cpf, name, email, user_type, password } = userData;
     const adminCpf = localStorage.getItem('current_user_cpf');
+    const cleanCpf = stripCPF(cpf);
 
     if (!adminCpf) throw new Error("Acesso negado: Administrador não identificado.");
 
+    // Garante que o membro existe na tabela members (cria se não existir)
+    const { data: existing } = await supabase
+        .from('members')
+        .select('cpf')
+        .eq('cpf', cleanCpf)
+        .single();
+
+    if (!existing) {
+        const { error: insertErr } = await supabase
+            .from('members')
+            .insert({ cpf: cleanCpf, name, email: email || null });
+        if (insertErr) throw insertErr;
+    }
+
     const { data, error } = await supabase.rpc('admin_upsert_user', {
         p_admin_cpf: adminCpf,
-        p_target_cpf: stripCPF(cpf),
+        p_target_cpf: cleanCpf,
         p_name: name,
         p_email: email,
         p_user_type: user_type,
