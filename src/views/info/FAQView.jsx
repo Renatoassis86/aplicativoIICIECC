@@ -147,7 +147,7 @@ const FAQView = ({ onClose }) => {
               cursor: 'pointer'
             }}
           >
-            FALVAR COM SUPORTE
+            FALAR COM SUPORTE
           </button>
         </div>
       </div>
