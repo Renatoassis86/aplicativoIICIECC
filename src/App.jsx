@@ -15,15 +15,17 @@ import './App.css';
 
 function App() {
   const [authStatus, setAuthStatus] = useState('loading'); 
-  const [view, setView] = useState('app'); // 'app' ou 'admin-portal'
+  const [view, setView] = useState('app'); 
   const [selectedType, setSelectedType] = useState(null);
   const [currentUserCpf, setCurrentUserCpf] = useState(null);
+  const [currentProfileId, setCurrentProfileId] = useState(null);
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState(null);
   const [errorState, setErrorState] = useState(null);
 
   // Global Error Listeners
   useEffect(() => {
+    // ... (listeners)
     const handleUnhandledError = (event) => {
       logService.error(event.message || 'Erro de Janela não tratado', {
         filename: event.filename,
@@ -56,14 +58,9 @@ function App() {
     
     const checkPersistedAuth = async () => {
       try {
-        // 1. PRIORIDADE: Detecção de URL (Admin vs App)
         const urlParams = new URLSearchParams(window.location.search);
         const isPathAdmin = window.location.pathname.toLowerCase().includes('/admin');
         const isAdminForced = urlParams.get('admin') === 'true';
-
-        if (isPathAdmin || isAdminForced) {
-          console.log("[App] Modo administrativo detectado na URL.");
-        }
 
         const savedCpf = localStorage.getItem('current_user_cpf');
         if (!savedCpf) {
@@ -71,7 +68,6 @@ function App() {
           setAuthStatus('logged-out');
           return;
         }
-
 
         console.log("[App] CPF salvo encontrado:", savedCpf);
         setCurrentUserCpf(savedCpf);
@@ -91,15 +87,14 @@ function App() {
           return;
         }
 
+        setCurrentProfileId(profile.id);
         const isAdminType = ['organizador', 'admin', 'staff', 'master'].includes(profile.user_type);
-        const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
+        const isUrlAdmin = isPathAdmin || isAdminForced;
 
         setSelectedType(profile.user_type || 'congressista');
         setUserAvatar(profile.avatar_url);
 
-
         if (isAdminType) {
-          // Admin: restaura sessão direto no portal ou no app conforme URL
           setView(isUrlAdmin ? 'admin-portal' : 'app');
           setAuthStatus('logged-in');
           return;
@@ -115,7 +110,6 @@ function App() {
         if (canBypassInitial) {
           setAuthStatus('logged-in');
         } else if (profile.user_type) {
-          // Se não tem a flag, mas já respondeu no banco, libera
           const alreadyDone = await checkOnboardingAlreadyDone(savedCpf, profile.user_type);
           if (alreadyDone) {
             setAuthStatus('logged-in');
@@ -139,26 +133,29 @@ function App() {
 
   // Heartbeat Periódico (Online Status)
   useEffect(() => {
-    if (!currentUserCpf) return;
+    if (!currentProfileId && !currentUserCpf) return;
 
     const updateHeartbeat = async () => {
       try {
-        await supabase
-          .from('profiles')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('user_id', currentUserCpf);
+        const query = supabase.from('profiles').update({ updated_at: new Date().toISOString() });
+        
+        if (currentProfileId) {
+          await query.eq('id', currentProfileId);
+        } else {
+          await query.eq('user_id', currentUserCpf);
+        }
+        
         console.log("[Heartbeat] Status online atualizado.");
       } catch (err) {
         console.warn("[Heartbeat] Falha ao atualizar status:", err);
       }
     };
 
-    // Atualiza imediatamente e depois a cada 3 minutos
     updateHeartbeat();
     const interval = setInterval(updateHeartbeat, 180000); 
 
     return () => clearInterval(interval);
-  }, [currentUserCpf]);
+  }, [currentProfileId, currentUserCpf]);
 
   if (errorState) {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
@@ -191,7 +188,6 @@ function App() {
   const handleLogin = async (rawCpf, password) => {
     let cpf = rawCpf.trim().toLowerCase();
     
-    // Se não for e-mail, remove a formatação (pontos e traços) do CPF/CNPJ
     if (!cpf.includes('@')) {
       cpf = cpf.replace(/[^\d]/g, '');
     }
@@ -217,6 +213,10 @@ function App() {
       // Sucesso na autenticação
       const { status, name, user_type, avatar_url, onboarding_completed } = data;
       
+      // Busca ID do perfil para o heartbeat
+      const { data: profileData } = await supabase.from('profiles').select('id').eq('user_id', cpf).single();
+      if (profileData) setCurrentProfileId(profileData.id);
+
       setCurrentUserCpf(cpf);
       localStorage.setItem('current_user_cpf', cpf);
       setUserName(name);
