@@ -70,6 +70,7 @@ const HomeTab = ({
   const [speakers, setSpeakers] = React.useState([]);
   const [selectedSpeaker, setSelectedSpeaker] = React.useState(null);
   const [selectedSponsor, setSelectedSponsor] = React.useState(null);
+  const [isOnline, setIsOnline] = React.useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -141,10 +142,18 @@ const HomeTab = ({
       }
     }
 
+    async function fetchUserModality() {
+      const { data: member } = await supabase.from('members').select('modality').eq('cpf', userCpf).single();
+      if (member && isMounted) {
+        setIsOnline((member.modality || '').toLowerCase().includes('online'));
+      }
+    }
+
     fetchSponsors();
     fetchWorkshops();
     fetchSpeakers();
     fetchNews();
+    fetchUserModality();
 
     // REALTIME NEWS: Sincroniza quando algo novo é postado
     const newsSub = supabase
@@ -470,6 +479,7 @@ const HomeTab = ({
        />
        
         {/* CHAMADA PARA ESCOLHA DE OFICINAS - PREMIUM DESIGN */}
+        {!isOnline && (
         <section style={{ padding: '0 20px', margin: '32px 0' }}>
           <div 
             onClick={onOpenWorkshops}
@@ -527,6 +537,7 @@ const HomeTab = ({
              </div>
           </div>
         </section>
+        )}
        
 
       {/* 4. Acessos Rápidos */}

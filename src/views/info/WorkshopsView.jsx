@@ -35,12 +35,32 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [userModality, setUserModality] = useState(null); // 'presencial' | 'online'
+  const [checkingModality, setCheckingModality] = useState(true);
 
   useEffect(() => { fetchData(); }, [userCpf]);
 
   const fetchData = async () => {
     setLoading(true);
+    setCheckingModality(true);
     try {
+      // Busca modalidade do membro
+      const { data: member } = await supabase
+        .from('members')
+        .select('modality')
+        .eq('cpf', userCpf)
+        .single();
+      
+      const modality = (member?.modality || '').toLowerCase();
+      const isOnline = modality.includes('online');
+      setUserModality(isOnline ? 'online' : 'presencial');
+      setCheckingModality(false);
+
+      if (isOnline) {
+        setLoading(false);
+        return;
+      }
+
       const { data: sessions } = await supabase
         .from('agenda_sessions')
         .select('*, speakers(*)')
@@ -216,7 +236,30 @@ const WorkshopsView = ({ userCpf, onClose }) => {
           </div>
         </div>
       </header>
-
+      
+      {userModality === 'online' && !checkingModality ? (
+        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ width: '80px', height: '80px', background: '#EBF8FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <AlertCircle size={40} color="#3182CE" />
+          </div>
+          <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#2D3748', marginBottom: '16px' }}>
+            Acesso Exclusivo Presencial
+          </h3>
+          <p style={{ fontSize: '15px', color: '#4A5568', lineHeight: '1.6', marginBottom: '24px' }}>
+            Identificamos que sua inscrição é para participação <strong>Online</strong>. 
+          </p>
+          <div style={{ background: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #E2E8F0', textAlign: 'left', marginBottom: '32px' }}>
+            <p style={{ fontSize: '14px', color: '#4A5568', lineHeight: '1.5' }}>
+              As oficinas práticas com escolha de vagas são destinadas apenas aos participantes que estarão fisicamente no evento.
+              <br/><br/>
+              <strong>Para você:</strong> Teremos uma transmissão especial com conteúdos exclusivos para o público online durante o horário das oficinas. Fique atento à agenda!
+            </p>
+          </div>
+          <button onClick={onClose} style={{ width: '100%', background: '#3182CE', color: 'white', border: 'none', borderRadius: '16px', padding: '16px', fontWeight: 'bold' }}>
+            ENTENDIDO
+          </button>
+        </div>
+      ) : (
       <div style={{ padding: '20px', paddingBottom: '120px' }}>
 
         {/* Resumo das confirmadas */}
@@ -363,6 +406,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
           </div>
         )}
       </div>
+      )}
 
       {/* ====== MODAL DE CONFIRMAÇÃO ====== */}
       {showConfirmModal && (
