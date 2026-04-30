@@ -37,7 +37,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     // Modal de criação (formulário lateral)
     const [newUser, setNewUser] = useState(EMPTY_USER);
     const [showPassword, setShowPassword] = useState(false);
-    const [createStatus, setCreateStatus] = useState(null); // 'success' | 'error' | null
+    const [createStatus, setCreateStatus] = useState(null); // 'success' | string (erro) | null
 
     // Modal de edição
     const [editModal, setEditModal] = useState(null);   // usuário sendo editado
@@ -96,7 +96,8 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
             await loadData();
             setTimeout(() => setCreateStatus(null), 3000);
         } catch (e) {
-            setCreateStatus('error');
+            console.error("[CMS] Erro ao criar/atualizar:", e);
+            setCreateStatus(e.message || 'Erro inesperado ao salvar.');
         }
         setSaving(false);
     };
@@ -137,8 +138,13 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     };
 
     const filteredUsers = users.filter(u => {
-        const q = searchTerm.toLowerCase();
-        const matchesSearch = !q || u.name?.toLowerCase().includes(q) || u.cpf?.includes(q);
+        const q = searchTerm.toLowerCase().trim();
+        // Se for busca numérica, limpa o termo de busca para bater com o banco
+        const cleanQ = q.replace(/[^\d]/g, '');
+        const matchesSearch = !q || 
+                             u.name?.toLowerCase().includes(q) || 
+                             u.cpf?.includes(q) ||
+                             (cleanQ && u.cpf?.includes(cleanQ));
         if (!matchesSearch) return false;
         if (filterType === 'all') return true;
         if (filterType === 'congressista') return u.user_type === 'congressista';
@@ -238,9 +244,9 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                                 ✓ Usuário criado com sucesso!
                             </div>
                         )}
-                        {createStatus === 'error' && (
-                            <div style={{ background: '#FFF5F5', color: '#C53030', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700' }}>
-                                Preencha nome, CPF e tipo. Tente novamente.
+                        {createStatus && createStatus !== 'success' && (
+                            <div style={{ background: '#FFF5F5', color: '#C53030', padding: '12px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700', border: '1px solid #FC8181' }}>
+                                {createStatus}
                             </div>
                         )}
 
