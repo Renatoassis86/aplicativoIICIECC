@@ -105,14 +105,22 @@ function App() {
         }
 
         // Fluxo Normal (congressista/patrocinador/palestrante)
+        const schoolTypes = ['gestor', 'diretor', 'coordenador', 'mantenedor'];
         const canBypassInitial = profile.onboarding_completed ||
+          ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(profile.user_type) ||
           profile.user_type?.includes('patrocinador') ||
-          profile.user_type === 'palestrante';
+          schoolTypes.includes(profile.user_type);
 
         if (canBypassInitial) {
           setAuthStatus('logged-in');
         } else if (profile.user_type) {
-          setAuthStatus('questionnaire');
+          // Se não tem a flag, mas já respondeu no banco, libera
+          const alreadyDone = await checkOnboardingAlreadyDone(savedCpf, profile.user_type);
+          if (alreadyDone) {
+            setAuthStatus('logged-in');
+          } else {
+            setAuthStatus('questionnaire');
+          }
         } else if (profile.password_reset) {
           setAuthStatus('select-type');
         } else {
@@ -195,7 +203,10 @@ function App() {
 
       setUserAvatar(avatar_url);
       const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
-      const canBypassOnboarding = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(user_type) || user_type?.includes('patrocinador');
+      const schoolTypes = ['gestor', 'diretor', 'coordenador', 'mantenedor'];
+      const canBypassOnboarding = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(user_type) || 
+                                 user_type?.includes('patrocinador') ||
+                                 schoolTypes.includes(user_type);
 
       if (onboarding_completed || canBypassOnboarding) {
         setSelectedType(user_type || 'congressista');
@@ -238,7 +249,10 @@ function App() {
       
       const type = updatedProfile?.user_type;
       const onboardingDone = updatedProfile?.onboarding_completed;
-      const isStaffOrSponsor = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || type?.includes('patrocinador');
+      const schoolTypes = ['gestor', 'diretor', 'coordenador', 'mantenedor'];
+      const isStaffOrSponsor = ['organizador', 'admin', 'staff', 'master', 'palestrante'].includes(type) || 
+                               type?.includes('patrocinador') ||
+                               schoolTypes.includes(type);
 
       if (isStaffOrSponsor || onboardingDone) {
         setSelectedType(type || 'congressista');
