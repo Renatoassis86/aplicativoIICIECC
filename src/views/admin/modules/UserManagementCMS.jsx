@@ -210,12 +210,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                 <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Ativos nos últimos 5min</p>
             </div>
         </div>
-            <div style={{ background: 'linear-gradient(135deg, #1E3A5F 0%, #1E293B 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
-                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Online</p>
-                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.online.toLocaleString('pt-BR')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Com ingresso online</p>
-            </div>
-        </div>
+
 
         <div className="responsive-grid">
 
