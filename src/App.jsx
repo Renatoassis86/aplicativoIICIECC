@@ -91,30 +91,27 @@ function App() {
           return;
         }
 
-        setUser({ ...profile, name: member.name });
-        
-        // SEGURANÇA: Se for admin/organizador, NÃO permite login automático
-        if (['organizador', 'admin', 'staff', 'master'].includes(profile.user_type)) {
-          console.log("[App] Persistência negada para Admin. Login obrigatório.");
-          setAuthStatus('logged-out');
+        const isAdminType = ['organizador', 'admin', 'staff', 'master'].includes(profile.user_type);
+        const isUrlAdmin = window.location.pathname.toLowerCase().includes('/admin');
+
+        setSelectedType(profile.user_type || 'congressista');
+        setUserAvatar(profile.avatar_url);
+
+        if (isAdminType) {
+          // Admin: restaura sessão direto no portal ou no app conforme URL
+          setView(isUrlAdmin ? 'admin-portal' : 'app');
+          setAuthStatus('logged-in');
           return;
         }
 
-        console.log("[App] Login automático para congressista:", member.name);
-        setAuthStatus('logged-in');
-
-        // Fluxo Normal (App Mobile)
-        const canBypassInitial = profile.onboarding_completed || 
-          ['organizador', 'admin', 'staff'].includes(profile.user_type) || 
-          profile.user_type?.includes('patrocinador');
+        // Fluxo Normal (congressista/patrocinador/palestrante)
+        const canBypassInitial = profile.onboarding_completed ||
+          profile.user_type?.includes('patrocinador') ||
+          profile.user_type === 'palestrante';
 
         if (canBypassInitial) {
-          setSelectedType(profile.user_type || 'congressista');
-          setUserAvatar(profile.avatar_url);
           setAuthStatus('logged-in');
         } else if (profile.user_type) {
-          setSelectedType(profile.user_type);
-          setUserAvatar(profile.avatar_url);
           setAuthStatus('questionnaire');
         } else if (profile.password_reset) {
           setAuthStatus('select-type');
