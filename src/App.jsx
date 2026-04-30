@@ -9,6 +9,7 @@ import AdminImportView from './views/admin/AdminImportView';
 import AdminPortalView from './views/admin/AdminPortalView';
 import { logService } from './services/logService';
 import { fetchUserTicket } from './services/tickets/ticketService';
+import AddToHomeScreenTrigger from './components/AddToHomeScreenModal';
 
 import './App.css';
 
@@ -411,6 +412,7 @@ class ErrorBoundary extends React.Component {
             
             {authStatus === 'logged-in' && view === 'app' && (
               <div className={window.innerWidth > 1024 ? "app-content-wide" : ""}>
+                <AddToHomeScreenTrigger />
                 {currentUserCpf ? (
                   <DashboardView 
                     onLogout={handleLogout} 
