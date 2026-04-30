@@ -177,9 +177,17 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
             {/* ── FORMULÁRIO DE CRIAÇÃO ── */}
             <div>
                 <div style={{ background: 'var(--card-bg)', padding: '28px', borderRadius: '24px', border: '1px solid var(--border-color)', backdropFilter: 'blur(10px)' }}>
-                    <h3 style={{ fontWeight: '800', fontSize: '16px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
-                        <UserPlus size={18} color="var(--gold)" /> Configurar Acesso
-                    </h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                        <h3 style={{ fontWeight: '800', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
+                            <UserPlus size={18} color="var(--gold)" /> Configurar Acesso
+                        </h3>
+                        <button 
+                            onClick={() => { setNewUser(EMPTY_USER); setCreateStatus(null); onClearSelection(); }}
+                            style={{ background: 'rgba(212,193,156,0.1)', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '6px', padding: '4px 8px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' }}
+                        >
+                            LIMPAR / NOVO
+                        </button>
+                    </div>
                     <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '20px' }}>
                         Adicione ou atualize permissões de usuários.
                     </p>
@@ -191,7 +199,17 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                         </div>
                         <div style={groupStyle}>
                             <label style={labelStyle}>CPF *</label>
-                            <input type="text" value={newUser.cpf} onChange={e => setNewUser({...newUser, cpf: e.target.value})} style={inputStyle} placeholder="Apenas números" autoComplete="off" />
+                            <input 
+                                type="text" 
+                                value={newUser.cpf} 
+                                onChange={e => {
+                                    const val = e.target.value.replace(/[^\d]/g, '');
+                                    setNewUser({...newUser, cpf: val});
+                                }} 
+                                style={inputStyle} 
+                                placeholder="Apenas números" 
+                                autoComplete="off" 
+                            />
                         </div>
                         <div style={groupStyle}>
                             <label style={labelStyle}>E-mail</label>
@@ -200,7 +218,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                         <div style={groupStyle}>
                             <label style={labelStyle}>Tipo de Usuário *</label>
                             <select value={newUser.user_type} onChange={e => setNewUser({...newUser, user_type: e.target.value})} style={inputStyle}>
-                                {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845'].includes(currentUserCpf)).map(t => (
+                                {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845','07745261490'].includes(currentUserCpf)).map(t => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
                                 ))}
                             </select>
