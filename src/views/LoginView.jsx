@@ -111,13 +111,13 @@ const LoginView = ({ onLogin, onAdminAccess }) => {
 
             <form onSubmit={handleSubmit}>
               <div className="input-group">
-                <span className="input-label" style={{ textAlign: 'left', display: 'block' }}>Seu CPF</span>
+                <span className="input-label" style={{ textAlign: 'left', display: 'block' }}>CPF ou E-mail</span>
                 <div style={{ position: 'relative' }}>
                   <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input 
                     type="text" 
                     className="input-field-custom" 
-                    placeholder="000.000.000-00"
+                    placeholder="000.000.000-00 ou seu@email.com"
                     value={loginCpf}
                     onChange={(e) => setLoginCpf(e.target.value)}
                     style={{ paddingLeft: '44px' }}
