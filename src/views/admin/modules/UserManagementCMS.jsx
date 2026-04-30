@@ -153,7 +153,8 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
             await loadData();
             setTimeout(() => { setEditModal(null); setEditStatus(null); setEditPwd(''); }, 1500);
         } catch (e) {
-            setEditStatus('error');
+            console.error("[CMS] Erro ao editar:", e);
+            setEditStatus(e.message || 'error');
         }
         setEditSaving(false);
     };
@@ -463,7 +464,11 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                             </div>
 
                             {editStatus === 'success' && <div style={{ background: '#F0FFF4', color: '#22543D', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}>✓ Salvo com sucesso!</div>}
-                            {editStatus === 'error' && <div style={{ background: '#FFF5F5', color: '#C53030', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}>Erro ao salvar. Tente novamente.</div>}
+                            {editStatus && editStatus !== 'success' && (
+                                <div style={{ background: '#FFF5F5', color: '#C53030', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}>
+                                    Erro: {editStatus === 'error' ? 'Tente novamente.' : editStatus}
+                                </div>
+                            )}
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
                                 <button onClick={() => setEditModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
