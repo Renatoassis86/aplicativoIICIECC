@@ -126,6 +126,12 @@ function App() {
         } else {
           setAuthStatus('reset-password');
         }
+        // Atualiza Heartbeat (Online Status)
+        await supabase
+          .from('profiles')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('user_id', savedCpf);
+
       } catch (err) {
         console.error("[App] Erro fatal na inicialização:", err);
         setAuthStatus('logged-out');

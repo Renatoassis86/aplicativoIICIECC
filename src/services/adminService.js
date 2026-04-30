@@ -156,7 +156,7 @@ export const fetchAllProfiles = async () => {
     while (true) {
         const { data, error } = await supabase
             .from('profiles')
-            .select('user_id, user_type, avatar_url, job_title')
+            .select('user_id, user_type, avatar_url, job_title, updated_at')
             .range(from, from + PAGE - 1);
         if (error) throw error;
         all = all.concat(data || []);

@@ -29,7 +29,7 @@ const EMPTY_USER = { name: '', cpf: '', email: '', user_type: 'staff', password:
 const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, currentUserCpf = null }) => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [counts, setCounts] = useState({ total: 0, presencial: 0, online: 0 });
+    const [counts, setCounts] = useState({ total: 0, presencial: 0, online: 0, accessed: 0, online_now: 0 });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [users, setUsers] = useState([]);
@@ -53,12 +53,29 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     useEffect(() => { loadData(); loadCounts(); }, []);
 
     const loadCounts = async () => {
-        const [{ count: total }, { count: presencial }, { count: online }] = await Promise.all([
+        const now = new Date();
+        const fiveMinsAgo = new Date(now.getTime() - 5 * 60000).toISOString();
+
+        const [
+            { count: total }, 
+            { count: presencial }, 
+            { count: online },
+            { count: accessed },
+            { count: onlineNow }
+        ] = await Promise.all([
             supabase.from('members').select('*', { count: 'exact', head: true }),
             supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%presencial%'),
             supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%online%'),
+            supabase.from('profiles').select('*', { count: 'exact', head: true }),
+            supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('updated_at', fiveMinsAgo),
         ]);
-        setCounts({ total: total || 0, presencial: presencial || 0, online: online || 0 });
+        setCounts({ 
+            total: total || 0, 
+            presencial: presencial || 0, 
+            online: online || 0,
+            accessed: accessed || 0,
+            online_now: onlineNow || 0
+        });
     };
 
     useEffect(() => {
@@ -74,7 +91,12 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
             const profiles = await fetchAllProfiles();
             const combined = members.map(m => {
                 const profile = profiles.find(p => p.cpf === m.cpf);
-                return { ...m, user_type: profile?.user_type || 'congressista' };
+                return { 
+                    ...m, 
+                    user_type: profile?.user_type || 'congressista',
+                    updated_at: profile?.updated_at,
+                    is_online: profile?.updated_at ? (new Date() - new Date(profile.updated_at)) < 5 * 60000 : false
+                };
             });
             setUsers(combined);
         } catch (e) { console.error(e); }
@@ -160,17 +182,34 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
         <div>
 
         {/* ── CARDS DE INSCRITOS ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
-                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Total de Inscritos</p>
-                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.total.toLocaleString('pt-BR')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Participantes cadastrados</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Total Inscritos</p>
+                <p style={{ fontSize: '28px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '2px' }}>{counts.total.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Base total</p>
             </div>
-            <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
-                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Presencial</p>
-                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.presencial.toLocaleString('pt-BR')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Com ingresso presencial</p>
+            <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Presencial</p>
+                <p style={{ fontSize: '28px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '2px' }}>{counts.presencial.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Ingresso físico</p>
             </div>
+            <div style={{ background: 'linear-gradient(135deg, #1E3A5F 0%, #1E293B 100%)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Online</p>
+                <p style={{ fontSize: '28px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '2px' }}>{counts.online.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Ingresso digital</p>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #2D3748 0%, #1A202C 100%)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(72,187,120,0.3)' }}>
+                <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Acessaram App</p>
+                <p style={{ fontSize: '28px', fontWeight: '900', color: '#48BB78', lineHeight: 1, marginBottom: '2px' }}>{counts.accessed.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Contas ativadas</p>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #1A202C 0%, #000000 100%)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(236,100,100,0.3)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '10px', right: '10px', width: '8px', height: '8px', borderRadius: '50%', background: '#48BB78', boxShadow: '0 0 10px #48BB78' }} className="pulse-animation"></div>
+                <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Online Agora</p>
+                <p style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: 1, marginBottom: '2px' }}>{counts.online_now.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Ativos nos últimos 5min</p>
+            </div>
+        </div>
             <div style={{ background: 'linear-gradient(135deg, #1E3A5F 0%, #1E293B 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
                 <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Online</p>
                 <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.online.toLocaleString('pt-BR')}</p>
@@ -299,7 +338,12 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                                     <ShieldCheck size={14} color="var(--gold)" />
-                                    <p style={{ fontWeight: '800', fontSize: '13px', color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
+                                    <p style={{ fontWeight: '800', fontSize: '13px', color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {u.is_online && (
+                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#48BB78', boxShadow: '0 0 8px #48BB78', display: 'inline-block', flexShrink: 0 }} title="Online agora" />
+                                        )}
+                                        {u.name}
+                                    </p>
                                 </div>
                                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{formatCPF(u.cpf)} • {u.email || 'Sem e-mail'}</p>
                                 <span style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '700' }}>{typeLabel(u.user_type)}</span>
