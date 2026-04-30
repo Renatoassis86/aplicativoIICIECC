@@ -181,6 +181,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                              (cleanQ && u.cpf?.includes(cleanQ));
         if (!matchesSearch) return false;
         if (filterType === 'all') return true;
+        if (filterType === 'online') return u.is_online;
         if (filterType === 'congressista') return u.user_type === 'congressista';
         if (filterType === 'organizer') return ['admin', 'staff', 'apoio', 'organizador'].includes(u.user_type);
         if (filterType === 'sponsor') return u.user_type?.startsWith('patrocinador');
@@ -318,12 +319,35 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
                     {[
                         { id: 'all', label: 'Todos' },
+                        { id: 'online', label: 'Online agora' },
                         { id: 'congressista', label: 'Congressistas' },
                         { id: 'organizer', label: 'Organizadores' },
                         { id: 'sponsor', label: 'Patrocinadores' },
                         { id: 'palestrante', label: 'Palestras/GTs' },
                     ].map(f => (
-                        <button key={f.id} onClick={() => setFilterType(f.id)} style={{ padding: '6px 14px', borderRadius: '100px', border: '1px solid var(--border-color)', background: filterType === f.id ? 'var(--gold)' : 'rgba(255,255,255,0.05)', color: filterType === f.id ? '#000' : 'rgba(255,255,255,0.6)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <button 
+                            key={f.id} 
+                            onClick={() => setFilterType(f.id)} 
+                            style={{ 
+                                padding: '6px 14px', 
+                                borderRadius: '100px', 
+                                border: filterType === f.id ? '1px solid transparent' : '1px solid var(--border-color)', 
+                                background: filterType === f.id 
+                                    ? (f.id === 'online' ? '#48BB78' : 'var(--gold)') 
+                                    : 'rgba(255,255,255,0.05)', 
+                                color: filterType === f.id ? '#000' : 'rgba(255,255,255,0.6)', 
+                                fontSize: '11px', 
+                                fontWeight: '800', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            {f.id === 'online' && (
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: filterType === f.id ? '#fff' : '#48BB78' }} />
+                            )}
                             {f.label}
                         </button>
                     ))}
