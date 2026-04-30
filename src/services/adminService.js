@@ -127,12 +127,21 @@ export const bulkImportMembers = async (membersArray) => {
  * Busca todos os membros cadastrados com todos os campos necessários
  */
 export const fetchAllMembers = async () => {
-    const { data, error } = await supabase
-        .from('members')
-        .select('cpf, name, email, phone, institution, city, state, birth_date, ticket_type')
-        .order('name');
-    if (error) throw error;
-    return data;
+    const PAGE = 1000;
+    let all = [];
+    let from = 0;
+    while (true) {
+        const { data, error } = await supabase
+            .from('members')
+            .select('cpf, name, email, phone, institution, city, state, birth_date, ticket_type')
+            .order('name')
+            .range(from, from + PAGE - 1);
+        if (error) throw error;
+        all = all.concat(data || []);
+        if (!data || data.length < PAGE) break;
+        from += PAGE;
+    }
+    return all;
 };
 
 /**
@@ -141,11 +150,20 @@ export const fetchAllMembers = async () => {
  * Retorna com a propriedade 'cpf' para compatibilidade com o restante do código.
  */
 export const fetchAllProfiles = async () => {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, user_type, avatar_url, job_title');
-    if (error) throw error;
-    return (data || []).map(p => ({ ...p, cpf: p.user_id }));
+    const PAGE = 1000;
+    let all = [];
+    let from = 0;
+    while (true) {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('user_id, user_type, avatar_url, job_title')
+            .range(from, from + PAGE - 1);
+        if (error) throw error;
+        all = all.concat(data || []);
+        if (!data || data.length < PAGE) break;
+        from += PAGE;
+    }
+    return all.map(p => ({ ...p, cpf: p.user_id }));
 };
 
 /**
