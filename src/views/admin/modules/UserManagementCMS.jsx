@@ -66,9 +66,10 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
             supabase.from('members').select('*', { count: 'exact', head: true }),
             supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%presencial%'),
             supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%online%'),
-            supabase.from('profiles').select('*', { count: 'exact', head: true }),
+            supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_completed', true),
             supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('updated_at', fiveMinsAgo),
         ]);
+        console.log("[CMS] Online Check:", { fiveMinsAgo, onlineNow });
         setCounts({ 
             total: total || 0, 
             presencial: presencial || 0, 

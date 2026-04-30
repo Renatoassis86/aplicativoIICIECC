@@ -97,6 +97,12 @@ function App() {
         setSelectedType(profile.user_type || 'congressista');
         setUserAvatar(profile.avatar_url);
 
+        // Atualiza Heartbeat (Online Status) para todos (incluindo Admins)
+        await supabase
+          .from('profiles')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('user_id', savedCpf);
+
         if (isAdminType) {
           // Admin: restaura sessão direto no portal ou no app conforme URL
           setView(isUrlAdmin ? 'admin-portal' : 'app');
@@ -126,11 +132,6 @@ function App() {
         } else {
           setAuthStatus('reset-password');
         }
-        // Atualiza Heartbeat (Online Status)
-        await supabase
-          .from('profiles')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('user_id', savedCpf);
 
       } catch (err) {
         console.error("[App] Erro fatal na inicialização:", err);
