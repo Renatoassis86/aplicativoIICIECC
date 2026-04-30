@@ -97,11 +97,6 @@ function App() {
         setSelectedType(profile.user_type || 'congressista');
         setUserAvatar(profile.avatar_url);
 
-        // Atualiza Heartbeat (Online Status) para todos (incluindo Admins)
-        await supabase
-          .from('profiles')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('user_id', savedCpf);
 
         if (isAdminType) {
           // Admin: restaura sessão direto no portal ou no app conforme URL
@@ -140,7 +135,30 @@ function App() {
     };
 
     checkPersistedAuth();
-  }, []); // Alterado para [] para evitar loop infinito de re-renderização
+  }, []);
+
+  // Heartbeat Periódico (Online Status)
+  useEffect(() => {
+    if (!currentUserCpf) return;
+
+    const updateHeartbeat = async () => {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('user_id', currentUserCpf);
+        console.log("[Heartbeat] Status online atualizado.");
+      } catch (err) {
+        console.warn("[Heartbeat] Falha ao atualizar status:", err);
+      }
+    };
+
+    // Atualiza imediatamente e depois a cada 3 minutos
+    updateHeartbeat();
+    const interval = setInterval(updateHeartbeat, 180000); 
+
+    return () => clearInterval(interval);
+  }, [currentUserCpf]);
 
   if (errorState) {
     return <div style={{ padding: 20, color: 'red' }}>Erro ao carregar o aplicativo: {errorState}</div>;
