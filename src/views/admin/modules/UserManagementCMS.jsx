@@ -146,6 +146,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                 cpf: editModal.cpf,
                 email: editModal.email,
                 user_type: editModal.user_type,
+                modality: editModal.modality,
                 password: editPwd || null,
             });
             setEditStatus('success');
@@ -274,6 +275,14 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                                 {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845','07745261490'].includes(currentUserCpf)).map(t => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
                                 ))}
+                            </select>
+                        </div>
+                        <div style={groupStyle}>
+                            <label style={labelStyle}>Modalidade (Inscrição)</label>
+                            <select value={newUser.modality || ''} onChange={e => setNewUser({...newUser, modality: e.target.value})} style={inputStyle}>
+                                <option value="">Não definido</option>
+                                <option value="2º LOTE - Presencial ">Presencial</option>
+                                <option value="Online">Online</option>
                             </select>
                         </div>
                         <div style={groupStyle}>
@@ -433,6 +442,14 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                                     {USER_TYPES.filter(t => t.value !== 'admin' || ['05875164450','36284400845'].includes(currentUserCpf)).map(t => (
                                         <option key={t.value} value={t.value}>{t.label}</option>
                                     ))}
+                                </select>
+                            </div>
+                            <div style={groupStyle}>
+                                <label style={labelStyle}>Modalidade (Inscrição)</label>
+                                <select value={editModal.modality || ''} onChange={e => setEditModal({...editModal, modality: e.target.value})} style={inputStyle}>
+                                    <option value="">Não definido</option>
+                                    <option value="2º LOTE - Presencial ">Presencial</option>
+                                    <option value="Online">Online</option>
                                 </select>
                             </div>
                             <div style={groupStyle}>

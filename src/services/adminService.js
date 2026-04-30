@@ -133,7 +133,7 @@ export const fetchAllMembers = async () => {
     while (true) {
         const { data, error } = await supabase
             .from('members')
-            .select('cpf, name, email, phone, institution, city, state, birth_date, ticket_type')
+            .select('cpf, name, email, phone, institution, city, state, birth_date, ticket_type, modality')
             .order('name')
             .range(from, from + PAGE - 1);
         if (error) throw error;
@@ -171,7 +171,7 @@ export const fetchAllProfiles = async () => {
  * Garante que o membro exista na tabela members antes de chamar o RPC.
  */
 export const createOrUpdateAdminUser = async (userData) => {
-    const { cpf, name, email, user_type, password } = userData;
+    const { cpf, name, email, user_type, password, modality } = userData;
     const adminCpf = localStorage.getItem('current_user_cpf');
     const cleanCpf = stripCPF(cpf);
 
@@ -187,8 +187,15 @@ export const createOrUpdateAdminUser = async (userData) => {
     if (!existing) {
         const { error: insertErr } = await supabase
             .from('members')
-            .insert({ cpf: cleanCpf, name, email: email || null });
+            .insert({ cpf: cleanCpf, name, email: email || null, modality: modality || null });
         if (insertErr) throw insertErr;
+    } else if (modality) {
+        // Atualiza a modalidade se o membro já existir
+        const { error: updateErr } = await supabase
+            .from('members')
+            .update({ modality })
+            .eq('cpf', cleanCpf);
+        if (updateErr) throw updateErr;
     }
 
     const { data, error } = await supabase.rpc('admin_upsert_user', {
