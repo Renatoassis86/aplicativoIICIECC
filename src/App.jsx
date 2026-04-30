@@ -156,7 +156,13 @@ function App() {
   };
 
   const handleLogin = async (rawCpf, password) => {
-    const cpf = rawCpf.trim().toLowerCase();
+    let cpf = rawCpf.trim().toLowerCase();
+    
+    // Se não for e-mail, remove a formatação (pontos e traços) do CPF/CNPJ
+    if (!cpf.includes('@')) {
+      cpf = cpf.replace(/[^\d]/g, '');
+    }
+
     setAuthStatus('loading');
 
     try {
