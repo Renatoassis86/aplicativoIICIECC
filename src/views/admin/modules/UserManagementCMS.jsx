@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Search, Shield, Briefcase, Trash2, Save, RefreshCw, ShieldCheck, Eye, EyeOff, Edit2, AlertTriangle, X } from 'lucide-react';
 import { fetchAllMembers, fetchAllProfiles, createOrUpdateAdminUser, deleteMember } from '../../../services/adminService';
 import { formatCPF } from '../../../utils/cpfUtils';
+import { supabase } from '../../../lib/supabase';
 
 const USER_TYPES = [
   { value: 'admin',               label: 'Organizador / Admin' },
@@ -28,6 +29,7 @@ const EMPTY_USER = { name: '', cpf: '', email: '', user_type: 'staff', password:
 const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, currentUserCpf = null }) => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [counts, setCounts] = useState({ total: 0, presencial: 0, online: 0 });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [users, setUsers] = useState([]);
@@ -48,7 +50,16 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     const [deleteModal, setDeleteModal] = useState(null); // usuário a excluir
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    useEffect(() => { loadData(); }, []);
+    useEffect(() => { loadData(); loadCounts(); }, []);
+
+    const loadCounts = async () => {
+        const [{ count: total }, { count: presencial }, { count: online }] = await Promise.all([
+            supabase.from('members').select('*', { count: 'exact', head: true }),
+            supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%presencial%'),
+            supabase.from('members').select('*', { count: 'exact', head: true }).ilike('modality', '%online%'),
+        ]);
+        setCounts({ total: total || 0, presencial: presencial || 0, online: online || 0 });
+    };
 
     useEffect(() => {
         if (initialUser) {
@@ -140,6 +151,27 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     const typeLabel = (type) => USER_TYPES.find(t => t.value === type)?.label || type;
 
     return (
+        <div>
+
+        {/* ── CARDS DE INSCRITOS ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ background: 'linear-gradient(135deg, #4A101D 0%, #6B141A 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Total de Inscritos</p>
+                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.total.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Participantes cadastrados</p>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Presencial</p>
+                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.presencial.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Com ingresso presencial</p>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #1E3A5F 0%, #1E293B 100%)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(212,193,156,0.3)' }}>
+                <p style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Inscritos Online</p>
+                <p style={{ fontSize: '42px', fontWeight: '900', color: '#D4C19C', lineHeight: 1, marginBottom: '4px' }}>{counts.online.toLocaleString('pt-BR')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Com ingresso online</p>
+            </div>
+        </div>
+
         <div className="responsive-grid">
 
             {/* ── FORMULÁRIO DE CRIAÇÃO ── */}
@@ -356,6 +388,7 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 };
