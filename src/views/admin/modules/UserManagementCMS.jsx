@@ -50,7 +50,18 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
     const [deleteModal, setDeleteModal] = useState(null); // usuário a excluir
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    useEffect(() => { loadData(); loadCounts(); }, []);
+    useEffect(() => { 
+        loadData(); 
+        loadCounts(); 
+        
+        // Atualização automática a cada 30 segundos
+        const interval = setInterval(() => {
+            loadCounts();
+            loadData();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const loadCounts = async () => {
         const now = new Date();
