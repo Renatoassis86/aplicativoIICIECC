@@ -348,7 +348,7 @@ const HomeTab = ({
               boxShadow: '0 0 40px rgba(229, 62, 62, 0.4)',
               zIndex: 2,
               transition: 'all 0.2s ease',
-              animation: 'logo-float 2s ease-in-out infinite'
+              animation: 'pulse-gold 2s ease-in-out infinite'
             }}>
               <Play size={40} fill="white" style={{ marginLeft: '4px' }} />
             </div>
