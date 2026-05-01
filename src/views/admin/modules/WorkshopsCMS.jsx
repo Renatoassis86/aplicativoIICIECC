@@ -74,29 +74,39 @@ const WorkshopsCMS = () => {
   const LIMIT_SALA = 30;
   const MAX_AUDITORIO = 2;
 
-  const auditorioIds = useMemo(() => {
+  const workshopCapacities = useMemo(() => {
+    const capacities = {};
+    const usedTitlesForAuditorio = new Set();
+    const slots = {};
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
-    
-    const winners = new Set();
-    const usedTitles = new Set();
-    const usedSlots = new Set();
 
-    // Ordena por popularidade real
-    const sortedAll = [...workshops].sort((a, b) => counts(b) - counts(a));
+    workshops.forEach(w => {
+      if (!slots[w.start_time]) slots[w.start_time] = [];
+      slots[w.start_time].push(w);
+    });
 
-    for (const w of sortedAll) {
-      if (!usedSlots.has(w.start_time) && !usedTitles.has(w.title)) {
-        winners.add(w.id);
-        usedTitles.add(w.title);
-        usedSlots.add(w.start_time);
+    Object.keys(slots).forEach(time => {
+      const sortedInSlot = [...slots[time]].sort((a, b) => counts(b) - counts(a));
+      
+      let auditorioWinner = null;
+      for (let i = 0; i < sortedInSlot.length; i++) {
+        if (!usedTitlesForAuditorio.has(sortedInSlot[i].title)) {
+          auditorioWinner = sortedInSlot[i];
+          usedTitlesForAuditorio.add(auditorioWinner.title);
+          capacities[auditorioWinner.id] = LIMIT_AUDITORIO;
+          break;
+        }
       }
-    }
 
-    return winners;
+      const remaining = sortedInSlot.filter(w => w.id !== auditorioWinner?.id);
+      remaining.slice(0, 2).forEach(w => { capacities[w.id] = LIMIT_SALA_MEDIA; });
+      remaining.slice(2).forEach(w => { capacities[w.id] = LIMIT_SALA; });
+    });
+
+    return capacities;
   }, [workshops, participants]);
 
-  const getCompetitiveCapacity = (workshop) =>
-    auditorioIds.has(workshop.id) ? LIMIT_AUDITORIO : LIMIT_SALA;
+  const getCompetitiveCapacity = (workshop) => workshopCapacities[workshop.id] || LIMIT_SALA;
 
   const getRoomLabel = (workshop) => {
     const wsCount = participants.filter(p => p.workshop_id === workshop.id).length;
