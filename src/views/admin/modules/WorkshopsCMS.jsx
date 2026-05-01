@@ -71,6 +71,7 @@ const WorkshopsCMS = () => {
   // As 2 primeiras a atingir 100 inscritos → Auditório Principal (trava em 100)
   // As demais que atingirem 30 → Sala (A definir) (trava em 30)
   const LIMIT_AUDITORIO = 100;
+  const LIMIT_SALA_MEDIA = 60;
   const LIMIT_SALA = 30;
   const MAX_AUDITORIO = 2;
 
