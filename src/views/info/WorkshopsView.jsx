@@ -446,10 +446,10 @@ const WorkshopsView = ({ userCpf, onClose }) => {
       {showConfirmModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(10,15,26,0.85)', backdropFilter: 'blur(16px)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 2000, padding: '20px'
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px'
         }}>
           <div style={{
-            background: 'white', borderRadius: '32px 32px 28px 28px', padding: '32px 24px',
+            background: 'white', borderRadius: '32px', padding: '32px 24px',
             width: '100%', maxWidth: '420px', boxShadow: '0 -10px 40px rgba(0,0,0,0.3)'
           }}>
             <div style={{ width: '56px', height: '56px', background: '#FDF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
@@ -488,8 +488,8 @@ const WorkshopsView = ({ userCpf, onClose }) => {
                 {saving ? 'CONFIRMANDO...' : 'SIM, CONFIRMAR MINHAS ESCOLHAS'}
               </button>
               <button
-                onClick={() => setShowConfirmModal(false)}
-                style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', width: '100%' }}
+                onClick={() => !saving && setShowConfirmModal(false)}
+                style={{ background: '#E2E8F0', color: '#1E293B', border: 'none', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: '800', cursor: 'pointer', width: '100%' }}
               >
                 NÃO, VOLTAR E ALTERAR
               </button>
