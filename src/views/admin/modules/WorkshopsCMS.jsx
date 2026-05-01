@@ -111,10 +111,12 @@ const WorkshopsCMS = () => {
 
   const getRoomLabel = (workshop) => {
     const wsCount = participants.filter(p => p.workshop_id === workshop.id).length;
-    if (auditorioIds.has(workshop.id))
-      return { label: 'Auditório Principal', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
-    if (wsCount >= LIMIT_SALA)
-      return { label: 'Sala — A definir', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
+    const capacity = workshopCapacities[workshop.id];
+    
+    if (capacity === LIMIT_AUDITORIO)
+      return { label: `Auditório Principal (${wsCount}/${LIMIT_AUDITORIO})`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
+    if (capacity === LIMIT_SALA_MEDIA)
+      return { label: `Sala Média (${wsCount}/${LIMIT_SALA_MEDIA})`, color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
     return { label: `Sala — A definir (${wsCount}/${LIMIT_SALA})`, color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', locked: false };
   };
 
