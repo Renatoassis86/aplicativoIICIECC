@@ -325,18 +325,18 @@ const HomeTab = ({
             <span style={{ color: 'white', fontSize: '14px', fontWeight: '500', opacity: 0.8 }}>{displaySafe(homeSubtitle)}</span>
           </h1>
 
-          {/* VÍDEO TRANSMISSÃO OFICIAL COM PROTEÇÃO */}
+          {/* VÍDEO TRANSMISSÃO OFICIAL - REDESIGN PREMIUM */}
           <div style={{ 
             width: '100%', 
             borderRadius: '24px', 
             overflow: 'hidden', 
             marginBottom: '24px', 
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.6)',
             background: '#000',
             aspectRatio: '16/9',
             position: 'relative',
             cursor: 'pointer',
-            border: '2px solid var(--gold)'
+            border: '1px solid rgba(255,255,255,0.1)'
           }} 
           onContextMenu={(e) => e.preventDefault()}
           onClick={() => {
@@ -345,30 +345,30 @@ const HomeTab = ({
               container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style="pointer-events: auto;"></iframe>`;
             }
           }} id="video-container">
-            <img 
-              src={homeVideoUrl ? `https://img.youtube.com/vi/${homeVideoUrl.split('/').pop()}/maxresdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=2000&auto=format&fit=crop'} 
-              alt="Transmissão II CIECC" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} 
-              onContextMenu={(e) => e.preventDefault()}
-            />
+            {/* Overlay Gradient Dark */}
             <div style={{ 
-              position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
-              background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%)',
-              pointerEvents: 'none'
+              position: 'absolute', inset: 0,
+              background: 'radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, #000 100%)',
+              zIndex: 1
             }}></div>
 
             <div style={{ 
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              background: 'var(--gold)', color: '#111', padding: '20px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px var(--gold)',
-              animation: 'pulse-gold 2s infinite'
+              background: '#E53E3E', color: 'white', padding: '24px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              boxShadow: '0 0 40px rgba(229, 62, 62, 0.4)',
+              zIndex: 2,
+              transition: 'transform 0.2s ease'
             }}>
-              <PlayCircle size={40} fill="#111" />
+              <PlayCircle size={48} fill="white" strokeWidth={0} />
             </div>
             
-            <div style={{ position: 'absolute', bottom: '20px', left: '0', right: '0', textAlign: 'center' }}>
-              <p style={{ color: 'var(--gold)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>Transmissão ao vivo</p>
-              <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '800' }}>CLIQUE AQUI PARA ASSISTIR AGORA...</h3>
+            <div style={{ position: 'absolute', bottom: '24px', left: '0', right: '0', textAlign: 'center', zIndex: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '8px', height: '8px', background: '#E53E3E', borderRadius: '50%', animation: 'pulse-red 1.5s infinite' }}></div>
+                <p style={{ color: '#E53E3E', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px' }}>AO VIVO AGORA</p>
+              </div>
+              <h3 style={{ color: 'white', fontSize: '15px', fontWeight: '800', letterSpacing: '0.5px' }}>CLIQUE PARA ASSISTIR À TRANSMISSÃO</h3>
             </div>
           </div>
 
