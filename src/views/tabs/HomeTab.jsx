@@ -293,7 +293,7 @@ const HomeTab = ({
 
           {/* Removido o logo centralizado para dar espaço ao vídeo */}
 
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: '8px' }}>
             <span className="badge-official" style={{ 
               background: 'var(--gold)', 
               color: '#111111', 
@@ -303,58 +303,72 @@ const HomeTab = ({
               {displaySafe(homeBadge)}
             </span>
           </div>
-          <h1 style={{ 
-            fontFamily: 'var(--font-serif)', 
-            fontSize: '22px', 
-            fontWeight: '800', 
-            lineHeight: '1.2',
-            marginBottom: '16px',
-            color: 'white'
-          }}>
-            {displaySafe(homeTitle)} <br/>
-            <span style={{ color: 'var(--gold)', fontSize: '20px', fontWeight: '800' }}>{displaySafe(homeSubtitle)}</span>
-          </h1>
           
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <MapPin size={12} color="var(--gold)" /> {displaySafe(homeLocation)}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px' }}>
-              <Calendar size={12} color="var(--gold)" /> {displaySafe(homeDateRange)}
-            </div>
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>
+              Olá, {firstName}! 
+            </h2>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>
+              Seja bem-vindo ao II CIECC 2026.
+            </p>
           </div>
 
-          {/* VÍDEO INTRODUTÓRIO OTIMIZADO (POO - Preview On-load) */}
+          <h1 style={{ 
+            fontFamily: 'var(--font-serif)', 
+            fontSize: '18px', 
+            fontWeight: '800', 
+            lineHeight: '1.2',
+            marginBottom: '20px',
+            color: 'var(--gold)'
+          }}>
+            {displaySafe(homeTitle)} <br/>
+            <span style={{ color: 'white', fontSize: '14px', fontWeight: '500', opacity: 0.8 }}>{displaySafe(homeSubtitle)}</span>
+          </h1>
+
+          {/* VÍDEO TRANSMISSÃO OFICIAL COM PROTEÇÃO */}
           <div style={{ 
             width: '100%', 
-            borderRadius: '16px', 
+            borderRadius: '24px', 
             overflow: 'hidden', 
             marginBottom: '24px', 
-            boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
-            background: 'black',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            background: '#000',
             aspectRatio: '16/9',
             position: 'relative',
-            cursor: 'pointer'
-          }} onClick={() => {
+            cursor: 'pointer',
+            border: '2px solid var(--gold)'
+          }} 
+          onContextMenu={(e) => e.preventDefault()}
+          onClick={() => {
             const container = document.getElementById('video-container');
             if (container) {
-              container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>`;
+              container.innerHTML = `<iframe width="100%" height="100%" src="${homeVideoUrl}?autoplay=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3" title="II CIECC 2026" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style="pointer-events: auto;"></iframe>`;
             }
           }} id="video-container">
             <img 
-              src={homeVideoUrl ? `https://img.youtube.com/vi/${homeVideoUrl.split('/').pop()}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=2000&auto=format&fit=crop'} 
-              alt="Preview II CIECC" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
+              src={homeVideoUrl ? `https://img.youtube.com/vi/${homeVideoUrl.split('/').pop()}/maxresdefault.jpg` : 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=2000&auto=format&fit=crop'} 
+              alt="Transmissão II CIECC" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} 
+              onContextMenu={(e) => e.preventDefault()}
             />
             <div style={{ 
+              position: 'absolute', top: '0', left: '0', right: '0', bottom: '0',
+              background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%)',
+              pointerEvents: 'none'
+            }}></div>
+
+            <div style={{ 
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              background: 'var(--primary)', color: 'white', padding: '16px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--primary)'
+              background: 'var(--gold)', color: '#111', padding: '20px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px var(--gold)',
+              animation: 'pulse-gold 2s infinite'
             }}>
-              <PlayCircle size={32} />
+              <PlayCircle size={40} fill="#111" />
             </div>
-            <div style={{ position: 'absolute', bottom: '12px', left: '16px', color: 'white', fontSize: '12px', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-              ASSISTIR VÍDEO PROMOCIONAL
+            
+            <div style={{ position: 'absolute', bottom: '20px', left: '0', right: '0', textAlign: 'center' }}>
+              <p style={{ color: 'var(--gold)', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>Transmissão ao vivo</p>
+              <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '800' }}>CLIQUE AQUI PARA ASSISTIR AGORA...</h3>
             </div>
           </div>
 
