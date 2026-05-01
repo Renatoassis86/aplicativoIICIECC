@@ -227,7 +227,13 @@ const WorkshopsCMS = () => {
 
       {/* Workshops grouped by slot */}
       {slots.map(slot => {
-        const slotWorkshops = filteredWorkshops.filter(w => w.start_time?.startsWith(slot));
+        const slotWorkshops = filteredWorkshops
+          .filter(w => w.start_time?.startsWith(slot))
+          .sort((a, b) => {
+            const countA = participants.filter(p => p.workshop_id === a.id).length;
+            const countB = participants.filter(p => p.workshop_id === b.id).length;
+            return countB - countA;
+          });
         if (slotWorkshops.length === 0) return null;
 
         const slotLabel = slot === '14:15' ? '1º Horário — 14h15 às 15h15' : '2º Horário — 15h30 às 16h30';
