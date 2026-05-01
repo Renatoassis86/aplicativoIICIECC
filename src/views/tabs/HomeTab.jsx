@@ -259,7 +259,8 @@ const HomeTab = ({
                 style={{ 
                   height: '42px', 
                   objectFit: 'contain',
-                  filter: 'brightness(0) invert(1)'
+                  filter: 'brightness(0) invert(1)',
+                  animation: 'logo-float 3s ease-in-out infinite'
                 }} 
               />
             </div>
