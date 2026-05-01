@@ -111,23 +111,24 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   };
 
   // Regras de lotação:
-  // As 2 primeiras (global, qualquer slot) a atingir 100 → Auditório Principal, trava em 100
-  // As demais que atingirem 30 → Sala (A definir), trava em 30
+  // Permitimos que as oficinas cresçam até 100 SE elas forem uma das 2 mais procuradas.
+  // Caso contrário, o limite é 30.
   const LIMIT_AUDITORIO = 100;
   const LIMIT_SALA = 30;
-  const MAX_AUDITORIO = 2; // máximo de oficinas no auditório principal
+  const MAX_AUDITORIO = 2; 
 
   const auditorioIds = useMemo(() => {
-    // Quais workshops já atingiram 100 (os primeiros 2)
-    const reached = workshops
-      .filter(w => w.registrations >= LIMIT_AUDITORIO)
-      .sort((a, b) => b.registrations - a.registrations)
-      .slice(0, MAX_AUDITORIO)
-      .map(w => w.id);
-    return new Set(reached);
+    // Identifica as 2 oficinas com mais inscritos em toda a grade
+    const sortedByRegs = [...workshops].sort((a, b) => (b.registrations || 0) - (a.registrations || 0));
+    const top2Ids = sortedByRegs.slice(0, MAX_AUDITORIO).map(w => w.id);
+    return new Set(top2Ids);
   }, [workshops]);
 
-  const getCapacity = (w) => auditorioIds.has(w.id) ? LIMIT_AUDITORIO : LIMIT_SALA;
+  const getCapacity = (w) => {
+    // Se estiver no Top 2 global, o limite é o do Auditório (100)
+    // Caso contrário, o limite é o da Sala (30)
+    return auditorioIds.has(w.id) ? LIMIT_AUDITORIO : LIMIT_SALA;
+  };
   const isFull = (w) => (w.registrations || 0) >= getCapacity(w);
 
   const isFinished = Object.keys(confirmed).length >= 2;

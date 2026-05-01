@@ -76,8 +76,8 @@ const WorkshopsCMS = () => {
 
   const auditorioIds = useMemo(() => {
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
+    // Identifica as 2 oficinas com mais inscritos no momento
     const reached = [...workshops]
-      .filter(w => counts(w) >= LIMIT_AUDITORIO)
       .sort((a, b) => counts(b) - counts(a))
       .slice(0, MAX_AUDITORIO)
       .map(w => w.id);
