@@ -77,21 +77,22 @@ const WorkshopsCMS = () => {
   const auditorioIds = useMemo(() => {
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
     
-    // Agrupa por horário
-    const slots = {};
-    workshops.forEach(w => {
-      if (!slots[w.start_time]) slots[w.start_time] = [];
-      slots[w.start_time].push(w);
-    });
+    const winners = new Set();
+    const usedTitles = new Set();
+    const usedSlots = new Set();
 
-    const winners = [];
-    Object.values(slots).forEach(workshopList => {
-      // A mais popular de cada slot ganha o auditório
-      const winner = [...workshopList].sort((a, b) => counts(b) - counts(a))[0];
-      if (winner) winners.push(winner.id);
-    });
+    // Ordena por popularidade real
+    const sortedAll = [...workshops].sort((a, b) => counts(b) - counts(a));
 
-    return new Set(winners);
+    for (const w of sortedAll) {
+      if (!usedSlots.has(w.start_time) && !usedTitles.has(w.title)) {
+        winners.add(w.id);
+        usedTitles.add(w.title);
+        usedSlots.add(w.start_time);
+      }
+    }
+
+    return winners;
   }, [workshops, participants]);
 
   const getCompetitiveCapacity = (workshop) =>

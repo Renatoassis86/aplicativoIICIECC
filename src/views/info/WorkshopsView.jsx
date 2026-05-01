@@ -111,27 +111,29 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   };
 
   // Regras de lotação:
-  // A mais popular de CADA horário ganha o Auditório (100 vagas)
-  // As demais ficam limitadas a 30 vagas (Salas)
+  // 1. Uma oficina de 100 vagas por horário.
+  // 2. As oficinas de 100 vagas DEVEM ser palestras diferentes (títulos diferentes).
   const LIMIT_AUDITORIO = 100;
   const LIMIT_SALA = 30;
 
   const auditorioIds = useMemo(() => {
-    // Agrupa oficinas por horário (start_time)
-    const slots = {};
-    workshops.forEach(w => {
-      if (!slots[w.start_time]) slots[w.start_time] = [];
-      slots[w.start_time].push(w);
-    });
+    const winners = new Set();
+    const usedTitles = new Set();
+    const usedSlots = new Set();
 
-    const winners = [];
-    Object.values(slots).forEach(workshopList => {
-      // Para cada horário, encontra a que tem mais inscritos
-      const winner = [...workshopList].sort((a, b) => (b.registrations || 0) - (a.registrations || 0))[0];
-      if (winner) winners.push(winner.id);
-    });
+    // Ordena TODAS as oficinas por popularidade global
+    const sortedAll = [...workshops].sort((a, b) => (b.registrations || 0) - (a.registrations || 0));
 
-    return new Set(winners);
+    // Tenta preencher 1 vaga de auditório para cada slot de horário disponível
+    for (const w of sortedAll) {
+      if (!usedSlots.has(w.start_time) && !usedTitles.has(w.title)) {
+        winners.add(w.id);
+        usedTitles.add(w.title);
+        usedSlots.add(w.start_time);
+      }
+    }
+
+    return winners;
   }, [workshops]);
 
   const getCapacity = (w) => {
