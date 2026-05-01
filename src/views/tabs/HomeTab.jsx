@@ -306,25 +306,13 @@ const HomeTab = ({
           </div>
           
           <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>
+            <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'white', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
               Olá, {firstName}! 
             </h2>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>
-              Seja bem-vindo ao II CIECC 2026.
+            <p style={{ fontSize: '16px', color: 'var(--gold)', fontWeight: '600', lineHeight: '1.4' }}>
+              Seja bem-vindo(a) ao II Congresso de Educação Cristã Clássica
             </p>
           </div>
-
-          <h1 style={{ 
-            fontFamily: 'var(--font-serif)', 
-            fontSize: '18px', 
-            fontWeight: '800', 
-            lineHeight: '1.2',
-            marginBottom: '20px',
-            color: 'var(--gold)'
-          }}>
-            {displaySafe(homeTitle)} <br/>
-            <span style={{ color: 'white', fontSize: '14px', fontWeight: '500', opacity: 0.8 }}>{displaySafe(homeSubtitle)}</span>
-          </h1>
 
           {/* VÍDEO TRANSMISSÃO OFICIAL - REDESIGN PREMIUM */}
           <div style={{ 
