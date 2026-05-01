@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users, Search, Download, Briefcase, ChevronRight, ChevronDown,
-  MapPin, Clock, Edit3, Check, X as XIcon, Info
+  MapPin, Clock, Edit3, Check, X as XIcon, Info, Bell
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -13,6 +13,7 @@ const WorkshopsCMS = () => {
   const [expandedWorkshops, setExpandedWorkshops] = useState([]);
   const [editingRoom, setEditingRoom] = useState(null); // { id, value }
   const [savingRoom, setSavingRoom] = useState(false);
+  const [sendingNotifs, setSendingNotifs] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -138,6 +139,67 @@ const WorkshopsCMS = () => {
     }
   };
 
+  const handleSendNotifications = async () => {
+    if (!window.confirm("Deseja enviar agora os avisos de salas para todos os inscritos? Pessoas que já receberam o aviso hoje não serão notificadas novamente.")) return;
+    
+    setSendingNotifs(true);
+    try {
+      // 1. Buscar quem já recebeu o aviso hoje para evitar spam
+      const today = new Date().toISOString().split('T')[0];
+      const { data: alreadyNotified } = await supabase
+        .from('member_inbox')
+        .select('user_cpf')
+        .eq('type', 'workshop_reminder')
+        .gte('created_at', today);
+
+      const notifiedCpfs = new Set((alreadyNotified || []).map(n => n.user_cpf));
+
+      // 2. Agrupar inscrições por congressista
+      const userWorkshops = {};
+      participants.forEach(p => {
+        if (!userWorkshops[p.cpf]) userWorkshops[p.cpf] = [];
+        const ws = workshops.find(w => w.id === p.workshop_id);
+        if (ws) userWorkshops[p.cpf].push(ws);
+      });
+
+      const toInsert = [];
+      Object.entries(userWorkshops).forEach(([cpf, userWs]) => {
+        if (notifiedCpfs.has(cpf)) return;
+
+        // Ordenar por horário
+        const sortedWs = userWs.sort((a, b) => a.start_time.localeCompare(b.start_time));
+        const messageLines = sortedWs.map(w => {
+          const time = w.start_time.substring(0, 5).replace(':', 'h');
+          const room = w.room || 'A definir no local';
+          return `${time} - ${w.title} (Sala: ${room})`;
+        });
+
+        toInsert.push({
+          user_cpf: cpf,
+          title: "📌 Suas Salas de Oficina",
+          body: `Olá! Confira os locais das suas oficinas escolhidas:\n\n${messageLines.join('\n')}\n\nBom congresso!`,
+          type: 'workshop_reminder',
+          sender_name: 'Organização CIECC'
+        });
+      });
+
+      if (toInsert.length === 0) {
+        alert("Todos os inscritos atuais já foram notificados hoje.");
+        return;
+      }
+
+      const { error } = await supabase.from('member_inbox').insert(toInsert);
+      if (error) throw error;
+
+      alert(`Sucesso! ${toInsert.length} avisos enviados com sucesso.`);
+    } catch (err) {
+      console.error('Erro ao notificar:', err);
+      alert('Erro ao enviar notificações: ' + err.message);
+    } finally {
+      setSendingNotifs(false);
+    }
+  };
+
   const toggleExpand = (id) => {
     setExpandedWorkshops(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -222,7 +284,20 @@ const WorkshopsCMS = () => {
             style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none', width: '100%', fontSize: '14px' }}
           />
         </div>
-        <button onClick={fetchData} className="sync-btn" style={{ margin: 0 }}>ATUALIZAR</button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={handleSendNotifications} 
+            disabled={sendingNotifs || loading}
+            style={{ 
+              margin: 0, background: '#4A101D', color: 'white', border: '1px solid var(--brand)',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', borderRadius: '12px',
+              fontSize: '13px', fontWeight: '900', cursor: 'pointer', opacity: (sendingNotifs || loading) ? 0.6 : 1
+            }}
+          >
+            <Bell size={18} /> {sendingNotifs ? 'ENVIANDO...' : 'NOTIFICAR INSCRITOS'}
+          </button>
+          <button onClick={fetchData} className="sync-btn" style={{ margin: 0 }}>ATUALIZAR</button>
+        </div>
       </div>
 
       {/* Workshops grouped by slot */}
