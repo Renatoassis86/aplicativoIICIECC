@@ -7,15 +7,14 @@ import { supabase } from '../../lib/supabase';
 // Agrupa workshops por título e retorna lista de grupos com instâncias por horário
 const groupByTitle = (workshops) => {
   const map = {};
-  const order = [];
   workshops.forEach(w => {
     if (!map[w.title]) {
-      map[w.title] = { title: w.title, speakerName: w.speakerName, slots: {} };
-      order.push(w.title);
+      map[w.title] = { title: w.title, speakerName: w.speakerName, slots: {}, totalRegistrations: 0 };
     }
     map[w.title].slots[w.start_time.substring(0, 5)] = w;
+    map[w.title].totalRegistrations += (w.registrations || 0);
   });
-  return order.map(t => map[t]);
+  return Object.values(map).sort((a, b) => b.totalRegistrations - a.totalRegistrations);
 };
 
 const SLOT_A = '14:15';
