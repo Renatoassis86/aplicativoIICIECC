@@ -362,9 +362,7 @@ const HomeTab = ({
             </div>
           </div>
 
-          <div style={{ padding: '0 0px', margin: '16px 0 24px' }}>
-            <CountdownTimer targetDate={homeCountdownDate} />
-          </div>
+
 
           <button 
             onClick={() => onNavigate('agenda')} 
