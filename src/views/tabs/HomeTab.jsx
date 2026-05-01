@@ -20,7 +20,8 @@ import {
   Megaphone,
   Bookmark,
   Heart,
-  ScanLine
+  ScanLine,
+  Play
 } from 'lucide-react';
 import CountdownTimer from '../../components/home/CountdownTimer';
 import SessionDetailModal from '../../components/agenda/SessionDetailModal';
@@ -360,7 +361,7 @@ const HomeTab = ({
               zIndex: 2,
               transition: 'transform 0.2s ease'
             }}>
-              <PlayCircle size={48} fill="white" strokeWidth={0} />
+              <Play size={40} fill="white" style={{ marginLeft: '4px' }} />
             </div>
             
             <div style={{ position: 'absolute', bottom: '24px', left: '0', right: '0', textAlign: 'center', zIndex: 2 }}>
