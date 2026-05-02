@@ -75,7 +75,7 @@ const MoreTab = ({
         { label: 'Network de Participantes', icon: <Users size={18} color="#48BB78" />, action: () => onNavigate('network') },
         { label: 'FAQ (Perguntas Frequentes)', icon: <HelpCircle size={18} color="#38A169" />, action: onOpenFAQ },
         { label: 'Palestrantes', icon: <Star size={18} color="#805AD5" />, action: () => onNavigate('speakers') },
-        { label: 'Revista e Grupos de Trabalho', icon: <BookOpen size={18} color="var(--primary)" />, action: onOpenGTs },
+        { label: 'Área do Autor (Revista e GTs)', icon: <BookOpen size={18} color="var(--primary)" />, action: onOpenGTs },
         { label: 'Patrocinadores & Parceiros', icon: <Briefcase size={18} color="var(--primary)" />, action: onOpenSponsors },
         { label: 'Mapa / Localização', icon: <MapPin size={18} color="#E53E3E" />, action: onOpenMap },
       ]

@@ -48,7 +48,11 @@ const BaseSurvey = ({ steps, onComplete, themeColor = 'var(--primary)' }) => {
       </div>
 
       {/* Progress Header */}
-      <div style={{ background: 'white', padding: '24px 20px', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ background: 'white', padding: '24px 20px', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid #EDF2F7' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '4px' }}>Conclua seu Perfil</h2>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Falta pouco! Preencha estas informações para liberar seu acesso às oficinas e outras funcionalidades.</p>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Zap size={18} color={themeColor} fill={themeColor} />
