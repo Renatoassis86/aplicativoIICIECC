@@ -18,11 +18,11 @@ const groupByTitle = (workshops) => {
 };
 
 const REGISTRATIONS_CLOSED = true;
-const SLOT_A = '14:15';
-const SLOT_B = '15:30';
+const SLOT_A = '15:00';
+const SLOT_B = '16:15';
 const SLOT_LABELS = {
-  [SLOT_A]: '14h15',
-  [SLOT_B]: '15h30',
+  [SLOT_A]: '15h00',
+  [SLOT_B]: '16h15',
 };
 
 const WorkshopsView = ({ userCpf, onClose }) => {
