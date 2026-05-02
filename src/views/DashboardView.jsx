@@ -34,6 +34,7 @@ import ProfileView from './ProfileView';
 import WorkshopsView from './info/WorkshopsView';
 import MediaDetailView from './media/MediaDetailView';
 import SatisfactionSurveyView from './SatisfactionSurveyView';
+import PreRegistrationView from './PreRegistrationView';
 import { fetchInbox, initPushNotifications, subscribeToNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
@@ -93,6 +94,7 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenProfile={() => setCurrentPage('profile')}
           onOpenWorkshops={() => setCurrentPage('workshops')}
           onOpenSurvey={() => setCurrentPage('survey')}
+          onOpenPreRegistration={() => setCurrentPage('preregistration')}
           onOpenMedia={(media) => {
             setMediaDetail(media);
             setCurrentPage('mediaDetail');
@@ -191,6 +193,9 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
             userCpf={userCpf}
             onClose={() => setCurrentPage(null)}
           />
+        )}
+        {currentPage === 'preregistration' && (
+          <PreRegistrationView onClose={() => setCurrentPage(null)} />
         )}
       </div>
     );

@@ -34,7 +34,7 @@ import { supabase } from '../../lib/supabase';
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, onOpenWorkshops, onOpenSurvey, userCpf
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, onOpenWorkshops, onOpenSurvey, onOpenPreRegistration, userCpf
 }) => {
   const getYouTubeEmbedUrl = (url) => {
     if (!url) return '';
@@ -387,8 +387,38 @@ const HomeTab = ({
         </div>
       </section>
 
-      {/* BANNER PESQUISA DE SATISFAÇÃO */}
+      {/* BANNER PRÉ-INSCRIÇÃO III CIECC */}
       <section style={{ padding: '24px 20px 0' }}>
+        <div
+          onClick={onOpenPreRegistration}
+          style={{
+            background: 'linear-gradient(135deg, #1A3A1A 0%, #0F2A0F 50%, #1E3A1A 100%)',
+            borderRadius: '24px', padding: '20px', cursor: 'pointer',
+            border: '1px solid rgba(56,161,105,0.3)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            display: 'flex', alignItems: 'center', gap: '16px',
+            position: 'relative', overflow: 'hidden'
+          }}
+        >
+          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(56,161,105,0.08)' }} />
+          <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(56,161,105,0.15)', border: '1px solid rgba(56,161,105,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '24px' }}>
+            🎟️
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <p style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: 0, fontFamily: 'Georgia, serif' }}>III CIECC 2027</p>
+              <span style={{ background: '#38A169', color: 'white', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '6px', letterSpacing: '1px' }}>ABERTO</span>
+            </div>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.4 }}>
+              Garanta sua vaga! Faça sua pré-inscrição agora.
+            </p>
+          </div>
+          <ChevronRight size={20} color="#38A169" style={{ flexShrink: 0 }} />
+        </div>
+      </section>
+
+      {/* BANNER PESQUISA DE SATISFAÇÃO */}
+      <section style={{ padding: '16px 20px 0' }}>
         <div
           onClick={onOpenSurvey}
           style={{
