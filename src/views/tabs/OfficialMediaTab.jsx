@@ -314,7 +314,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         {/* 6. OUTRAS CATEGORIAS (DINÂMICO) */}
         {Object.entries(
           mediaList.reduce((acc, m) => {
-            if (!['Flash 2026', 'Entrevistas Exclusivas', 'Podcast', 'Memórias'].includes(m.category)) {
+            if (!['Flash 2026', 'Entrevistas Exclusivas', 'Podcast', 'Memórias', 'Palestras'].includes(m.category)) {
               if (!acc[m.category]) acc[m.category] = [];
               acc[m.category].push(m);
             }
