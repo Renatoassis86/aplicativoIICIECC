@@ -68,13 +68,9 @@ const WorkshopsCMS = () => {
     }
   };
 
-  // Regras de lotação global:
-  // As 2 primeiras a atingir 100 inscritos → Auditório Principal (trava em 100)
-  // As demais que atingirem 30 → Sala (A definir) (trava em 30)
-  const LIMIT_AUDITORIO = 100;
-  const LIMIT_SALA_MEDIA = 60;
-  const LIMIT_SALA = 30;
-  const MAX_AUDITORIO = 2;
+  // Regras de lotação global escalonadas por popularidade:
+  const CAPACITIES_LADDER = [100, 60, 60, 36, 30, 30, 20, 20, 20, 15];
+  const DEFAULT_LIMIT = 15;
 
   const workshopCapacities = useMemo(() => {
     const capacities = {};
@@ -83,42 +79,51 @@ const WorkshopsCMS = () => {
     const counts = (w) => participants.filter(p => p.workshop_id === w.id).length;
 
     workshops.forEach(w => {
-      if (!slots[w.start_time]) slots[w.start_time] = [];
-      slots[w.start_time].push(w);
+      const timeKey = w.start_time.substring(0, 5);
+      if (!slots[timeKey]) slots[timeKey] = [];
+      slots[timeKey].push(w);
     });
 
     Object.keys(slots).forEach(time => {
       const sortedInSlot = [...slots[time]].sort((a, b) => counts(b) - counts(a));
       
-      let auditorioWinner = null;
+      let auditorioIdx = -1;
       for (let i = 0; i < sortedInSlot.length; i++) {
         if (!usedTitlesForAuditorio.has(sortedInSlot[i].title)) {
-          auditorioWinner = sortedInSlot[i];
-          usedTitlesForAuditorio.add(auditorioWinner.title);
-          capacities[auditorioWinner.id] = LIMIT_AUDITORIO;
+          auditorioIdx = i;
+          usedTitlesForAuditorio.add(sortedInSlot[i].title);
+          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 100
           break;
         }
       }
 
-      const remaining = sortedInSlot.filter(w => w.id !== auditorioWinner?.id);
-      remaining.slice(0, 2).forEach(w => { capacities[w.id] = LIMIT_SALA_MEDIA; });
-      remaining.slice(2).forEach(w => { capacities[w.id] = LIMIT_SALA; });
+      if (auditorioIdx === -1 && sortedInSlot.length > 0) {
+        auditorioIdx = 0;
+        capacities[sortedInSlot[0].id] = CAPACITIES_LADDER[0];
+      }
+
+      const remaining = sortedInSlot.filter((_, idx) => idx !== auditorioIdx);
+      remaining.forEach((w, idx) => {
+        capacities[w.id] = CAPACITIES_LADDER[idx + 1] || DEFAULT_LIMIT;
+      });
     });
 
     return capacities;
   }, [workshops, participants]);
 
-  const getCompetitiveCapacity = (workshop) => workshopCapacities[workshop.id] || LIMIT_SALA;
+  const getCompetitiveCapacity = (workshop) => workshopCapacities[workshop.id] || DEFAULT_LIMIT;
 
   const getRoomLabel = (workshop) => {
     const wsCount = participants.filter(p => p.workshop_id === workshop.id).length;
-    const capacity = workshopCapacities[workshop.id];
+    const capacity = workshopCapacities[workshop.id] || DEFAULT_LIMIT;
     
-    if (capacity === LIMIT_AUDITORIO)
-      return { label: `Auditório Principal (${wsCount}/${LIMIT_AUDITORIO})`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
-    if (capacity === LIMIT_SALA_MEDIA)
-      return { label: `Sala Média (${wsCount}/${LIMIT_SALA_MEDIA})`, color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
-    return { label: `Sala — A definir (${wsCount}/${LIMIT_SALA})`, color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', locked: false };
+    if (capacity === 100)
+      return { label: `Auditório Principal (${wsCount}/100)`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
+    if (capacity === 60)
+      return { label: `Sala Média (${wsCount}/60)`, color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
+    if (capacity >= 30)
+      return { label: `Sala Comum (${wsCount}/${capacity})`, color: '#D4C19C', bg: 'rgba(212,193,156,0.12)', locked: true };
+    return { label: `Sala Pequena (${wsCount}/${capacity})`, color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', locked: false };
   };
 
   const handleSaveRoom = async (workshopId) => {
@@ -263,11 +268,10 @@ const WorkshopsCMS = () => {
       <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
         <Info size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
-          <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Alocação de Salas</p>
+          <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Alocação de Salas (Escalonada)</p>
           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6' }}>
-            As <strong style={{ color: '#F59E0B' }}>2 primeiras a atingir 100 inscritos → Auditório Principal</strong> (inscrições travadas).
-            As demais que <strong style={{ color: '#60A5FA' }}>atingirem 30 inscritos → Sala (A definir)</strong> (inscrições travadas).
-            <br />Todas as oficinas ficam abertas até atingir o limite. O nome da sala pode ser editado clicando em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} />.
+            As salas são distribuídas automaticamente por popularidade: <strong style={{ color: '#F59E0B' }}>Auditório (100)</strong>, <strong style={{ color: '#60A5FA' }}>Médias (60)</strong>, e demais salas variando de <strong style={{ color: '#D4C19C' }}>15 a 36 vagas</strong> conforme a tabela real.
+            <br />As inscrições travam automaticamente quando o limite da sala é atingido. Edite o nome da sala clicando em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} />.
           </p>
         </div>
       </div>
