@@ -151,14 +151,35 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
         const saved = localStorage.getItem(STORAGE_KEY(userCpf));
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.current >= 0 && parsed.answers) {
-            setSavedProgress({ current: parsed.current, answersCount: Object.keys(parsed.answers).length });
-            // Restaura respostas salvas
-            setAnswers(parsed.answers);
-            if (member) setProfile(member);
-            // Vai direto para a tela de confirmação com aviso de progresso salvo
-            setLoadingProfile(false);
-            return;
+          if (parsed.answers && Object.keys(parsed.answers).length > 0) {
+            // Se estava marcado como "concluído mas não enviado", tenta reenviar agora
+            if (parsed.pendingSubmit) {
+              const ans = parsed.answers;
+              const modalityAns = ans['Q02'] || '';
+              const mod = modalityAns.toLowerCase().includes('presencial') ? 'presencial' : 'online';
+              const { error } = await supabase.from('satisfaction_responses').insert({
+                respondent_cpf: userCpf || null,
+                answers: ans,
+                modality: mod,
+                profile_type: ans['Q01'] || '',
+                is_first_congress: (ans['Q03'] || '').toLowerCase().includes('primeiro'),
+                completed: true
+              });
+              if (!error) {
+                localStorage.removeItem(STORAGE_KEY(userCpf));
+                setDone(true);
+                setLoadingProfile(false);
+                return;
+              }
+            }
+            // Progresso parcial — mostra tela de continuação
+            if (parsed.current >= 0) {
+              setSavedProgress({ current: parsed.current, answersCount: Object.keys(parsed.answers).length });
+              setAnswers(parsed.answers);
+              if (member) setProfile(member);
+              setLoadingProfile(false);
+              return;
+            }
           }
         }
 
@@ -279,27 +300,27 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
     const profileAns = answers['Q01'] || '';
     const isFirst = (answers['Q03'] || '').toLowerCase().includes('primeiro');
 
-    const payload = {
-      respondent_cpf: userCpf || null,
-      answers,
-      modality,
-      profile_type: profileAns,
-      is_first_congress: isFirst,
-      completed: true
-    };
-    console.log('[Survey] Enviando payload:', payload);
+    // Marca como pendente antes de enviar — garante reenvio se cair conexão
+    localStorage.setItem(STORAGE_KEY(userCpf), JSON.stringify({
+      current: TOTAL - 1, answers, pendingSubmit: true
+    }));
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('satisfaction_responses')
-      .insert(payload)
-      .select();
-
-    console.log('[Survey] Resultado insert:', data, 'Erro:', error);
+      .insert({
+        respondent_cpf: userCpf || null,
+        answers,
+        modality,
+        profile_type: profileAns,
+        is_first_congress: isFirst,
+        completed: true
+      });
 
     if (error) {
       console.error('[Survey] Erro ao salvar:', JSON.stringify(error));
-      alert('Erro ao salvar respostas: ' + (error.message || JSON.stringify(error)));
+      // Mantém no localStorage com pendingSubmit para reenviar depois
       setSubmitting(false);
+      setDone(true); // Mostra tela de obrigado mesmo assim — dados estão salvos localmente
       return;
     }
 
