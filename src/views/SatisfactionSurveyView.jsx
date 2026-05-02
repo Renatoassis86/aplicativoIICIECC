@@ -162,6 +162,39 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
   const progress = current >= 0 ? Math.round(((current + 1) / TOTAL) * 100) : 0;
   const color = q ? (DIM_COLORS[q.dim] || '#6B141A') : '#6B141A';
 
+  // Detecta modalidade a partir da resposta Q02
+  const modality = (() => {
+    const ans = answers['Q02'] || '';
+    if (ans.toLowerCase().includes('presencial')) return 'presencial';
+    if (ans.toLowerCase().includes('online')) return 'online';
+    return null;
+  })();
+
+  // Retorna true se a pergunta deve ser pulada com base na modalidade
+  const shouldSkip = (idx) => {
+    const question = QUESTIONS[idx];
+    if (!modality) return false;
+    // dim 5 = Infraestrutura Presencial → pular para online
+    if (question.dim === 5 && modality === 'online') return true;
+    // dim 6 = Experiência Online → pular para presencial
+    if (question.dim === 6 && modality === 'presencial') return true;
+    return false;
+  };
+
+  // Avança para o próximo índice válido (pula dimensões irrelevantes)
+  const nextIndex = (from) => {
+    let next = from + 1;
+    while (next < TOTAL && shouldSkip(next)) next++;
+    return next;
+  };
+
+  // Volta para o índice anterior válido
+  const prevIndex = (from) => {
+    let prev = from - 1;
+    while (prev >= 0 && shouldSkip(prev)) prev--;
+    return prev;
+  };
+
   const setAnswer = (val) => {
     setAnswers(prev => ({ ...prev, [q.id]: val }));
   };
@@ -174,9 +207,18 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
     return true;
   };
 
+  const goBack = () => {
+    const prev = prevIndex(current);
+    if (prev >= 0) {
+      setCurrent(prev);
+      containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const advance = () => {
-    if (current < TOTAL - 1) {
-      setCurrent(c => c + 1);
+    const next = nextIndex(current);
+    if (next < TOTAL) {
+      setCurrent(next);
       containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       handleSubmit();
@@ -185,12 +227,24 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
 
   const handleAutoAdvance = (val) => {
     setAnswers(prev => {
-      const next = { ...prev, [q.id]: val };
+      const updated = { ...prev, [q.id]: val };
       setTimeout(() => {
-        setCurrent(c => c + 1);
+        // Recalcula modalidade com a resposta recém-dada (pode ser Q02)
+        const modAns = updated['Q02'] || '';
+        const mod = modAns.toLowerCase().includes('presencial') ? 'presencial'
+          : modAns.toLowerCase().includes('online') ? 'online' : null;
+        let next = current + 1;
+        while (next < TOTAL) {
+          const dq = QUESTIONS[next];
+          if (mod === 'online' && dq.dim === 5) { next++; continue; }
+          if (mod === 'presencial' && dq.dim === 6) { next++; continue; }
+          break;
+        }
+        if (next < TOTAL) setCurrent(next);
+        else handleSubmit();
         containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       }, 350);
-      return next;
+      return updated;
     });
   };
 
@@ -236,7 +290,7 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
       <div style={{ background: color, padding: '16px 20px 10px', flexShrink: 0, transition: 'background 0.4s' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           {current > 0 ? (
-            <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            <button onClick={goBack}
               style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <ArrowLeft size={18} color="white" />
             </button>
@@ -270,7 +324,7 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
 
         {/* Voltar para single/nps (auto-advance, sem footer) */}
         {(q.type === 'single' || q.type === 'nps') && current > 0 && (
-          <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          <button onClick={goBack}
             style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '13px', cursor: 'pointer', padding: '8px 0' }}>
             <ArrowLeft size={14} /> Voltar à pergunta anterior
           </button>
@@ -288,7 +342,7 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
           )}
           <div style={{ display: 'flex', gap: '10px' }}>
             {current > 0 && (
-              <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              <button onClick={goBack}
                 style={{ padding: '18px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ArrowLeft size={18} />
               </button>
