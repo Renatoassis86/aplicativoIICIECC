@@ -518,7 +518,7 @@ const WorkshopsCMS = () => {
     w.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const slots = ['14:15', '15:30'];
+  const slots = ['15:00', '16:15'];
 
   const slotCounts = useMemo(() => {
     return slots.reduce((acc, slot) => {
@@ -547,11 +547,11 @@ const WorkshopsCMS = () => {
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
             <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Total 1º Turno</p>
-            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['14:15'] || 0}</p>
+            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['15:00'] || 0}</p>
           </div>
           <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
             <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Total 2º Turno</p>
-            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['15:30'] || 0}</p>
+            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['16:15'] || 0}</p>
           </div>
           <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
             <p style={{ fontSize: '10px', color: '#48BB78', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Oficinas Ativas</p>
@@ -633,7 +633,7 @@ const WorkshopsCMS = () => {
           });
         if (slotWorkshops.length === 0) return null;
 
-        const slotLabel = slot === '14:15' ? '1º Horário — 14h15 às 15h15' : '2º Horário — 15h30 às 16h30';
+        const slotLabel = slot === '15:00' ? '1º Horário — 15h00 às 16h00' : '2º Horário — 16h15 às 17h15';
 
         return (
           <div key={slot} style={{ marginBottom: '32px' }}>
