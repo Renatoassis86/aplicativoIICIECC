@@ -117,6 +117,8 @@ const DIM_COLORS = {
 const TOTAL = QUESTIONS.length;
 const TOTAL_DIMS = 16; // dimensões 0-15
 
+const STORAGE_KEY = (cpf) => `ciecc_survey_${cpf || 'anon'}`;
+
 export default function SatisfactionSurveyView({ userCpf, onClose }) {
   const [current, setCurrent] = useState(-1); // -1 = tela de confirmação de perfil
   const [answers, setAnswers] = useState({});
@@ -124,7 +126,15 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
   const [done, setDone] = useState(false);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [savedProgress, setSavedProgress] = useState(null); // { current, answersCount }
   const containerRef = useRef(null);
+
+  // Persistência: salva answers + current no localStorage a cada mudança
+  useEffect(() => {
+    if (current < 0) return; // não salva enquanto está na tela de confirmação
+    const key = STORAGE_KEY(userCpf);
+    localStorage.setItem(key, JSON.stringify({ current, answers }));
+  }, [current, answers, userCpf]);
 
   // Buscar perfil do congressista para pré-preencher
   useEffect(() => {
@@ -136,9 +146,24 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
           .select('name, email, phone, institution, city, state, ticket_type, modality')
           .eq('cpf', userCpf)
           .single();
+
+        // Verificar progresso salvo
+        const saved = localStorage.getItem(STORAGE_KEY(userCpf));
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.current >= 0 && parsed.answers) {
+            setSavedProgress({ current: parsed.current, answersCount: Object.keys(parsed.answers).length });
+            // Restaura respostas salvas
+            setAnswers(parsed.answers);
+            if (member) setProfile(member);
+            // Vai direto para a tela de confirmação com aviso de progresso salvo
+            setLoadingProfile(false);
+            return;
+          }
+        }
+
         if (member) {
           setProfile(member);
-          // Pré-preencher modalidade automaticamente
           const prefilled = {};
           if (member.modality) {
             const mod = member.modality.toLowerCase();
@@ -146,9 +171,8 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
             else if (mod.includes('online')) prefilled['Q02'] = 'Online — acompanhei ao vivo pela transmissão';
           }
           setAnswers(prev => ({ ...prefilled, ...prev }));
-          // Mantém em -1 para mostrar tela de confirmação
         } else {
-          setCurrent(0); // Sem perfil, começa direto nas perguntas
+          setCurrent(0);
         }
       } catch {
         setCurrent(0);
@@ -267,6 +291,7 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
     } catch (e) {
       console.error('[Survey] Erro ao salvar:', e);
     }
+    localStorage.removeItem(STORAGE_KEY(userCpf));
     setSubmitting(false);
     setDone(true);
   };
@@ -280,8 +305,25 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
     </div>
   );
 
-  if (profile && current === -1) return (
-    <ProfileConfirmScreen profile={profile} onClose={onClose} onConfirm={() => setCurrent(0)} />
+  if (current === -1) return (
+    <ProfileConfirmScreen
+      profile={profile}
+      savedProgress={savedProgress}
+      onClose={onClose}
+      onConfirm={() => setCurrent(savedProgress ? savedProgress.current : 0)}
+      onRestart={() => {
+        localStorage.removeItem(STORAGE_KEY(userCpf));
+        const prefilled = {};
+        if (profile?.modality) {
+          const mod = profile.modality.toLowerCase();
+          if (mod.includes('presencial')) prefilled['Q02'] = 'Presencial — estive fisicamente no evento';
+          else if (mod.includes('online')) prefilled['Q02'] = 'Online — acompanhei ao vivo pela transmissão';
+        }
+        setAnswers(prefilled);
+        setSavedProgress(null);
+        setCurrent(0);
+      }}
+    />
   );
 
   return (
@@ -467,15 +509,18 @@ function OpenText({ q, answers, onSelect }) {
   );
 }
 
-function ProfileConfirmScreen({ profile, onClose, onConfirm }) {
-  const fields = [
+function ProfileConfirmScreen({ profile, savedProgress, onClose, onConfirm, onRestart }) {
+  const fields = profile ? [
     { label: 'Nome', value: profile.name },
     { label: 'E-mail', value: profile.email },
     { label: 'Telefone', value: profile.phone },
     { label: 'Instituição', value: profile.institution },
     { label: 'Cidade / Estado', value: [profile.city, profile.state].filter(Boolean).join(' / ') },
     { label: 'Modalidade', value: profile.modality },
-  ].filter(f => f.value);
+  ].filter(f => f.value) : [];
+
+  const firstName = profile ? (profile.name || '').split(' ')[0] : '';
+  const pct = savedProgress ? Math.round(((savedProgress.current + 1) / TOTAL) * 100) : 0;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#0A0F1A', display: 'flex', flexDirection: 'column' }}>
@@ -493,32 +538,63 @@ function ProfileConfirmScreen({ profile, onClose, onConfirm }) {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 120px' }}>
-        <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, marginBottom: '24px' }}>
-          Olá, <strong style={{ color: '#D4C19C' }}>{(profile.name || '').split(' ')[0]}</strong>! Identificamos seu cadastro. Confirme seus dados antes de iniciar:
-        </p>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 140px' }}>
 
-        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(212,193,156,0.2)', overflow: 'hidden', marginBottom: '24px' }}>
-          {fields.map((f, i) => (
-            <div key={i} style={{ padding: '14px 20px', borderBottom: i < fields.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', display: 'flex', gap: '12px', alignItems: 'baseline' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#D4C19C', textTransform: 'uppercase', letterSpacing: '1px', minWidth: '90px', flexShrink: 0 }}>{f.label}</span>
-              <span style={{ fontSize: '15px', color: 'white', fontWeight: '500' }}>{f.value}</span>
+        {/* Banner de progresso salvo */}
+        {savedProgress && (
+          <div style={{ background: 'rgba(212,193,156,0.1)', border: '1px solid rgba(212,193,156,0.3)', borderRadius: '16px', padding: '16px 18px', marginBottom: '24px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '22px', flexShrink: 0 }}>💾</span>
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: '800', color: '#D4C19C', margin: '0 0 4px' }}>Você tem progresso salvo!</p>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.5 }}>
+                Você já respondeu <strong style={{ color: 'white' }}>{pct}%</strong> da pesquisa. Pode continuar de onde parou ou recomeçar do zero.
+              </p>
+              {/* Mini barra de progresso */}
+              <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden', marginTop: '10px' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: '#D4C19C', borderRadius: '2px' }} />
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* Saudação e dados do perfil */}
+        {profile && (
+          <>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, marginBottom: '16px' }}>
+              {savedProgress
+                ? <>Bem-vindo de volta, <strong style={{ color: '#D4C19C' }}>{firstName}</strong>!</>
+                : <>Olá, <strong style={{ color: '#D4C19C' }}>{firstName}</strong>! Identificamos seu cadastro. Confirme seus dados antes de iniciar:</>
+              }
+            </p>
+            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(212,193,156,0.2)', overflow: 'hidden', marginBottom: '20px' }}>
+              {fields.map((f, i) => (
+                <div key={i} style={{ padding: '14px 20px', borderBottom: i < fields.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', display: 'flex', gap: '12px', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#D4C19C', textTransform: 'uppercase', letterSpacing: '1px', minWidth: '90px', flexShrink: 0 }}>{f.label}</span>
+                  <span style={{ fontSize: '15px', color: 'white', fontWeight: '500' }}>{f.value}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', lineHeight: 1.5 }}>
-          Leva aproximadamente 10 minutos. Suas respostas são anônimas e usadas apenas para melhorar o próximo Congresso.
+          🔒 Suas respostas são salvas automaticamente. Se sair, poderá continuar de onde parou.
         </p>
       </div>
 
       {/* Footer */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: 'linear-gradient(to top, #0A0F1A 80%, transparent)', paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: 'linear-gradient(to top, #0A0F1A 85%, transparent)', paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
         <button onClick={onConfirm}
-          style={{ width: '100%', padding: '18px', borderRadius: '16px', background: '#6B141A', border: 'none', color: '#D4C19C', fontSize: '16px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          Confirmar e Iniciar Pesquisa
+          style={{ width: '100%', padding: '18px', borderRadius: '16px', background: '#6B141A', border: 'none', color: '#D4C19C', fontSize: '16px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: savedProgress ? '10px' : '0' }}>
+          {savedProgress ? 'Continuar de onde parei' : 'Confirmar e Iniciar Pesquisa'}
           <ArrowRight size={18} />
         </button>
+        {savedProgress && (
+          <button onClick={onRestart}
+            style={{ width: '100%', padding: '14px', borderRadius: '16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', fontSize: '14px', cursor: 'pointer' }}>
+            Recomeçar do zero
+          </button>
+        )}
       </div>
     </div>
   );
