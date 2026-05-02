@@ -292,7 +292,8 @@ const WorkshopsCMS = () => {
 
       doc.setFontSize(14);
       doc.setTextColor(74, 16, 29); // Tema claro - vermelho escuro do evento
-      const slotLabel = slot === '14:15' ? '1o Horario — 14h15 as 15h15' : '2o Horario — 15h30 as 16h30';
+      const slotName = slot === '14:15' ? '1o Horario — 14h15 as 15h15' : '2o Horario — 15h30 as 16h30';
+      const slotLabel = `${slotName} (Inscritos: ${slotCounts[slot] || 0})`;
       doc.text(slotLabel, 14, currentY);
       currentY += 8;
 
@@ -328,6 +329,16 @@ const WorkshopsCMS = () => {
 
   const slots = ['14:15', '15:30'];
 
+  const slotCounts = useMemo(() => {
+    return slots.reduce((acc, slot) => {
+      acc[slot] = participants.filter(p => {
+        const w = workshops.find(wk => wk.id === p.workshop_id);
+        return w?.start_time?.startsWith(slot);
+      }).length;
+      return acc;
+    }, {});
+  }, [participants, workshops]);
+
   if (loading) return (
     <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
       Carregando dados das oficinas...
@@ -342,10 +353,14 @@ const WorkshopsCMS = () => {
           <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>Gestão de Oficinas</h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Acompanhe inscrições e defina os nomes das salas no dia do evento.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
-            <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Total Inscrições</p>
-            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{participants.length}</p>
+            <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Total 1º Turno</p>
+            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['14:15'] || 0}</p>
+          </div>
+          <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
+            <p style={{ fontSize: '10px', color: 'var(--gold)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Total 2º Turno</p>
+            <p style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{slotCounts['15:30'] || 0}</p>
           </div>
           <div className="stat-card" style={{ padding: '12px 24px', minWidth: 'auto', marginBottom: 0 }}>
             <p style={{ fontSize: '10px', color: '#48BB78', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>Oficinas Ativas</p>
