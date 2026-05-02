@@ -44,22 +44,30 @@ const WorkshopsCMS = () => {
       const { data: regs } = await supabase
         .from('workshop_registrations')
         .select('workshop_id, user_cpf, created_at');
-
       const cpfs = [...new Set((regs || []).map(r => r.user_cpf))];
-      const { data: membersData } = cpfs.length > 0
-        ? await supabase.from('members').select('cpf, name, institution, email').in('cpf', cpfs)
-        : { data: [] };
+      
+      // Busca membros tanto por CPF quanto por Email, pois alguns usuários podem estar registrados por email
+      const { data: membersByCpf } = await supabase.from('members').select('cpf, name, institution, email').in('cpf', cpfs);
+      const { data: membersByEmail } = await supabase.from('members').select('cpf, name, institution, email').in('email', cpfs);
+      
+      const allMembers = [...(membersByCpf || []), ...(membersByEmail || [])];
+      const membersMap = allMembers.reduce((acc, m) => { 
+        if (m.cpf) acc[m.cpf] = m;
+        if (m.email) acc[m.email] = m;
+        return acc; 
+      }, {});
 
-      const membersMap = (membersData || []).reduce((acc, m) => { acc[m.cpf] = m; return acc; }, {});
-
-      const participantsList = (regs || []).map(r => ({
-        workshop_id: r.workshop_id,
-        registered_at: r.created_at,
-        cpf: r.user_cpf,
-        name: membersMap[r.user_cpf]?.name || r.user_cpf,
-        institution: membersMap[r.user_cpf]?.institution || '',
-        email: membersMap[r.user_cpf]?.email || '',
-      }));
+      const participantsList = (regs || []).map(r => {
+        const member = membersMap[r.user_cpf];
+        return {
+          workshop_id: r.workshop_id,
+          registered_at: r.created_at,
+          cpf: member?.cpf || r.user_cpf,
+          name: member?.name || r.user_cpf,
+          institution: member?.institution || '',
+          email: member?.email || '',
+        };
+      });;
 
       setWorkshops(sessions || []);
       setParticipants(participantsList);
@@ -244,16 +252,40 @@ const WorkshopsCMS = () => {
     doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
     doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
 
+    // Resumo de Perfil para o Palestrante
+    doc.setFontSize(11);
+    doc.setTextColor(74, 16, 29);
+    doc.text("RESUMO DO PERFIL DOS INSCRITOS:", 14, 35);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    
+    const institutions = {};
+    wsParticipants.forEach(p => {
+      const inst = p.institution?.trim() || 'Não informada';
+      institutions[inst] = (institutions[inst] || 0) + 1;
+    });
+    
+    const topInstitutions = Object.entries(institutions)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([name, count]) => `${name} (${count})`)
+      .join(', ');
+
+    doc.text(`Principais Instituicoes: ${topInstitutions || 'N/A'}`, 14, 40);
+    
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 43, 196, 43);
+
     const tableData = wsParticipants.map((p, idx) => [
       idx + 1,
       p.name,
-      p.cpf,
+      p.email || '-',
       p.institution || '-'
     ]);
 
     autoTable(doc, {
-      startY: 32,
-      head: [['#', 'Nome Completo', 'CPF', 'Instituicao']],
+      startY: 48,
+      head: [['#', 'Nome Completo', 'Email', 'Instituicao']],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
@@ -352,16 +384,40 @@ const WorkshopsCMS = () => {
         doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
         doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
 
+        // Resumo de Perfil para o Palestrante
+        doc.setFontSize(11);
+        doc.setTextColor(74, 16, 29);
+        doc.text("RESUMO DO PERFIL DOS INSCRITOS:", 14, 35);
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        
+        const institutions = {};
+        wsParticipants.forEach(p => {
+          const inst = p.institution?.trim() || 'Não informada';
+          institutions[inst] = (institutions[inst] || 0) + 1;
+        });
+        
+        const topInstitutions = Object.entries(institutions)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4)
+          .map(([name, count]) => `${name} (${count})`)
+          .join(', ');
+
+        doc.text(`Principais Instituicoes: ${topInstitutions || 'N/A'}`, 14, 40);
+        
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, 43, 196, 43);
+
         const tableData = wsParticipants.map((p, idx) => [
           idx + 1,
           p.name,
-          p.cpf,
+          p.email || '-',
           p.institution || '-'
         ]);
 
         autoTable(doc, {
-          startY: 32,
-          head: [['#', 'Nome Completo', 'CPF', 'Instituicao']],
+          startY: 48,
+          head: [['#', 'Nome Completo', 'Email', 'Instituicao']],
           body: tableData,
           theme: 'grid',
           headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
@@ -655,7 +711,7 @@ const WorkshopsCMS = () => {
                                 <tr style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', textAlign: 'left' }}>
                                   <th style={{ padding: '11px 16px', fontWeight: '700' }}>Congressista</th>
                                   <th style={{ padding: '11px 16px', fontWeight: '700' }}>Instituição</th>
-                                  <th style={{ padding: '11px 16px', fontWeight: '700' }}>CPF</th>
+                                  <th style={{ padding: '11px 16px', fontWeight: '700' }}>Email</th>
                                   <th style={{ padding: '11px 16px', fontWeight: '700' }}>Inscrição</th>
                                 </tr>
                               </thead>
@@ -674,7 +730,7 @@ const WorkshopsCMS = () => {
                                       </div>
                                     </td>
                                     <td style={{ padding: '11px 16px', color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>{p.institution || '-'}</td>
-                                    <td style={{ padding: '11px 16px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{p.cpf}</td>
+                                    <td style={{ padding: '11px 16px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{p.email}</td>
                                     <td style={{ padding: '11px 16px', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
                                       {new Date(p.registered_at).toLocaleDateString()} {new Date(p.registered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </td>
