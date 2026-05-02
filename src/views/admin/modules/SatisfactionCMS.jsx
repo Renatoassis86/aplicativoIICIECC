@@ -27,12 +27,12 @@ export default function SatisfactionCMS() {
 
   const loadResponses = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error, status, statusText } = await supabase
       .from('satisfaction_responses')
-      .select('*')
-      .order('created_at', { ascending: false });
-    console.log('[SatisfactionCMS] raw data:', data, 'error:', error);
-    if (error) console.error('[SatisfactionCMS] error:', error);
+      .select('*');
+    console.log('[SatisfactionCMS] status:', status, statusText);
+    console.log('[SatisfactionCMS] data:', data, 'error:', error);
+    if (error) console.error('[SatisfactionCMS] error detail:', JSON.stringify(error));
     setResponses(data || []);
     setLoading(false);
   };
