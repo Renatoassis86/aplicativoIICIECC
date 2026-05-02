@@ -673,7 +673,7 @@ const HomeTab = ({
                   display: 'flex', alignItems: 'center', justifyContent: 'center' 
                 }}>
                   {item.itemType === 'media' ? (
-                    <PlayCircle size={20} />
+                    item.type === 'pdf' ? <ExternalLink size={20} /> : <PlayCircle size={20} />
                   ) : item.itemType === 'social' ? (
                     <Users size={20} />
                   ) : (
@@ -683,7 +683,9 @@ const HomeTab = ({
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      {item.itemType === 'media' ? (item.type === 'video' ? 'Vídeo / Entrevista' : 'Podcast / Mídia') : item.itemType === 'social' ? 'Novo Post no Feed' : 'Comunicado Oficial'}
+                      {item.itemType === 'media'
+                        ? (item.type === 'video' ? 'Vídeo / Entrevista' : item.type === 'pdf' ? 'PDF / Material' : item.type === 'audio' ? 'Podcast / Áudio' : 'Mídia')
+                        : item.itemType === 'social' ? 'Novo Post no Feed' : 'Comunicado Oficial'}
                     </p>
                     <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
                       {new Date(item.created_at).toLocaleDateString()}
