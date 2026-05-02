@@ -217,7 +217,7 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
               scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
             }} className="no-scrollbar">
               {documents.map((item) => (
-                <div key={item.id} onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', minWidth: '120px' }}>
+                <div key={item.id} onClick={() => window.open(item.mediaUrl, '_blank')} style={{ textAlign: 'center', minWidth: '120px', cursor: 'pointer' }}>
                   <div style={{ 
                     width: '110px', height: '110px', borderRadius: '24px', padding: '4px', 
                     background: 'linear-gradient(135deg, #D69E2E 0%, #B8860B 100%)', margin: '0 auto 12px', 
