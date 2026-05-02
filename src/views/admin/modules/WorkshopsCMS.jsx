@@ -345,8 +345,12 @@ const WorkshopsCMS = () => {
       styles: { fontSize: 8 }
     });
 
+    const speakerName = workshop.speakers?.name?.replace(/\s+/g, '_') || 'Sem_Palestrante';
     const timeFileName = workshop.start_time.substring(0, 5).replace(':', 'h');
-    doc.save(`lista_presenca_${timeFileName}_${workshop.title.replace(/\s+/g, '_')}.pdf`);
+    const roomName = workshop.room?.replace(/\s+/g, '_') || 'Sem_Sala';
+    const workshopTitle = workshop.title.replace(/\s+/g, '_');
+
+    doc.save(`${speakerName}_${timeFileName}_${roomName}_${workshopTitle}.pdf`);
   };
 
   const exportAllToPDF = () => {
