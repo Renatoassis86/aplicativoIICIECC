@@ -205,55 +205,37 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
       </header>
 
       <div style={{ padding: '0 20px' }}>
-        
-        {/* 1. TRANSMISSÃO AO VIVO (TOPO) */}
-        <div style={{ marginBottom: '40px' }}>
-           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div className="live-indicator-pulse" style={{ width: '12px', height: '12px', background: '#FF0000', borderRadius: '50%' }}></div>
-              <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase' }}>Transmissão Ao Vivo</h3>
-           </div>
-           
-           <div style={{ 
-             width: '100%', borderRadius: '24px', overflow: 'hidden', background: '#000', aspectRatio: '16/9', 
-             boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.05)'
-           }}>
-             {liveStream ? (
-                <iframe 
-                  width="100%" height="100%" 
-                  src={(liveStream.url)?.includes('youtube') && !(liveStream.url)?.includes('embed') 
-                    ? `https://www.youtube.com/embed/${(liveStream.url).split('v=')[1]?.split('&')[0] || (liveStream.url).split('/').pop()}` 
-                    : (liveStream.url)} 
-                  title="Live" frameBorder="0" allowFullScreen
-                ></iframe>
-             ) : (
-               <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
-                  <Radio size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-                  <p>Nenhuma transmissão ativa no momento.</p>
-               </div>
-             )}
-           </div>
-        </div>
-
-        {/* 1.5 DOCUMENTOS / SLIDES (NOVO) */}
+        {/* 1. DOCUMENTOS / SLIDES (DESTAQUE NO TOPO) */}
         {documents.length > 0 && (
-          <CarouselSection 
-            title="Slides e Materiais"
-            items={documents}
-            renderItem={(item) => (
-              <div onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', width: '100px' }}>
-                <div style={{ 
-                  width: '80px', height: '80px', borderRadius: '20px', padding: '3px', 
-                  background: '#D69E2E', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                }}>
-                  <div style={{ width: '100%', height: '100%', borderRadius: '18px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <FileText size={40} color="#D69E2E" />
+          <div style={{ marginBottom: '40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <FileText size={20} color="var(--gold)" />
+              <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase' }}>Slides e Materiais</h3>
+            </div>
+            <div style={{ 
+              display: 'flex', gap: '16px', overflowX: 'auto', padding: '10px 4px 20px',
+              scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'
+            }} className="no-scrollbar">
+              {documents.map((item) => (
+                <div key={item.id} onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', minWidth: '120px' }}>
+                  <div style={{ 
+                    width: '110px', height: '110px', borderRadius: '24px', padding: '4px', 
+                    background: 'linear-gradient(135deg, #D69E2E 0%, #B8860B 100%)', margin: '0 auto 12px', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 10px 20px rgba(214, 158, 46, 0.2)'
+                  }}>
+                    <div style={{ width: '100%', height: '100%', borderRadius: '20px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <FileText size={50} color="#D69E2E" />
+                    </div>
                   </div>
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', display: 'block', lineHeight: '1.2' }}>{item.title}</span>
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
-              </div>
-            )}
-          />
+              ))}
+            </div>
+          </div>
         )}
+
+
 
         {/* 2. FOTOS CONGRESSO 2026 (CARROSSEL FOTOS) */}
         <CarouselSection
