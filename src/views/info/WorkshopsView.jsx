@@ -17,6 +17,7 @@ const groupByTitle = (workshops) => {
   return Object.values(map).sort((a, b) => b.totalRegistrations - a.totalRegistrations);
 };
 
+const REGISTRATIONS_CLOSED = true;
 const SLOT_A = '14:15';
 const SLOT_B = '15:30';
 const SLOT_LABELS = {
@@ -168,7 +169,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
 
 
   const handleSelect = (slotKey, workshop) => {
-    if (saving || isFinished) return;
+    if (saving || isFinished || REGISTRATIONS_CLOSED) return;
     if (isFull(workshop)) return;
 
     // Toggle: desmarca se já está pendente neste slot
@@ -317,7 +318,17 @@ const WorkshopsView = ({ userCpf, onClose }) => {
         )}
 
         {/* Instrução */}
-        {!isFinished && (
+        {REGISTRATIONS_CLOSED ? (
+          <div style={{ background: '#FEE2E2', padding: '16px', borderRadius: '16px', border: '1px solid #FECACA', display: 'flex', gap: '10px', marginBottom: '24px' }}>
+            <AlertCircle size={20} color="#DC2626" style={{ flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: '800', color: '#991B1B', marginBottom: '4px' }}>Inscrições Encerradas</p>
+              <p style={{ fontSize: '12px', color: '#B91C1C', lineHeight: '1.4' }}>
+                O período de inscrições para as oficinas foi encerrado. Caso você já tenha se inscrito, sua vaga está garantida.
+              </p>
+            </div>
+          </div>
+        ) : !isFinished && (
           <div style={{ background: '#FFFBEB', padding: '14px 16px', borderRadius: '16px', border: '1px solid #FCD34D', display: 'flex', gap: '10px', marginBottom: '24px' }}>
             <AlertCircle size={18} color="#D97706" style={{ flexShrink: 0, marginTop: '2px' }} />
             <p style={{ fontSize: '12px', color: '#78350F', lineHeight: '1.6' }}>
@@ -389,7 +400,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
                     const otherTitle = workshops.find(x => x.id === otherChosenId)?.title;
                     const blockedSameTitle = otherTitle === group.title;
 
-                    const disabled = isFinished || full || blockedSameTitle;
+                    const disabled = REGISTRATIONS_CLOSED || isFinished || full || blockedSameTitle;
 
                     return (
                       <button
