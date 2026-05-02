@@ -115,24 +115,59 @@ const DIM_COLORS = {
 };
 
 const TOTAL = QUESTIONS.length;
+const TOTAL_DIMS = 16; // dimensões 0-15
 
 export default function SatisfactionSurveyView({ userCpf, onClose }) {
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(-1); // -1 = tela de confirmação de perfil
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const containerRef = useRef(null);
 
-  const q = QUESTIONS[current];
-  const progress = Math.round((current / TOTAL) * 100);
-  const color = DIM_COLORS[q.dim] || '#6B141A';
+  // Buscar perfil do congressista para pré-preencher
+  useEffect(() => {
+    if (!userCpf) { setLoadingProfile(false); return; }
+    const load = async () => {
+      try {
+        const { data: member } = await supabase
+          .from('members')
+          .select('name, email, phone, institution, city, state, ticket_type, modality')
+          .eq('cpf', userCpf)
+          .single();
+        if (member) {
+          setProfile(member);
+          // Pré-preencher modalidade automaticamente
+          const prefilled = {};
+          if (member.modality) {
+            const mod = member.modality.toLowerCase();
+            if (mod.includes('presencial')) prefilled['Q02'] = 'Presencial — estive fisicamente no evento';
+            else if (mod.includes('online')) prefilled['Q02'] = 'Online — acompanhei ao vivo pela transmissão';
+          }
+          setAnswers(prev => ({ ...prefilled, ...prev }));
+          // Mantém em -1 para mostrar tela de confirmação
+        } else {
+          setCurrent(0); // Sem perfil, começa direto nas perguntas
+        }
+      } catch {
+        setCurrent(0);
+      }
+      setLoadingProfile(false);
+    };
+    load();
+  }, [userCpf]);
+
+  const q = current >= 0 ? QUESTIONS[current] : null;
+  const progress = current >= 0 ? Math.round(((current + 1) / TOTAL) * 100) : 0;
+  const color = q ? (DIM_COLORS[q.dim] || '#6B141A') : '#6B141A';
 
   const setAnswer = (val) => {
     setAnswers(prev => ({ ...prev, [q.id]: val }));
   };
 
   const canAdvance = () => {
-    if (q.optional || q.skipLabel) return true;
+    if (!q || q.optional || q.skipLabel) return true;
     const ans = answers[q.id];
     if (!ans) return false;
     if (q.type === 'likert_group') return Array.isArray(ans) && ans.length === q.items.length;
@@ -184,22 +219,33 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
 
   if (done) return <DoneScreen onClose={onClose} />;
 
+  // Tela de confirmação de perfil (exibida antes da primeira pergunta)
+  if (loadingProfile) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#0A0F1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px' }}>Carregando...</p>
+    </div>
+  );
+
+  if (profile && current === -1) return (
+    <ProfileConfirmScreen profile={profile} onClose={onClose} onConfirm={() => setCurrent(0)} />
+  );
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#0A0F1A', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ background: color, padding: '16px 20px 12px', flexShrink: 0, transition: 'background 0.4s' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+      <div style={{ background: color, padding: '16px 20px 10px', flexShrink: 0, transition: 'background 0.4s' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <X size={18} color="white" />
           </button>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>{q.dimTitle}</p>
           </div>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: '700', margin: 0 }}>{current + 1}/{TOTAL}</p>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: '700', margin: 0 }}>{progress}%</p>
         </div>
-        {/* Progress bar */}
-        <div style={{ height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: '#D4C19C', borderRadius: '2px', transition: 'width 0.3s ease' }} />
+        {/* Barra de progresso visual */}
+        <div style={{ height: '6px', background: 'rgba(255,255,255,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${progress}%`, background: '#D4C19C', borderRadius: '3px', transition: 'width 0.4s ease' }} />
         </div>
       </div>
 
@@ -341,6 +387,63 @@ function OpenText({ q, answers, onSelect }) {
       rows={5}
       style={{ width: '100%', padding: '18px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.06)', color: 'white', fontSize: '15px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box' }}
     />
+  );
+}
+
+function ProfileConfirmScreen({ profile, onClose, onConfirm }) {
+  const fields = [
+    { label: 'Nome', value: profile.name },
+    { label: 'E-mail', value: profile.email },
+    { label: 'Telefone', value: profile.phone },
+    { label: 'Instituição', value: profile.institution },
+    { label: 'Cidade / Estado', value: [profile.city, profile.state].filter(Boolean).join(' / ') },
+    { label: 'Modalidade', value: profile.modality },
+  ].filter(f => f.value);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: '#0A0F1A', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg, #4A101D, #6B141A)', padding: '20px 20px 24px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <X size={18} color="white" />
+          </button>
+          <img src="/logo.png" alt="CIECC" style={{ height: '28px', filter: 'brightness(0) invert(1)', opacity: 0.7 }} />
+          <div style={{ width: 36 }} />
+        </div>
+        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', margin: 0, fontFamily: 'Georgia, serif' }}>Pesquisa de Satisfação</h2>
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', margin: '6px 0 0' }}>II Congresso Internacional de Educação Cristã Clássica</p>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 120px' }}>
+        <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, marginBottom: '24px' }}>
+          Olá, <strong style={{ color: '#D4C19C' }}>{(profile.name || '').split(' ')[0]}</strong>! Identificamos seu cadastro. Confirme seus dados antes de iniciar:
+        </p>
+
+        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(212,193,156,0.2)', overflow: 'hidden', marginBottom: '24px' }}>
+          {fields.map((f, i) => (
+            <div key={i} style={{ padding: '14px 20px', borderBottom: i < fields.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', display: 'flex', gap: '12px', alignItems: 'baseline' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#D4C19C', textTransform: 'uppercase', letterSpacing: '1px', minWidth: '90px', flexShrink: 0 }}>{f.label}</span>
+              <span style={{ fontSize: '15px', color: 'white', fontWeight: '500' }}>{f.value}</span>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', lineHeight: 1.5 }}>
+          Leva aproximadamente 10 minutos. Suas respostas são anônimas e usadas apenas para melhorar o próximo Congresso.
+        </p>
+      </div>
+
+      {/* Footer */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: 'linear-gradient(to top, #0A0F1A 80%, transparent)', paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+        <button onClick={onConfirm}
+          style={{ width: '100%', padding: '18px', borderRadius: '16px', background: '#6B141A', border: 'none', color: '#D4C19C', fontSize: '16px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          Confirmar e Iniciar Pesquisa
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    </div>
   );
 }
 
