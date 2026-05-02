@@ -455,6 +455,42 @@ const HomeTab = ({
         )}
       </section>
 
+      {/* BANNER PESQUISA DE SATISFAÇÃO */}
+      <section style={{ padding: '20px 20px 0' }}>
+        <div
+          onClick={onOpenSurvey}
+          style={{
+            background: 'linear-gradient(135deg, #4A101D 0%, #1E3A5F 100%)',
+            borderRadius: '24px',
+            padding: '20px',
+            cursor: 'pointer',
+            border: '1px solid rgba(212,193,156,0.25)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(212,193,156,0.08)' }} />
+          <div style={{ position: 'absolute', bottom: '-30px', right: '60px', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(212,193,156,0.05)' }} />
+          <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(212,193,156,0.15)', border: '1px solid rgba(212,193,156,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '24px' }}>
+            ⭐
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <p style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: 0, fontFamily: 'Georgia, serif' }}>Pesquisa de Satisfação</p>
+              <span style={{ background: '#D4C19C', color: '#1A0A0D', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '6px', letterSpacing: '1px' }}>NOVO</span>
+            </div>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.4 }}>
+              Avalie o II CIECC e ajude a construir o próximo Congresso. Leva ~10 min.
+            </p>
+          </div>
+          <ChevronRight size={20} color="#D4C19C" style={{ flexShrink: 0 }} />
+        </div>
+      </section>
+
       {/* PALESTRANTES CONFIRMADOS - CARROSSEL */}
       <CarouselSection
          title="Palestras Principais"

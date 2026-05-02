@@ -33,6 +33,7 @@ import AdminBroadcastModal from './admin/AdminBroadcastModal';
 import ProfileView from './ProfileView';
 import WorkshopsView from './info/WorkshopsView';
 import MediaDetailView from './media/MediaDetailView';
+import SatisfactionSurveyView from './SatisfactionSurveyView';
 import { fetchInbox, initPushNotifications, subscribeToNotifications } from '../services/notifications/notificationService';
 import { Video } from 'lucide-react';
 import { useContent } from '../hooks/useContent';
@@ -91,10 +92,12 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           onOpenMap={() => setCurrentPage('map')}
           onOpenProfile={() => setCurrentPage('profile')}
           onOpenWorkshops={() => setCurrentPage('workshops')}
+          onOpenSurvey={() => setCurrentPage('survey')}
           onOpenMedia={(media) => {
             setMediaDetail(media);
             setCurrentPage('mediaDetail');
           }}
+          userCpf={userCpf}
         />
       );
       case 'agenda': return <AgendaTab userCpf={userCpf} />;
@@ -176,11 +179,17 @@ const DashboardView = ({ onLogout, userType, userName, userCpf, userAvatar, onAv
           />
         )}
         {currentPage === 'mediaDetail' && mediaDetail && (
-          <MediaDetailView 
-            media={mediaDetail} 
-            onClose={() => setCurrentPage(null)} 
-            userCpf={userCpf} 
-            userName={userName} 
+          <MediaDetailView
+            media={mediaDetail}
+            onClose={() => setCurrentPage(null)}
+            userCpf={userCpf}
+            userName={userName}
+          />
+        )}
+        {currentPage === 'survey' && (
+          <SatisfactionSurveyView
+            userCpf={userCpf}
+            onClose={() => setCurrentPage(null)}
           />
         )}
       </div>

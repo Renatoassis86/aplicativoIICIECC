@@ -57,6 +57,7 @@ import MaintenanceCMS from './modules/MaintenanceCMS';
 import WorkshopsCMS from './modules/WorkshopsCMS';
 import TicketsCMS from './modules/TicketsCMS';
 import DriveSyncCMS from './modules/DriveSyncCMS';
+import SatisfactionCMS from './modules/SatisfactionCMS';
 import AdminBroadcastModal from './AdminBroadcastModal';
 import { logService } from '../../services/logService';
 
@@ -189,6 +190,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
     { id: 'tickets', label: 'Gestão de Ingressos', icon: <Ticket size={20} />, color: '#D4C19C' },
     { id: 'members', label: 'Lista de Membros', icon: <Users size={20} />, color: '#D4C19C' },
     { id: 'profile', label: 'Meu Perfil', icon: <UserCheck size={20} />, color: '#D4C19C' },
+    { id: 'satisfaction', label: 'Pesquisa de Satisfação', icon: <BarChart3 size={20} />, color: '#D4C19C' },
     { id: 'maintenance', label: 'Manutenção & Logs', icon: <ShieldCheck size={20} />, color: '#EF4444' },
   ];
 
@@ -229,6 +231,7 @@ export default function AdminPortalView({ onLogout, onBackToApp, userName, userC
       case 'tickets': return <TicketsCMS />;
       case 'members': return <MembersListCMS onEditUser={(u) => { setSelectedUserForEdit(u); setActiveMenu('users'); }} />;
       case 'profile': return <ProfileCMS userCpf={userCpf} />;
+      case 'satisfaction': return <SatisfactionCMS />;
       case 'maintenance': return <MaintenanceCMS />;
       default: return null;
     }
