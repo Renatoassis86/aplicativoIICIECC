@@ -31,12 +31,9 @@ export default function SatisfactionCMS() {
       .from('satisfaction_responses')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) console.error('[SatisfactionCMS]', error);
-    // Considera resposta válida se tem ao menos 1 resposta nas answers
-    const valid = (data || []).filter(r =>
-      r.answers && Object.keys(r.answers).length > 0
-    );
-    setResponses(valid);
+    console.log('[SatisfactionCMS] raw data:', data, 'error:', error);
+    if (error) console.error('[SatisfactionCMS] error:', error);
+    setResponses(data || []);
     setLoading(false);
   };
 
