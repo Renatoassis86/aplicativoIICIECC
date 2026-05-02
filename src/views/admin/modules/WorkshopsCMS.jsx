@@ -379,7 +379,7 @@ const WorkshopsCMS = () => {
 
       doc.setFontSize(14);
       doc.setTextColor(74, 16, 29); // Tema claro - vermelho escuro do evento
-      const slotName = slot === '14:15' ? '1o Horario — 14h15 as 15h15' : '2o Horario — 15h30 as 16h30';
+      const slotName = slot === '15:00' ? '1o Horario — 15h00 as 16h00' : '2o Horario — 16h15 as 17h15';
       const slotLabel = `${slotName} (Inscritos: ${slotCounts[slot] || 0})`;
       doc.text(slotLabel, 14, currentY);
       currentY += 8;
