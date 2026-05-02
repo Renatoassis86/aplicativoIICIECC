@@ -34,7 +34,7 @@ import { supabase } from '../../lib/supabase';
 const HomeTab = ({ 
   userName, userType, userAvatar, unreadCount, 
   onOpenNotifications, onOpenTicket, onOpenScanner, onOpenBroadcast, onNavigate,
-  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, onOpenWorkshops, userCpf
+  onOpenFAQ, onOpenSponsors, onOpenMap, onOpenProfile, onOpenMedia, onOpenWorkshops, onOpenSurvey, userCpf
 }) => {
   const getYouTubeEmbedUrl = (url) => {
     if (!url) return '';
