@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const WorkshopsCMS = () => {
   const [workshops, setWorkshops] = useState([]);
@@ -251,7 +251,7 @@ const WorkshopsCMS = () => {
       p.institution || '-'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 32,
       head: [['#', 'Nome Completo', 'CPF', 'Instituicao']],
       body: tableData,
@@ -307,7 +307,7 @@ const WorkshopsCMS = () => {
         ];
       });
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: currentY,
         head: [['Oficina', 'Palestrante', 'Sala', 'Ocupacao']],
         body: tableData,
