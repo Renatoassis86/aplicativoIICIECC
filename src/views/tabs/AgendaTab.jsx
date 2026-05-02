@@ -24,7 +24,7 @@ const AgendaTab = ({ userCpf }) => {
     return String(val);
   };
 
-  const [activeTab, setActiveTab] = useState('1');
+  const [activeTab, setActiveTab] = useState('2');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
