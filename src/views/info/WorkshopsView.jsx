@@ -109,59 +109,56 @@ const WorkshopsView = ({ userCpf, onClose }) => {
     }
   };
 
-  // Regras de lotação escalonadas por horário:
-  // 1. Auditório (100 vagas): 1 por horário (títulos diferentes)
-  // 2. Sala Média (60 vagas): Próximas 2 mais populares de cada horário
-  // 3. Sala Comum (30 vagas): Demais oficinas
-  const LIMIT_AUDITORIO = 100;
-  const LIMIT_SALA_MEDIA = 60;
-  const LIMIT_SALA = 30;
+  // Regras de lotação escalonadas por popularidade conforme tabela real:
+  const CAPACITIES_LADDER = [100, 60, 60, 36, 30, 30, 20, 20, 20, 15];
+  const DEFAULT_LIMIT = 15;
 
   const workshopCapacities = useMemo(() => {
-    const capacities = {}; // { id: 100 | 60 | 30 }
+    const capacities = {}; 
     const usedTitlesForAuditorio = new Set();
     const slots = {};
 
     // Agrupa por horário
     workshops.forEach(w => {
-      if (!slots[w.start_time]) slots[w.start_time] = [];
-      slots[w.start_time].push(w);
+      const timeKey = w.start_time.substring(0, 5);
+      if (!slots[timeKey]) slots[timeKey] = [];
+      slots[timeKey].push(w);
     });
 
     // Processa cada horário para definir quem vai para onde
     Object.keys(slots).forEach(time => {
       const sortedInSlot = [...slots[time]].sort((a, b) => (b.registrations || 0) - (a.registrations || 0));
       
-      let auditorioWinner = null;
-      let mediumWinners = [];
+      let auditorioIdx = -1;
 
-      // 1. Tenta definir o Auditório (respeitando títulos diferentes)
+      // 1. Encontra o vencedor do Auditório (100 vagas), evitando repetir títulos no mesmo dia se possível
       for (let i = 0; i < sortedInSlot.length; i++) {
         if (!usedTitlesForAuditorio.has(sortedInSlot[i].title)) {
-          auditorioWinner = sortedInSlot[i];
-          usedTitlesForAuditorio.add(auditorioWinner.title);
-          capacities[auditorioWinner.id] = LIMIT_AUDITORIO;
+          auditorioIdx = i;
+          usedTitlesForAuditorio.add(sortedInSlot[i].title);
+          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 100
           break;
         }
       }
 
-      // 2. Define as 2 Salas Médias (60 vagas) entre as que sobraram
-      const remaining = sortedInSlot.filter(w => w.id !== auditorioWinner?.id);
-      mediumWinners = remaining.slice(0, 2);
-      mediumWinners.forEach(w => {
-        capacities[w.id] = LIMIT_SALA_MEDIA;
-      });
+      // Se não achou um título novo, pega o mais popular mesmo
+      if (auditorioIdx === -1 && sortedInSlot.length > 0) {
+        auditorioIdx = 0;
+        capacities[sortedInSlot[0].id] = CAPACITIES_LADDER[0];
+      }
 
-      // 3. O resto fica com Sala Comum (30 vagas)
-      remaining.slice(2).forEach(w => {
-        capacities[w.id] = LIMIT_SALA;
+      // 2. Distribui o restante das salas conforme a escada de capacidades
+      const remaining = sortedInSlot.filter((_, idx) => idx !== auditorioIdx);
+      remaining.forEach((w, idx) => {
+        // idx + 1 pois o 0 é o auditório
+        capacities[w.id] = CAPACITIES_LADDER[idx + 1] || DEFAULT_LIMIT;
       });
     });
 
     return capacities;
   }, [workshops]);
 
-  const getCapacity = (w) => workshopCapacities[w.id] || LIMIT_SALA;
+  const getCapacity = (w) => workshopCapacities[w.id] || DEFAULT_LIMIT;
   const isFull = (w) => (w.registrations || 0) >= getCapacity(w);
 
   const isFinished = Object.keys(confirmed).length >= 2;
