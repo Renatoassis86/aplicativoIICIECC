@@ -248,7 +248,7 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>{q.dimTitle}</p>
           </div>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: '700', margin: 0 }}>{progress}%</p>
+          <div style={{ width: 36 }} />
         </div>
         {/* Barra de progresso visual */}
         <div style={{ height: '6px', background: 'rgba(255,255,255,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
