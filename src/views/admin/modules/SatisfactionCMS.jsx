@@ -27,19 +27,29 @@ export default function SatisfactionCMS() {
 
   const loadResponses = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('satisfaction_responses')
       .select('*')
-      .eq('completed', true)
       .order('created_at', { ascending: false });
-    setResponses(data || []);
+    if (error) console.error('[SatisfactionCMS]', error);
+    // Considera resposta válida se tem ao menos 1 resposta nas answers
+    const valid = (data || []).filter(r =>
+      r.answers && Object.keys(r.answers).length > 0
+    );
+    setResponses(valid);
     setLoading(false);
   };
 
   const total = responses.length;
-  const presencial = responses.filter(r => r.modality === 'presencial').length;
-  const online = responses.filter(r => r.modality === 'online').length;
-  const firstTimers = responses.filter(r => r.is_first_congress).length;
+  const getModality = (r) => {
+    const m = (r.modality || r.answers?.['Q02'] || '').toLowerCase();
+    if (m.includes('presencial')) return 'presencial';
+    if (m.includes('online')) return 'online';
+    return null;
+  };
+  const presencial = responses.filter(r => getModality(r) === 'presencial').length;
+  const online = responses.filter(r => getModality(r) === 'online').length;
+  const firstTimers = responses.filter(r => r.is_first_congress || (r.answers?.['Q03'] || '').toLowerCase().includes('primeiro')).length;
 
   // Calcula NPS para uma questão
   const calcNPS = (qId) => {
