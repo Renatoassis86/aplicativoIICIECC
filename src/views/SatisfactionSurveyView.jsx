@@ -235,9 +235,16 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
       {/* Header */}
       <div style={{ background: color, padding: '16px 20px 10px', flexShrink: 0, transition: 'background 0.4s' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <X size={18} color="white" />
-          </button>
+          {current > 0 ? (
+            <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <ArrowLeft size={18} color="white" />
+            </button>
+          ) : (
+            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <X size={18} color="white" />
+            </button>
+          )}
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', margin: 0 }}>{q.dimTitle}</p>
           </div>
@@ -260,6 +267,14 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
         {q.type === 'likert_group' && <LikertGroup q={q} answers={answers} onSelect={setAnswer} color={color} />}
         {q.type === 'nps' && <NPS q={q} answers={answers} onSelect={handleAutoAdvance} color={color} />}
         {q.type === 'open' && <OpenText q={q} answers={answers} onSelect={setAnswer} />}
+
+        {/* Voltar para single/nps (auto-advance, sem footer) */}
+        {(q.type === 'single' || q.type === 'nps') && current > 0 && (
+          <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '13px', cursor: 'pointer', padding: '8px 0' }}>
+            <ArrowLeft size={14} /> Voltar à pergunta anterior
+          </button>
+        )}
       </div>
 
       {/* Footer */}
@@ -271,12 +286,20 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
               {q.skipLabel}
             </button>
           )}
-          <button onClick={advance} disabled={!canAdvance() && !q.optional}
-            style={{ width: '100%', padding: '18px', borderRadius: '16px', background: canAdvance() || q.optional ? color : 'rgba(255,255,255,0.1)', border: 'none', color: canAdvance() || q.optional ? '#D4C19C' : 'rgba(255,255,255,0.3)', fontSize: '16px', fontWeight: '900', cursor: canAdvance() || q.optional ? 'pointer' : 'not-allowed', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            {current === TOTAL - 1 ? (submitting ? 'Enviando...' : 'Enviar Pesquisa') : 'Continuar'}
-            {current < TOTAL - 1 && <ArrowRight size={18} />}
-            {current === TOTAL - 1 && !submitting && <Check size={18} />}
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {current > 0 && (
+              <button onClick={() => { setCurrent(c => c - 1); containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                style={{ padding: '18px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ArrowLeft size={18} />
+              </button>
+            )}
+            <button onClick={advance} disabled={!canAdvance() && !q.optional}
+              style={{ flex: 1, padding: '18px', borderRadius: '16px', background: canAdvance() || q.optional ? color : 'rgba(255,255,255,0.1)', border: 'none', color: canAdvance() || q.optional ? '#D4C19C' : 'rgba(255,255,255,0.3)', fontSize: '16px', fontWeight: '900', cursor: canAdvance() || q.optional ? 'pointer' : 'not-allowed', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {current === TOTAL - 1 ? (submitting ? 'Enviando...' : 'Enviar Pesquisa') : 'Continuar'}
+              {current < TOTAL - 1 && <ArrowRight size={18} />}
+              {current === TOTAL - 1 && !submitting && <Check size={18} />}
+            </button>
+          </div>
         </div>
       )}
     </div>
