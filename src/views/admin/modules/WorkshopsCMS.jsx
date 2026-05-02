@@ -263,7 +263,8 @@ const WorkshopsCMS = () => {
       styles: { fontSize: 8 }
     });
 
-    doc.save(`lista_presenca_${workshop.title.replace(/\s+/g, '_')}.pdf`);
+    const timeFileName = workshop.start_time.substring(0, 5).replace(':', 'h');
+    doc.save(`lista_presenca_${timeFileName}_${workshop.title.replace(/\s+/g, '_')}.pdf`);
   };
 
   const exportAllToPDF = () => {
@@ -321,6 +322,56 @@ const WorkshopsCMS = () => {
     });
 
     doc.save('visao_geral_oficinas.pdf');
+  };
+
+  const exportAllListsToPDF = () => {
+    const doc = new jsPDF();
+    let firstPage = true;
+
+    slots.forEach(slot => {
+      const slotWorkshops = workshops
+        .filter(w => w.start_time?.startsWith(slot))
+        .sort((a, b) => {
+          const countA = participants.filter(p => p.workshop_id === a.id).length;
+          const countB = participants.filter(p => p.workshop_id === b.id).length;
+          return countB - countA;
+        });
+
+      slotWorkshops.forEach(workshop => {
+        const wsParticipants = getParticipantsForWorkshop(workshop.id);
+        
+        if (!firstPage) {
+          doc.addPage();
+        }
+        firstPage = false;
+
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Lista de Presenca - ${workshop.title}`, 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
+        doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
+
+        const tableData = wsParticipants.map((p, idx) => [
+          idx + 1,
+          p.name,
+          p.cpf,
+          p.institution || '-'
+        ]);
+
+        autoTable(doc, {
+          startY: 32,
+          head: [['#', 'Nome Completo', 'CPF', 'Instituicao']],
+          body: tableData,
+          theme: 'grid',
+          headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
+          columnStyles: { 0: { cellWidth: 10 } },
+          styles: { fontSize: 8 }
+        });
+      });
+    });
+
+    doc.save('todas_listas_presenca_oficinas.pdf');
   };
 
   const filteredWorkshops = workshops.filter(w =>
@@ -406,6 +457,17 @@ const WorkshopsCMS = () => {
             <Bell size={18} /> {sendingNotifs ? 'ENVIANDO...' : 'NOTIFICAR INSCRITOS'}
           </button>
           <button 
+            onClick={exportAllListsToPDF} 
+            disabled={loading}
+            style={{ 
+              margin: 0, background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)',
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '12px',
+              fontSize: '12px', fontWeight: '900', cursor: 'pointer', opacity: loading ? 0.6 : 1
+            }}
+          >
+            <FileText size={18} color="white" /> TODAS AS LISTAS
+          </button>
+          <button 
             onClick={exportAllToPDF} 
             disabled={loading}
             style={{ 
@@ -414,7 +476,7 @@ const WorkshopsCMS = () => {
               fontSize: '12px', fontWeight: '900', cursor: 'pointer', opacity: loading ? 0.6 : 1
             }}
           >
-            <FileText size={18} color="#4A101D" /> EXPORTAR PDF
+            <FileText size={18} color="#4A101D" /> VISÃO GERAL
           </button>
           <button onClick={fetchData} className="sync-btn" style={{ margin: 0 }}>ATUALIZAR</button>
         </div>
