@@ -274,23 +274,35 @@ export default function SatisfactionSurveyView({ userCpf, onClose }) {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    try {
-      const modalityAns = answers['Q02'] || '';
-      const modality = modalityAns.toLowerCase().includes('presencial') ? 'presencial' : 'online';
-      const profileAns = answers['Q01'] || '';
-      const isFirst = (answers['Q03'] || '').toLowerCase().includes('primeiro');
+    const modalityAns = answers['Q02'] || '';
+    const modality = modalityAns.toLowerCase().includes('presencial') ? 'presencial' : 'online';
+    const profileAns = answers['Q01'] || '';
+    const isFirst = (answers['Q03'] || '').toLowerCase().includes('primeiro');
 
-      await supabase.from('satisfaction_responses').insert({
-        respondent_cpf: userCpf || null,
-        answers,
-        modality,
-        profile_type: profileAns,
-        is_first_congress: isFirst,
-        completed: true
-      });
-    } catch (e) {
-      console.error('[Survey] Erro ao salvar:', e);
+    const payload = {
+      respondent_cpf: userCpf || null,
+      answers,
+      modality,
+      profile_type: profileAns,
+      is_first_congress: isFirst,
+      completed: true
+    };
+    console.log('[Survey] Enviando payload:', payload);
+
+    const { data, error } = await supabase
+      .from('satisfaction_responses')
+      .insert(payload)
+      .select();
+
+    console.log('[Survey] Resultado insert:', data, 'Erro:', error);
+
+    if (error) {
+      console.error('[Survey] Erro ao salvar:', JSON.stringify(error));
+      alert('Erro ao salvar respostas: ' + (error.message || JSON.stringify(error)));
+      setSubmitting(false);
+      return;
     }
+
     localStorage.removeItem(STORAGE_KEY(userCpf));
     setSubmitting(false);
     setDone(true);
