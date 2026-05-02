@@ -46,9 +46,13 @@ const WorkshopsCMS = () => {
         .select('workshop_id, user_cpf, created_at');
       const cpfs = [...new Set((regs || []).map(r => r.user_cpf))];
       
-      // Busca membros tanto por CPF quanto por Email, pois alguns usuários podem estar registrados por email
+      // Busca membros tanto por CPF quanto por Email
       const { data: membersByCpf } = await supabase.from('members').select('cpf, name, institution, email').in('cpf', cpfs);
       const { data: membersByEmail } = await supabase.from('members').select('cpf, name, institution, email').in('email', cpfs);
+      
+      // Busca perfis e pesquisas para o resumo sólido
+      const { data: surveys } = await supabase.from('survey_responses').select('user_cpf, survey_type, answers').in('user_cpf', cpfs);
+      const { data: profiles } = await supabase.from('profiles').select('user_id, user_type').in('user_id', cpfs);
       
       const allMembers = [...(membersByCpf || []), ...(membersByEmail || [])];
       const membersMap = allMembers.reduce((acc, m) => { 
@@ -56,9 +60,14 @@ const WorkshopsCMS = () => {
         if (m.email) acc[m.email] = m;
         return acc; 
       }, {});
+      
+      const surveysMap = (surveys || []).reduce((acc, s) => { acc[s.user_cpf] = s; return acc; }, {});
+      const profilesMap = (profiles || []).reduce((acc, p) => { acc[p.user_id] = p; return acc; }, {});
 
       const participantsList = (regs || []).map(r => {
         const member = membersMap[r.user_cpf];
+        const profile = profilesMap[r.user_cpf];
+        const survey = surveysMap[r.user_cpf];
         return {
           workshop_id: r.workshop_id,
           registered_at: r.created_at,
@@ -66,8 +75,10 @@ const WorkshopsCMS = () => {
           name: member?.name || r.user_cpf,
           institution: member?.institution || '',
           email: member?.email || '',
+          user_type: profile?.user_type || 'congressista',
+          survey_data: survey?.answers || null
         };
-      });;
+      });
 
       setWorkshops(sessions || []);
       setParticipants(participantsList);
@@ -252,29 +263,70 @@ const WorkshopsCMS = () => {
     doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
     doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
 
-    // Resumo de Perfil para o Palestrante
+    // Resumo Sólido para o Palestrante
     doc.setFontSize(11);
     doc.setTextColor(74, 16, 29);
-    doc.text("RESUMO DO PERFIL DOS INSCRITOS:", 14, 35);
+    doc.text("PERFIL ESTRATEGICO DOS INSCRITOS:", 14, 35);
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     
+    // Calcular estatísticas avançadas
     const institutions = {};
+    const profiles = {};
+    const challenges = {};
+    
     wsParticipants.forEach(p => {
-      const inst = p.institution?.trim() || 'Não informada';
+      // Instituições
+      const inst = p.institution?.trim() || 'Nao informada';
       institutions[inst] = (institutions[inst] || 0) + 1;
+      
+      // Perfis
+      const type = p.user_type || 'congressista';
+      profiles[type] = (profiles[type] || 0) + 1;
+
+      // Desafios (de pesquisas se houver)
+      if (p.survey_data?.q3_2) {
+        const qChallenges = Array.isArray(p.survey_data.q3_2) ? p.survey_data.q3_2 : [p.survey_data.q3_2];
+        qChallenges.forEach(c => {
+          challenges[c] = (challenges[c] || 0) + 1;
+        });
+      }
     });
     
     const topInstitutions = Object.entries(institutions)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
+      .slice(0, 5)
       .map(([name, count]) => `${name} (${count})`)
       .join(', ');
 
-    doc.text(`Principais Instituicoes: ${topInstitutions || 'N/A'}`, 14, 40);
+    const profileBreakdown = Object.entries(profiles)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => `${name.toUpperCase()}: ${count}`)
+      .join(' | ');
+
+    const topChallenges = Object.entries(challenges)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name, count]) => `${name} (${count})`)
+      .join('; ');
+
+    // Renderizar com quebra de linha (maxWidth) para evitar corte
+    let summaryY = 40;
+    doc.text(`Instituicoes: ${topInstitutions}`, 14, summaryY, { maxWidth: 180 });
     
+    summaryY += (doc.getTextDimensions(`Instituicoes: ${topInstitutions}`, { maxWidth: 180 }).h + 2);
+    doc.text(`Segmentacao: ${profileBreakdown}`, 14, summaryY, { maxWidth: 180 });
+    
+    if (topChallenges) {
+      summaryY += (doc.getTextDimensions(`Segmentacao: ${profileBreakdown}`, { maxWidth: 180 }).h + 2);
+      doc.setFont("helvetica", "bold");
+      doc.text("Desafios Citados:", 14, summaryY);
+      doc.setFont("helvetica", "normal");
+      doc.text(topChallenges, 42, summaryY, { maxWidth: 150 });
+    }
+
     doc.setDrawColor(200, 200, 200);
-    doc.line(14, 43, 196, 43);
+    doc.line(14, summaryY + 5, 196, summaryY + 5);
 
     const tableData = wsParticipants.map((p, idx) => [
       idx + 1,
@@ -284,14 +336,12 @@ const WorkshopsCMS = () => {
     ]);
 
     autoTable(doc, {
-      startY: 48,
+      startY: summaryY + 10,
       head: [['#', 'Nome Completo', 'Email', 'Instituicao']],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
-      columnStyles: {
-        0: { cellWidth: 10 }
-      },
+      columnStyles: { 0: { cellWidth: 10 } },
       styles: { fontSize: 8 }
     });
 
@@ -384,29 +434,59 @@ const WorkshopsCMS = () => {
         doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
         doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
 
-        // Resumo de Perfil para o Palestrante
+        // Resumo Sólido para o Palestrante
         doc.setFontSize(11);
         doc.setTextColor(74, 16, 29);
-        doc.text("RESUMO DO PERFIL DOS INSCRITOS:", 14, 35);
+        doc.text("PERFIL ESTRATEGICO DOS INSCRITOS:", 14, 35);
         doc.setTextColor(0, 0, 0);
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         
         const institutions = {};
+        const profiles = {};
+        const challenges = {};
+        
         wsParticipants.forEach(p => {
-          const inst = p.institution?.trim() || 'Não informada';
+          const inst = p.institution?.trim() || 'Nao informada';
           institutions[inst] = (institutions[inst] || 0) + 1;
+          const type = p.user_type || 'congressista';
+          profiles[type] = (profiles[type] || 0) + 1;
+          if (p.survey_data?.q3_2) {
+            const qChallenges = Array.isArray(p.survey_data.q3_2) ? p.survey_data.q3_2 : [p.survey_data.q3_2];
+            qChallenges.forEach(c => { challenges[c] = (challenges[c] || 0) + 1; });
+          }
         });
         
         const topInstitutions = Object.entries(institutions)
           .sort((a, b) => b[1] - a[1])
-          .slice(0, 4)
+          .slice(0, 5)
           .map(([name, count]) => `${name} (${count})`)
           .join(', ');
 
-        doc.text(`Principais Instituicoes: ${topInstitutions || 'N/A'}`, 14, 40);
-        
+        const profileBreakdown = Object.entries(profiles)
+          .sort((a, b) => b[1] - a[1])
+          .map(([name, count]) => `${name.toUpperCase()}: ${count}`)
+          .join(' | ');
+
+        const topChallenges = Object.entries(challenges)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([name, count]) => `${name} (${count})`)
+          .join('; ');
+
+        let summaryY = 40;
+        doc.text(`Instituicoes: ${topInstitutions}`, 14, summaryY, { maxWidth: 180 });
+        summaryY += (doc.getTextDimensions(`Instituicoes: ${topInstitutions}`, { maxWidth: 180 }).h + 2);
+        doc.text(`Segmentacao: ${profileBreakdown}`, 14, summaryY, { maxWidth: 180 });
+        if (topChallenges) {
+          summaryY += (doc.getTextDimensions(`Segmentacao: ${profileBreakdown}`, { maxWidth: 180 }).h + 2);
+          doc.setFont("helvetica", "bold");
+          doc.text("Desafios Citados:", 14, summaryY);
+          doc.setFont("helvetica", "normal");
+          doc.text(topChallenges, 42, summaryY, { maxWidth: 150 });
+        }
+
         doc.setDrawColor(200, 200, 200);
-        doc.line(14, 43, 196, 43);
+        doc.line(14, summaryY + 5, 196, summaryY + 5);
 
         const tableData = wsParticipants.map((p, idx) => [
           idx + 1,
@@ -416,7 +496,7 @@ const WorkshopsCMS = () => {
         ]);
 
         autoTable(doc, {
-          startY: 48,
+          startY: summaryY + 10,
           head: [['#', 'Nome Completo', 'Email', 'Instituicao']],
           body: tableData,
           theme: 'grid',
