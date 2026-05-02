@@ -26,6 +26,14 @@ const USER_TYPES = [
 
 const EMPTY_USER = { name: '', cpf: '', email: '', user_type: 'staff', password: '' };
 
+const normalizeModality = (mod) => {
+    if (!mod) return '';
+    const lower = mod.toLowerCase();
+    if (lower.includes('online')) return 'Online';
+    if (lower.includes('presencial')) return 'Presencial';
+    return '';
+};
+
 const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, currentUserCpf = null }) => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -280,9 +288,9 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                         </div>
                         <div style={groupStyle}>
                             <label style={labelStyle}>Modalidade (Inscrição)</label>
-                            <select value={newUser.modality || ''} onChange={e => setNewUser({...newUser, modality: e.target.value})} style={inputStyle}>
+                            <select value={normalizeModality(newUser.modality)} onChange={e => setNewUser({...newUser, modality: e.target.value})} style={inputStyle}>
                                 <option value="">Não definido</option>
-                                <option value="2º LOTE - Presencial ">Presencial</option>
+                                <option value="Presencial">Presencial</option>
                                 <option value="Online">Online</option>
                             </select>
                         </div>
@@ -447,9 +455,9 @@ const UserManagementCMS = ({ initialUser = null, onClearSelection = () => {}, cu
                             </div>
                             <div style={groupStyle}>
                                 <label style={labelStyle}>Modalidade (Inscrição)</label>
-                                <select value={editModal.modality || ''} onChange={e => setEditModal({...editModal, modality: e.target.value})} style={inputStyle}>
+                                <select value={normalizeModality(editModal.modality)} onChange={e => setEditModal({...editModal, modality: e.target.value})} style={inputStyle}>
                                     <option value="">Não definido</option>
-                                    <option value="2º LOTE - Presencial ">Presencial</option>
+                                    <option value="Presencial">Presencial</option>
                                     <option value="Online">Online</option>
                                 </select>
                             </div>

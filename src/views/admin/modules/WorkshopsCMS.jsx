@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users, Search, Download, Briefcase, ChevronRight, ChevronDown,
-  MapPin, Clock, Edit3, Check, X as XIcon, Info, Bell
+  MapPin, Clock, Edit3, Check, X as XIcon, Info, Bell, FileText
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const WorkshopsCMS = () => {
   const [workshops, setWorkshops] = useState([]);
@@ -69,7 +71,7 @@ const WorkshopsCMS = () => {
   };
 
   // Regras de lotação global escalonadas por popularidade:
-  const CAPACITIES_LADDER = [100, 60, 60, 36, 30, 30, 20, 20, 20, 15];
+  const CAPACITIES_LADDER = [200, 60, 60, 36, 30, 30, 20, 20, 20, 15];
   const DEFAULT_LIMIT = 15;
 
   const workshopCapacities = useMemo(() => {
@@ -92,7 +94,7 @@ const WorkshopsCMS = () => {
         if (!usedTitlesForAuditorio.has(sortedInSlot[i].title)) {
           auditorioIdx = i;
           usedTitlesForAuditorio.add(sortedInSlot[i].title);
-          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 100
+          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 200
           break;
         }
       }
@@ -117,8 +119,8 @@ const WorkshopsCMS = () => {
     const wsCount = participants.filter(p => p.workshop_id === workshop.id).length;
     const capacity = workshopCapacities[workshop.id] || DEFAULT_LIMIT;
     
-    if (capacity === 100)
-      return { label: `Auditório Principal (${wsCount}/100)`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
+    if (capacity === 200)
+      return { label: `Auditório Principal (${wsCount}/200)`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', locked: true };
     if (capacity === 60)
       return { label: `Sala Média (${wsCount}/60)`, color: '#60A5FA', bg: 'rgba(96,165,250,0.12)', locked: true };
     if (capacity >= 30)
@@ -232,6 +234,94 @@ const WorkshopsCMS = () => {
     document.body.removeChild(link);
   };
 
+  const exportToPDF = (workshop) => {
+    const wsParticipants = getParticipantsForWorkshop(workshop.id);
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text(`Lista de Presenca - ${workshop.title}`, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Sala: ${workshop.room || 'A definir'} | Palestrante: ${workshop.speakers?.name || 'N/A'}`, 14, 22);
+    doc.text(`Horario: ${workshop.start_time.substring(0, 5)} | Inscritos: ${wsParticipants.length}`, 14, 27);
+
+    const tableData = wsParticipants.map((p, idx) => [
+      idx + 1,
+      p.name,
+      p.cpf,
+      p.institution || '-'
+    ]);
+
+    doc.autoTable({
+      startY: 32,
+      head: [['#', 'Nome Completo', 'CPF', 'Instituicao']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
+      columnStyles: {
+        0: { cellWidth: 10 }
+      },
+      styles: { fontSize: 8 }
+    });
+
+    doc.save(`lista_presenca_${workshop.title.replace(/\s+/g, '_')}.pdf`);
+  };
+
+  const exportAllToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Visao Geral das Oficinas', 14, 15);
+    
+    let currentY = 25;
+
+    slots.forEach(slot => {
+      const slotWorkshops = workshops
+        .filter(w => w.start_time?.startsWith(slot))
+        .sort((a, b) => {
+          const countA = participants.filter(p => p.workshop_id === a.id).length;
+          const countB = participants.filter(p => p.workshop_id === b.id).length;
+          return countB - countA;
+        });
+      
+      if (slotWorkshops.length === 0) return;
+
+      if (currentY > 250) {
+        doc.addPage();
+        currentY = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setTextColor(74, 16, 29); // Tema claro - vermelho escuro do evento
+      const slotLabel = slot === '14:15' ? '1o Horario — 14h15 as 15h15' : '2o Horario — 15h30 as 16h30';
+      doc.text(slotLabel, 14, currentY);
+      currentY += 8;
+
+      const tableData = slotWorkshops.map(w => {
+        const wsCount = participants.filter(p => p.workshop_id === w.id).length;
+        const capacity = workshopCapacities[w.id] || DEFAULT_LIMIT;
+        return [
+          w.title,
+          w.speakers?.name || '-',
+          w.room || 'A definir',
+          `${wsCount} / ${capacity}`
+        ];
+      });
+
+      doc.autoTable({
+        startY: currentY,
+        head: [['Oficina', 'Palestrante', 'Sala', 'Ocupacao']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [74, 16, 29], textColor: [255, 255, 255] },
+        styles: { fontSize: 9 },
+      });
+
+      currentY = doc.lastAutoTable.finalY + 15;
+    });
+
+    doc.save('visao_geral_oficinas.pdf');
+  };
+
   const filteredWorkshops = workshops.filter(w =>
     w.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -270,7 +360,7 @@ const WorkshopsCMS = () => {
         <div>
           <p style={{ fontSize: '13px', fontWeight: '800', color: '#F59E0B', marginBottom: '4px' }}>Regra de Alocação de Salas (Escalonada)</p>
           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6' }}>
-            As salas são distribuídas automaticamente por popularidade: <strong style={{ color: '#F59E0B' }}>Auditório (100)</strong>, <strong style={{ color: '#60A5FA' }}>Médias (60)</strong>, e demais salas variando de <strong style={{ color: '#D4C19C' }}>15 a 36 vagas</strong> conforme a tabela real.
+            As salas são distribuídas automaticamente por popularidade: <strong style={{ color: '#F59E0B' }}>Auditório (200)</strong>, <strong style={{ color: '#60A5FA' }}>Médias (60)</strong>, e demais salas variando de <strong style={{ color: '#D4C19C' }}>15 a 36 vagas</strong> conforme a tabela real.
             <br />As inscrições travam automaticamente quando o limite da sala é atingido. Edite o nome da sala clicando em <Edit3 size={11} style={{ display:'inline', verticalAlign:'middle' }} />.
           </p>
         </div>
@@ -299,6 +389,17 @@ const WorkshopsCMS = () => {
             }}
           >
             <Bell size={18} /> {sendingNotifs ? 'ENVIANDO...' : 'NOTIFICAR INSCRITOS'}
+          </button>
+          <button 
+            onClick={exportAllToPDF} 
+            disabled={loading}
+            style={{ 
+              margin: 0, background: 'white', color: 'black', border: 'none',
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '12px',
+              fontSize: '12px', fontWeight: '900', cursor: 'pointer', opacity: loading ? 0.6 : 1
+            }}
+          >
+            <FileText size={18} color="#4A101D" /> EXPORTAR PDF
           </button>
           <button onClick={fetchData} className="sync-btn" style={{ margin: 0 }}>ATUALIZAR</button>
         </div>
@@ -450,12 +551,20 @@ const WorkshopsCMS = () => {
                           <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Users size={15} /> INSCRITOS ({wsParticipants.length})
                           </h4>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); exportToCSV(workshop); }}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '7px 14px', borderRadius: '10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                          >
-                            <Download size={13} /> EXPORTAR CSV
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); exportToPDF(workshop); }}
+                              style={{ background: 'white', border: 'none', color: '#4A101D', padding: '7px 14px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              <FileText size={13} /> PDF LISTA
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); exportToCSV(workshop); }}
+                              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '7px 14px', borderRadius: '10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              <Download size={13} /> EXPORTAR CSV
+                            </button>
+                          </div>
                         </div>
 
                         {wsParticipants.length === 0 ? (

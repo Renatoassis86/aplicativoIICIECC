@@ -110,7 +110,7 @@ const WorkshopsView = ({ userCpf, onClose }) => {
   };
 
   // Regras de lotação escalonadas por popularidade conforme tabela real:
-  const CAPACITIES_LADDER = [100, 60, 60, 36, 30, 30, 20, 20, 20, 15];
+  const CAPACITIES_LADDER = [200, 60, 60, 36, 30, 30, 20, 20, 20, 15];
   const DEFAULT_LIMIT = 15;
 
   const workshopCapacities = useMemo(() => {
@@ -131,12 +131,12 @@ const WorkshopsView = ({ userCpf, onClose }) => {
       
       let auditorioIdx = -1;
 
-      // 1. Encontra o vencedor do Auditório (100 vagas), evitando repetir títulos no mesmo dia se possível
+      // 1. Encontra o vencedor do Auditório (200 vagas), evitando repetir títulos no mesmo dia se possível
       for (let i = 0; i < sortedInSlot.length; i++) {
         if (!usedTitlesForAuditorio.has(sortedInSlot[i].title)) {
           auditorioIdx = i;
           usedTitlesForAuditorio.add(sortedInSlot[i].title);
-          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 100
+          capacities[sortedInSlot[i].id] = CAPACITIES_LADDER[0]; // 200
           break;
         }
       }

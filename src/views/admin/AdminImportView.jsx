@@ -122,6 +122,15 @@ const AdminImportView = ({ onBackToApp }) => {
       // Se tiver 11 caracteres tentamos validar como CPF, se tiver 14 como CNPJ, senão apenas checamos presença
       const idIsValid = cleanId.length >= 10; // Critério flexível para aceitar CNPJ e CPF
 
+      // Tenta inferir modality buscando 'online' ou 'presencial' em toda a linha
+      let inferredModality = mapping.modality ? row[mapping.modality] : null;
+      if (!inferredModality) {
+        const rowString = Object.values(row).join(' ').toLowerCase();
+        if (rowString.includes('online')) inferredModality = 'Online';
+        else if (rowString.includes('presencial')) inferredModality = 'Presencial';
+        else inferredModality = 'Presencial'; // Default fallback
+      }
+
       if (cleanId && idIsValid && rawName) {
         valids.push({
           cpf: cleanId,
@@ -132,7 +141,7 @@ const AdminImportView = ({ onBackToApp }) => {
           city: mapping.city ? row[mapping.city] : null,
           state: mapping.state ? row[mapping.state] : null,
           ticket_type: mapping.ticket_type ? row[mapping.ticket_type] : 'Fórum/Prover',
-          modality: mapping.modality ? row[mapping.modality] : null,
+          modality: inferredModality,
           originalRow: index + 2
         });
       } else {
