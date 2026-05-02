@@ -4,7 +4,7 @@ import {
   Radio, PlayCircle, Podcast, Clapperboard, MonitorPlay, 
   Upload, Image as ImageIcon, Search, Filter, 
   ChevronRight, MoreHorizontal, Globe, Shield, Camera, Film, RefreshCw,
-  LayoutGrid, List, Play
+  LayoutGrid, List, Play, FileText
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import SuccessMessage from '../../../components/admin/SuccessMessage';
@@ -160,6 +160,7 @@ const MediaCMS = () => {
                         if (['mp4', 'mov', 'avi', 'm4v', 'webm'].includes(ext)) finalType = 'video';
                         else if (['mp3', 'wav', 'aac', 'ogg'].includes(ext)) finalType = 'audio';
                         else if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) finalType = 'image';
+                        else if (ext === 'pdf') finalType = 'pdf';
 
                         const payload = {
                             title: mediaFiles.length > 1 ? `${data.title} (${i + 1})` : data.title,
@@ -252,7 +253,8 @@ const MediaCMS = () => {
     const typeOptions = [
         { id: 'video', label: '🎥 VÍDEO', color: '#E53E3E', icon: <Film size={20} /> },
         { id: 'image', label: '📸 FOTO', color: '#3182CE', icon: <Camera size={20} /> },
-        { id: 'audio', label: '🎙️ ÁUDIO', color: '#805AD5', icon: <Podcast size={20} /> }
+        { id: 'audio', label: '🎙️ ÁUDIO', color: '#805AD5', icon: <Podcast size={20} /> },
+        { id: 'pdf', label: '📄 PDF', color: '#D69E2E', icon: <FileText size={20} /> }
     ];
 
     return (
@@ -298,7 +300,7 @@ const MediaCMS = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
                                 <label style={labelStyle}>TIPO DE CONTEÚDO</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                                     {typeOptions.map(opt => (
                                         <button 
                                             key={opt.id}
@@ -505,6 +507,8 @@ const MediaCMS = () => {
                                         </div>
                                     ) : item.media_type === 'image' ? (
                                         <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                    ) : item.media_type === 'pdf' ? (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={layoutMode === 'grid' ? 40 : 20} /></div>
                                     ) : (
                                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Podcast size={layoutMode === 'grid' ? 40 : 20} /></div>
                                     )}

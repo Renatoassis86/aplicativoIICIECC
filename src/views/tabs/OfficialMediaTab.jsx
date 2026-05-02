@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   X,
   ChevronLeft,
-  Radio
+  Radio,
+  FileText
 } from 'lucide-react';
 import { memories2025 } from '../../data/memories2025';
 import MemoriesMarquee from '../../components/media/MemoriesMarquee';
@@ -108,6 +109,10 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
         return 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
       }
       
+      if (item.media_type === 'pdf' || urlValue.toLowerCase().endsWith('.pdf')) {
+        return 'https://cdn-icons-png.flaticon.com/512/337/337946.png'; // Ícone padrão de PDF
+      }
+
       return urlValue || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=300&h=300&fit=crop';
     }
     
@@ -168,6 +173,16 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
     url: getImageUrl(m),
     type: 'photo'
   }));
+
+  const documents = mediaList.filter(m => m.category === 'Palestras' || m.media_type === 'pdf').map(m => ({
+    id: m.id,
+    url: getImageUrl(m),
+    mediaUrl: getMediaUrl(m),
+    title: m.title,
+    type: 'pdf',
+    media_type: 'pdf'
+  }));
+
   const allMemories = [...dbMemories, ...drivePhotos2025, ...memories2025];
 
   const liveStream = mediaList.find(m => m.is_live_stream);
@@ -218,6 +233,27 @@ const OfficialMediaTab = ({ onOpenMedia }) => {
              )}
            </div>
         </div>
+
+        {/* 1.5 DOCUMENTOS / SLIDES (NOVO) */}
+        {documents.length > 0 && (
+          <CarouselSection 
+            title="Slides e Materiais"
+            items={documents}
+            renderItem={(item) => (
+              <div onClick={() => onOpenMedia(item)} style={{ textAlign: 'center', width: '100px' }}>
+                <div style={{ 
+                  width: '80px', height: '80px', borderRadius: '20px', padding: '3px', 
+                  background: '#D69E2E', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '18px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FileText size={40} color="#D69E2E" />
+                  </div>
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+              </div>
+            )}
+          />
+        )}
 
         {/* 2. FOTOS CONGRESSO 2026 (CARROSSEL FOTOS) */}
         <CarouselSection

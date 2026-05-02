@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Play, Pause, SkipBack, SkipForward, AlertCircle } from 'lucide-react';
+import { X, Play, Pause, SkipBack, SkipForward, AlertCircle, FileText } from 'lucide-react';
 import ReactPlayer from 'react-player';
 
 const MediaPlayerModal = ({ media, onClose }) => {
@@ -27,6 +27,7 @@ const MediaPlayerModal = ({ media, onClose }) => {
   const isImage = media.media_type === 'image' || media.type === 'image' || media.type === 'photo' || mediaUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/i);
   const isVideoFile = mediaUrl?.endsWith('.mp4') || mediaUrl?.endsWith('.webm') || media.media_type === 'video' || media.type === 'video';
   const isAudioFile = mediaUrl?.endsWith('.mp3') || mediaUrl?.endsWith('.wav') || media.media_type === 'audio' || media.type === 'podcast' || media.media_type === 'podcast';
+  const isPdf = media.media_type === 'pdf' || media.type === 'pdf' || mediaUrl?.toLowerCase().endsWith('.pdf');
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -77,6 +78,18 @@ const MediaPlayerModal = ({ media, onClose }) => {
               style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: '800' }}
             >
               ABRIR NO NAVEGADOR
+            </button>
+          </div>
+        ) : isPdf ? (
+          <div style={{ textAlign: 'center', color: 'white', padding: '20px' }}>
+            <FileText size={80} color="var(--gold)" style={{ marginBottom: '24px' }} />
+            <h4 style={{ fontWeight: '800', fontSize: '20px', marginBottom: '12px' }}>Documento PDF</h4>
+            <p style={{ fontSize: '14px', opacity: 0.7, marginBottom: '32px' }}>Clique no botão abaixo para abrir ou baixar o arquivo.</p>
+            <button 
+              onClick={() => window.open(mediaUrl, '_blank')}
+              style={{ background: 'var(--gold)', color: 'black', border: 'none', padding: '16px 32px', borderRadius: '16px', fontWeight: '900', fontSize: '15px' }}
+            >
+              ABRIR DOCUMENTO
             </button>
           </div>
         ) : isImage ? (
